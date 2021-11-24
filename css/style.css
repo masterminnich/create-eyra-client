@@ -1,0 +1,76 @@
+td.true{
+    background-color: greenyellow;
+}
+
+td.false{
+    background-color: hotpink;
+}
+
+thead.badgeInMembers {
+    height: 90px;
+}
+
+th {
+    white-space: nowrap;
+}
+
+th > div {
+    transform: translate(16px,27px) rotate(315deg);
+    width: 30px;
+}
+
+th > div > span {
+    border-bottom: 1px solid black;
+    padding: 5px 10px;
+}
+
+section.badgeOutPopUp{
+    background-color: lightskyblue;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    width: 90%;
+    border: 1px solid black;
+    border-radius: 15px;
+    margin: 4%;
+    z-index: 1;
+}
+
+/*div.checkboxes div{
+    display: flex;
+    flex-direction: column;
+}*/
+
+button#submitBadgeOutPopup{
+    float: right;
+}
+
+button#cancelPopupButton{
+    float: left;
+}
+
+div section form div.field{
+    display: flex;
+    margin-bottom: 5px;
+}
+
+div section form div.field input, div#visitType select{
+    position: absolute;
+    left: 12ch;
+}
+
+h1#badgingOutTitle{
+    text-align: center;
+}
+
+div#visitType{
+    margin-bottom: 5px;
+}
+
+div.checkboxes p{
+    margin-bottom: 5px;
+}
+
+button.addInfoAttn{
+    background-color: yellow;
+}
