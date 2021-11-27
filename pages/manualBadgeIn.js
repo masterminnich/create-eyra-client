@@ -37,7 +37,6 @@ const searchForRFID = async (RFID_UID_input) => {
             return 404
         } else if (res.status == 200) {
             console.log('res',res)
-            console.log("check if badging out")
             if (memberData.badgeIn == false){
                 //If member badging out, append a new Event to activity collection
                 //Add event to activities collection!!!!!!!

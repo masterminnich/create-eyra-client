@@ -12,29 +12,24 @@ const updateActivityLog = async (activity, newActivity, existing) => {
   //console.log('activity',activity);
   //console.log('newActivity',newActivity);
 
-  //Get Date
-  let dateStr = newActivity.badgeOutTime.substring(0,10);
-
-  let ActivityDay = activity.find(a => a.Date == dateStr)
+  let dateStr = newActivity.badgeOutTime.substring(0,10); //Get Date
+  let ActivityDay = activity.find(a => a.Date == dateStr) //Get the activity document for the correct day
 
   if (existing){
-    console.log("updating...")
+    console.log("updating existing activity...")
     let DayEvents = ActivityDay.Events.filter(a => a._id !== editEvent._id) //Remove the event from the ActivityDaily document so we can add it back in.
     let DroppedEvent = ActivityDay.Events.filter(a => a._id == editEvent._id) //Remove the event from the ActivityDaily document so we can add it back in.
     let DayEventsAfter = DayEvents.concat(newActivity); //All events from the day.
-    console.log("DayEvents",DayEvents,"DayEventsAfter",DayEventsAfter)
+    //console.log("vMember",vMember,"DayEvents",DayEvents,"DayEventsAfter",DayEventsAfter)
 
-    //update Member Session
+    //update Member Session.  Search vMember for prevBadgeInTime, then drop that session and save back to vMember
     const prevBadgeInTime = String(DroppedEvent[0].badgeInTime);
-    //Search vMember for prevBadgeInTime, remove, then add new session
-    console.log("vMember",vMember)
     let keepEvents = vMember.sessions.filter(vm => vm.badgeIn !== prevBadgeInTime)
     let droppedEvent = vMember.sessions.filter(vm => vm.badgeIn == prevBadgeInTime)
     let newSession = {badgeInTime: newActivity.badgeInTime, badgeOutTime: newActivity.badgeOutTime, sessionLengthMinutes: newActivity.sessionLengthMinutes}
-    //let FinalSessions = keepEvents.concat(newSession)
     vMember.sessions = keepEvents
-    console.log("prevBadgeInTime",prevBadgeInTime,"keepE",keepEvents)
-    console.log("vMember",vMember,"droppedEvent",droppedEvent,"keepEvents",keepEvents)
+    //console.log("prevBadgeInTime",prevBadgeInTime,"keepEvents",keepEvents)
+    //console.log("vMember",vMember,"droppedEvent",droppedEvent,"keepEvents",keepEvents)
 
     try {
       const res = await fetch(`http://localhost:3000/api/activity`, {
@@ -108,11 +103,12 @@ export default function Home({ isConnected, members, activity }) {
 
           //Append a new session to the member
           let foundMember = members.filter(member => member._id == form.MemberID)[0]
-          let newSession = {'badgeIn': form.badgedInTime, 'badgeOut':form.badgedOutTime, 'sessionLengthMinutes': form.sessionLengthMinutes};
+          let newSession = {'badgeIn': form.badgeInTime, 'badgeOut':form.badgeOutTime, 'sessionLengthMinutes': form.sessionLengthMinutes};
           console.log("newSession ",newSession);
           let memberSessionsBefore = foundMember.sessions;
           foundMember.sessions = memberSessionsBefore.concat(newSession);
           foundMember.badgedIn = false;
+          foundMember.lastBadgeIn = form.badgeOutTime;
           updateMemberBadgeInStatus(foundMember);
         }
         else {
@@ -278,9 +274,11 @@ export default function Home({ isConnected, members, activity }) {
 
           //Find and replace member session.
           let foundMember = members.filter(member => member._id == Editform.MemberID)[0]
+          console.log('badgeIn',Editform.badgeInTime, 'badgeOut',Editform.badgeOutTime, 'sessionLengthMinutes',Editform.sessionLengthMinutes)
           let newSession = {'badgeIn': Editform.badgeInTime, 'badgeOut':Editform.badgeOutTime, 'sessionLengthMinutes': Editform.sessionLengthMinutes};
           let foundSessions = foundMember.sessions.filter(fmem => fmem.badgeOut !== Editform.prevBadgeOutTime)
           foundMember.sessions = foundSessions.concat(newSession);
+          foundMember.lastBadgeIn = Editform.badgeOutTime;
           updateMemberBadgeInStatus(foundMember);
         }
         else {
@@ -553,18 +551,15 @@ export default function Home({ isConnected, members, activity }) {
       </section>
       <h3>Next up:</h3>
       <ul>
-        <li>LEFT OFF: trying to replace activity when editing. Currently trying to delete without deleting everything.</li>
-        <li>next up: Activity feed load for today</li>
         <li>Send failed scans to newMember</li>
-        <li>Fix autobadge page. It should create a newActivity</li>
-        <li>BUG: manual badge out - if staff member changes badge out time this doesn't change the session info under members collection</li>
-        <li>STILL NEED TO DO: manualBadgeIn adds to activity collection</li>
+        <li>Popups for testBadge GUI</li>
+        <li>STILL NEED TO DO: testBadge adds to activity collection</li>
+        <li>CSS</li>
       </ul>
       <h3>Later on:</h3>
       <ul>
-        <li>create confirmation system. Edit badgeIn/out times, view/edit member.</li>
         <li>check if user badgeIn time is from a different day. Alert the user.</li>
-        <li>create a script to determine popularity of each day</li>
+        <li>create a script to determine popularity of each day.... Nope - activity log!</li>
       </ul>
     </div>
   )
