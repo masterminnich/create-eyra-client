@@ -248,21 +248,6 @@ export default function Home({ isConnected, members, activity }) {
     )
   }
 
-  const deleteActivity = async (activityID) => {
-    try {  
-        const res = await fetch(`http://localhost:3000/api/activity/${activityID}`, {
-            method: 'DELETE',
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(editEvent)
-        })
-    } catch (error) {
-        console.log(error);
-    }
-  }
-
   useEffect(() => {
     if (isSubmittingEdit) {
         if (Object.keys(errors).length === 0) {

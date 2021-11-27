@@ -7,14 +7,15 @@ export default async (req, res) => {
     const { method } = req;
     
     switch (method) {
-        case 'GET':/*
+        case 'GET': //Returns all documents in activities collection
             try {
+                console.log("activity/index GET triggered")
                 const activity = await Activity.find({});
                 res.status(200).json({ success: true, data: activity })
             } catch (error) {
                 res.status(400).json({ success: false });
             }
-            break;*/
+            break;
         case 'POST':
             //Check if there is other activity today. If not, add today's date to the Activity collection.
             console.log("RB:",req.body)
