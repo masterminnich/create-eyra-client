@@ -36,7 +36,7 @@ export default async (req, res) => {
             let dateObj = new Date();
             let edt_offset = -5*60; 
             dateObj.setMinutes(dateObj.getMinutes() + edt_offset);
-            let dateStr = (dateObj.getMonth()+1)+"/"+dateObj.getDate()+"/"+dateObj.getFullYear();
+            let dateStr = dateObj.getFullYear()+"-"+(dateObj.getMonth()+1)+"-"+dateObj.getDate();
 
             const activity1 = await Activity.find({Date: dateStr})
             console.log("found",activity1)

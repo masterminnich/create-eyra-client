@@ -90,7 +90,6 @@ const NewMember = () => {
             ...form,
             [e.target.name]: e.target.value
         })
-        console.log("form.GraduationYear: ",form.GraduationYear)
     }
 
     const handleSelectMajor = (e) => {
@@ -144,7 +143,7 @@ const NewMember = () => {
                             onChange={handleChange}
                         />
                         <label htmlFor="Major">Major: </label>
-                        <select name="Major" onClick={handleSelectMajor}>
+                        <select name="Major" onChange={handleSelectMajor}>
                             {majorsList.map((major) => (
                                 <option key={major} value={major}>{major}</option>
                             ))}
@@ -174,7 +173,7 @@ const NewMember = () => {
                             onClick={handleRadio}
                         />
                         <label htmlFor="GraduationYear">Graduation Year: </label>
-                        <select name="GraduationYear" onClick={handleSelect}>
+                        <select name="GraduationYear" onChange={handleSelect}>
                             <option value="N/A">N/A</option>
                             <option value="2021">2021</option>
                             <option value="2022">2022</option>

@@ -7,20 +7,51 @@ var vMember = {};
 var vSession = [];
 var editEvent = {};
 
-const updateActivityLog = async (activity, newActivity) => {
-  console.log('activity',activity);
-  console.log('newActivity',newActivity);
+//creates a new activity upon badge out
+const updateActivityLog = async (activity, newActivity, existing) => {
+  //console.log('activity',activity);
+  //console.log('newActivity',newActivity);
 
-  //Convert UTC to local time
-  let dateObj = new Date();
-  let edt_offset = -5*60; 
-  dateObj.setMinutes(dateObj.getMinutes() + edt_offset);
+  //Get Date
+  let dateStr = newActivity.badgeOutTime.substring(0,10);
 
-  let dateStr = (dateObj.getMonth()+1)+"/"+dateObj.getDate()+"/"+dateObj.getFullYear();
-  if (activity[activity.length-1].Date == dateStr){
+  let ActivityDay = activity.find(a => a.Date == dateStr)
+
+  if (existing){
+    console.log("updating...")
+    let DayEvents = ActivityDay.Events.filter(a => a._id !== editEvent._id) //Remove the event from the ActivityDaily document so we can add it back in.
+    let DroppedEvent = ActivityDay.Events.filter(a => a._id == editEvent._id) //Remove the event from the ActivityDaily document so we can add it back in.
+    let DayEventsAfter = DayEvents.concat(newActivity); //All events from the day.
+    console.log("DayEvents",DayEvents,"DayEventsAfter",DayEventsAfter)
+
+    //update Member Session
+    const prevBadgeInTime = String(DroppedEvent[0].badgeInTime);
+    //Search vMember for prevBadgeInTime, remove, then add new session
+    console.log("vMember",vMember)
+    let keepEvents = vMember.sessions.filter(vm => vm.badgeIn !== prevBadgeInTime)
+    let droppedEvent = vMember.sessions.filter(vm => vm.badgeIn == prevBadgeInTime)
+    let newSession = {badgeInTime: newActivity.badgeInTime, badgeOutTime: newActivity.badgeOutTime, sessionLengthMinutes: newActivity.sessionLengthMinutes}
+    //let FinalSessions = keepEvents.concat(newSession)
+    vMember.sessions = keepEvents
+    console.log("prevBadgeInTime",prevBadgeInTime,"keepE",keepEvents)
+    console.log("vMember",vMember,"droppedEvent",droppedEvent,"keepEvents",keepEvents)
+
+    try {
+      const res = await fetch(`http://localhost:3000/api/activity`, {
+          method: 'PUT',
+          headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify({Date: dateStr, Events: DayEventsAfter})
+      })
+    } catch (error) { console.log("Error adding to Activity collection.",error) }
+
+  } else {
+  if (ActivityDay){
     console.log("date found");
     try {
-      let acitivitiesBefore = activity[activity.length-1].Events
+      let acitivitiesBefore = ActivityDay.Events
       let activitiesAfter = acitivitiesBefore.concat(newActivity);
 
       const res = await fetch(`http://localhost:3000/api/activity`, {
@@ -52,6 +83,7 @@ const updateActivityLog = async (activity, newActivity) => {
       console.log("Error adding to Activity collection.",error);
     }
   }
+  }
 }
 
 export default function Home({ isConnected, members, activity }) {
@@ -71,7 +103,7 @@ export default function Home({ isConnected, members, activity }) {
   useEffect(() => {
     if (isSubmitting) {
         if (Object.keys(errors).length === 0) {
-          updateActivityLog(activity,form);
+          updateActivityLog(activity,form,false);
           console.log("activity",activity,"form",form,"members",members)
 
           //Append a new session to the member
@@ -82,7 +114,6 @@ export default function Home({ isConnected, members, activity }) {
           foundMember.sessions = memberSessionsBefore.concat(newSession);
           foundMember.badgedIn = false;
           updateMemberBadgeInStatus(foundMember);
-          console.log("pass any changed info to this function!")
         }
         else {
             setIsSubmitting(false);
@@ -108,7 +139,7 @@ export default function Home({ isConnected, members, activity }) {
     }*/
 
     console.log("REMINDER: I still have to finish validation function for popup in index.js")
-    console.log("(debug) e:",e.target)
+    //console.log("(debug) e:",e.target)
 
     return err;
   }
@@ -134,10 +165,9 @@ export default function Home({ isConnected, members, activity }) {
     } else { badgedOutTime = e.target.badgeOutTime.value }
 
     //Calculate sessionLengthMinutes
-    let outDate = new Date(badgedOutTime)
-    let inDate = new Date(String(badgedInTime))
-    console.log("badgedInTime",badgedInTime,typeof(badgedInTime),"inDate",inDate)
-    let sessionLengthMinutes = Math.round(outDate - inDate)/60000    
+    let outDate = new Date(badgedOutTime);
+    let inDate = new Date(String(badgedInTime));
+    let sessionLengthMinutes = Math.round(outDate - inDate)/60000
 
     setForm({
       ...form,
@@ -182,13 +212,13 @@ export default function Home({ isConnected, members, activity }) {
         <Form.Input
           label='Badged In: '
           placeholder={vSession.badgeIn}
-          deafultValue={vSession.badgeIn}
+          deafultvalue={vSession.badgeIn}
           name='badgeInTime'
         />
         <Form.Input
           label='Badged Out: '
           placeholder={vSession.badgeOut}
-          deafultValue={vSession.badgeOut}
+          deafultvalue={vSession.badgeOut}
           name='badgeOutTime'
         />
         <div className="checkboxes">
@@ -230,7 +260,7 @@ export default function Home({ isConnected, members, activity }) {
                 "Accept": "application/json",
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({test:true})
+            body: JSON.stringify(editEvent)
         })
     } catch (error) {
         console.log(error);
@@ -242,21 +272,16 @@ export default function Home({ isConnected, members, activity }) {
         if (Object.keys(errors).length === 0) {
           //Find and replace activity.
           let activityID = editEvent._id
-          deleteActivity(activityID)
 
-
-          console.log("Find and replace activity...")
-          updateActivityLog(activity,Editform);
+          updateActivityLog(activity,Editform,true);
           console.log("activity",activity,"Editform",Editform,"members",members)
 
           //Find and replace member session.
           let foundMember = members.filter(member => member._id == Editform.MemberID)[0]
-          let newSession = {'badgeIn': Editform.badgedInTime, 'badgeOut':Editform.badgedOutTime, 'sessionLengthMinutes': Editform.sessionLengthMinutes};
+          let newSession = {'badgeIn': Editform.badgeInTime, 'badgeOut':Editform.badgeOutTime, 'sessionLengthMinutes': Editform.sessionLengthMinutes};
           let foundSessions = foundMember.sessions.filter(fmem => fmem.badgeOut !== Editform.prevBadgeOutTime)
           foundMember.sessions = foundSessions.concat(newSession);
-          foundMember.badgedIn = false;
           updateMemberBadgeInStatus(foundMember);
-          console.log("pass any changed info to this function!")
         }
         else {
             setIsSubmittingEdit(false);
@@ -288,7 +313,6 @@ export default function Home({ isConnected, members, activity }) {
     //Calculate sessionLengthMinutes
     let outDate = new Date(badgedOutTime)
     let inDate = new Date(String(badgedInTime))
-    console.log("badgedInTime",badgedInTime,typeof(badgedInTime),"inDate",inDate)
     let sessionLengthMinutes = Math.round(outDate - inDate)/60000  
 
     setEditForm({
@@ -327,13 +351,13 @@ export default function Home({ isConnected, members, activity }) {
         <Form.Input
           label='Badged In: '
           placeholder={vSession.badgeIn}
-          deafultValue={vSession.badgeIn}
+          deafultvalue={vSession.badgeIn}
           name='badgeInTime'
         />
         <Form.Input
           label='Badged Out: '
           placeholder={vSession.badgeOut}
-          deafultValue={vSession.badgeOut}
+          deafultvalue={vSession.badgeOut}
           name='badgeOutTime'
         />
         
@@ -410,7 +434,7 @@ export default function Home({ isConnected, members, activity }) {
   let dateObj = new Date();
   let edt_offset = -5*60; 
   dateObj.setMinutes(dateObj.getMinutes() + edt_offset);
-  let dateStr = (dateObj.getMonth()+1)+"/"+dateObj.getDate()+"/"+dateObj.getFullYear();
+  let dateStr = dateObj.getFullYear()+"-"+(dateObj.getMonth()+1)+"-"+dateObj.getDate();
 
   let todayActivity = activity.filter(act => act.Date == dateStr);
   if (todayActivity.length !== 0){
