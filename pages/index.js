@@ -420,10 +420,6 @@ export default function Home({ isConnected, members, activity }) {
   let dateStr = dateObj.getFullYear()+"-"+(dateObj.getMonth()+1)+"-"+dateObj.getDate();
 
   let todayActivity = activity.filter(act => act.Date == dateStr);
-  if (todayActivity.length !== 0){
-    console.log("Todays activities:",todayActivity[0].Events)
-  }
-  
 
   const certificationList = ['UltimakerCertified', 'GlowforgeCertified', 'FourAxisMillCertified', 'BantamMillCertified', 'P9000Certified', 'SewingCertified', 'SilhouetteCertified', 'CuraCertified', 'VectorCADCertified', 'CircuitDesignCertified'];
   const certificationNames = ['Ultimaker','Glowforge','Four Axis Mill', 'Bantam Mill', 'P9000', 'Sewing', 'Silhouette', 'Cura', 'VectorCAD', 'CircuitDesign'];

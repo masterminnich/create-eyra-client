@@ -9,7 +9,6 @@ export default async (req, res) => {
     switch (method) {
         case 'GET': //Returns all documents in activities collection
             try {
-                console.log("activity/index GET triggered")
                 const activity = await Activity.find({});
                 res.status(200).json({ success: true, data: activity })
             } catch (error) {
@@ -18,7 +17,7 @@ export default async (req, res) => {
             break;
         case 'POST':
             //Check if there is other activity today. If not, add today's date to the Activity collection.
-            console.log("RB:",req.body)
+            //console.log("RB:",req.body)
             const activity = await Activity.find({});
             //console.log("activity|index.js activity:",activity);
             
@@ -29,8 +28,7 @@ export default async (req, res) => {
                 res.status(201).json({ success: true, data: activity })
             } catch (error) {
                 res.status(400).json({ success: false });
-                console.log("Error at activity|index.js|POST")
-                console.log(error);
+                console.log("Error at activity|index.js|POST",error);
             }
             break;
         case 'PUT':
@@ -40,14 +38,13 @@ export default async (req, res) => {
             let dateStr = dateObj.getFullYear()+"-"+(dateObj.getMonth()+1)+"-"+dateObj.getDate();
 
             const activity1 = await Activity.find({Date: dateStr})
-            console.log("found",activity1)
             
             try {
                 const activity2 = await Activity.findByIdAndUpdate(activity1[0]._id, req.body, {
                     new: true,
                     runValidators: true
                 });
-                console.log("New activity added to database:",activity2);
+                console.log("New activity added to database:",activity2.Date);
 
                 res.status(201).json({ success: true, data: activity2 })
             } catch (error) {

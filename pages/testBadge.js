@@ -14,18 +14,20 @@ class App extends Component {
     //let history = useHistory();
 
     handleKeyPress = badgeStatus => {
-        this.setState({ badgeStatus })
-        let T = timeout(2000);
-        T.then((a) =>{
-            document.getElementsByClassName("badgeStatus")[0].innerText = "Status: waiting";
-        });
+        //this.setState({ badgeStatus })
+        console.log(this.state.badgeStatus)
+        console.log("XZXZXZXZXZXZXZXZXXZXZXZXZ!!!!!!XZXZXZXZZXZX!!!")
+        //let T = timeout(2000);
+        //T.then((a) =>{
+        //    document.getElementsByClassName("badgeStatus")[0].innerText = "Status: waiting";
+        //});
         
     }
 
     render() {
         return (
             <>
-                <CheckKey onKeyPress={this.handleKeyPress}/>
+                <CheckKey onKeyPress={this.handleKeyPress()}/>
                 <p className="badgeStatus">Status: {this.state.badgeStatus}</p>
             </>
         );

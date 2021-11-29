@@ -1,3 +1,4 @@
+import { resolveHref } from 'next/dist/shared/lib/router/router';
 import React, { Component, useState } from 'react';
 import { SearchResult } from 'semantic-ui-react';
 //import activity from './api/activity';
@@ -10,8 +11,6 @@ import { SearchResult } from 'semantic-ui-react';
 
 var createReactClass = require('create-react-class');
 var RFID_UID_input = "";
-var activities;
-var searchResult = {code: 0,msg: "waiting for scan..."}
 
 const getActivitiesCollection = async (memberData) => {
     try {
@@ -76,6 +75,25 @@ const updateActivityLog = async (activity, memberData) => {
       }
 }
 
+function timeout(delay) {
+  return new Promise( res => setTimeout(res, delay) );
+}
+
+function createPopUp(msg,code){
+  let f = document.getElementsByClassName("herf")[0]
+  const p = document.createElement("p");
+  const d = document.createElement("div");
+  d.id = code
+  p.className = "popupMsg"
+  p.innerText = msg
+  d.appendChild(p)
+  f.appendChild(d);
+  let T = timeout(3500);
+  T.then((a) =>{
+    document.getElementsByClassName("popupMsg")[0].remove();
+  });
+}
+
 const searchForRFID = async (RFID_UID_input) => {
     try {
         const res = await fetch('http://localhost:3000/api/badgeIn', {
@@ -92,12 +110,14 @@ const searchForRFID = async (RFID_UID_input) => {
             //console.log(memberData.Name,"badged in?")
 
             if (res.status == 406){ 
-                console.log("Search failed. More than one user share this RFID.");
-                return 406;
+                let fullMsg = "Search failed. More than one user share this RFID."
+                console.log(fullMsg);
+                createPopUp(fullMsg,"fourohsix")
             } else if (res.status == 404){
-                console.log("Search failed. No member with this RFID.");
+                let fullMsg = "Search failed. No member with this RFID."
+                console.log(fullMsg);
                 console.log("redirect to new member page?");
-                return 404;
+                createPopUp(fullMsg,"fourohfour")
             } else if (res.status == 200) {
                 let msg = ""
                 if(memberData.badgeIn){msg = "badged in"}else{msg = "badged out"}
@@ -106,8 +126,7 @@ const searchForRFID = async (RFID_UID_input) => {
                 if (memberData.badgedIn == false){
                     getActivitiesCollection(memberData); //If member badging out, append a new Event to activity collection
                 };
-                searchResult = {code: 200,msg: fullMsg}
-                //return 200;//{response:200, msg: fullMsg};
+                createPopUp(fullMsg,"twohundred")
             } else { return "something really wrong happened"};
         });
         //router.push("/");
@@ -122,58 +141,44 @@ const tryingSomething = async (args) => {
     console.log("res1!",res)
 }*/
 
+class App extends Component {
+  state = {
+      badgeStatus: "waiting"
+  };
 
-const CheckKey = createReactClass({
-    handleKeyDown: function(e) {
-        RFID_UID_input += e.key;
-        console.log("keypress: ", e.key);
+  handleKeyDown = e => {
+    RFID_UID_input += e.key;
+    console.log("keypress: ", e.key);
 
-        if (RFID_UID_input.length == 10){
-            //When all characters of RFID are entered. Check if in database.
-            console.log("Searching database for RFID_UID matching",RFID_UID_input,"...");
-            let searchResultPromise = searchForRFID(RFID_UID_input);
-            //searchResult = "waiting..."
-            //let response = res.json();
-            searchResultPromise.then((a) => {
-                console.log("resolving promise.....")
-                console.log("a",a)
-                console.log("searchResult",searchResult)
-                console.log("prmose",searchResultPromise)
-                //console.log(".json",a.json())
-                //console.log(a.response,a.msg)
-                //searchResult = a;
-                //this.props.onKeyPress(searchResult);
-            });
-            RFID_UID_input = "";
-        }
-    },
-    componentDidMount(){
-        this.nameInput.focus(); 
-    },
-    render: function() {
-        return (
-            <React.Fragment>
-                <h1>Please Badge In!</h1>
+    if (RFID_UID_input.length == 10){
+        //When all characters of RFID are entered. Check if in database.
+        console.log("Searching database for RFID_UID matching",RFID_UID_input,"...");
+        let searchResultPromise = searchForRFID(RFID_UID_input);
 
-                <input type='text'
-                    ref={(input) => { this.nameInput = input; }} //autoFocus wasn't working for some reason. Solution from StackOverflow: https://stackoverflow.com/questions/28889826/how-to-set-focus-on-an-input-field-after-rendering?rq=1
-                    onKeyDown={this.handleKeyDown}/>
-                <a href="newMember">New Member Sign-Up</a>
-                {searchResult.code == 200 ? (
-                    <div><p>SUCCESS!</p></div>
-                ):(<div></div>)}
-                {searchResult.code == 404 ? (
-                    <div><p>404</p></div>
-                ):(<div></div>)}
-                {searchResult.code == 406 ? (
-                    <div><p>406</p></div>
-                ):(<div></div>)}
-                {searchResult.code == 0 ? (
-                    <div><p>No load :(</p></div>
-                ):(<div></div>)}
-            </React.Fragment>
-        )
+        //searchResult = "waiting..."
+        searchResultPromise.then((a) => {
+            //this.state = "test69"
+            //console.log("prmose",searchResultPromise)
+        });
+        RFID_UID_input = "";
     }
-  })
+  }
 
-export default CheckKey;
+  componentDidMount(){
+    this.nameInput.focus(); 
+  }
+
+  render() {
+      return (
+        <React.Fragment>
+          <h1>Please Badge In!</h1>
+          <input type='text'
+            ref={(input) => { this.nameInput = input; }} //autoFocus wasn't working for some reason. Solution from StackOverflow: https://stackoverflow.com/questions/28889826/how-to-set-focus-on-an-input-field-after-rendering?rq=1
+            onKeyDown={this.handleKeyDown}/>
+          <a href="newMember">New Member Sign-Up</a>
+          <div className="herf"></div>
+        </React.Fragment>
+      );
+  }
+}
+export default App;
