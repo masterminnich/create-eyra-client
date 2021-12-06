@@ -44,12 +44,6 @@ class App extends Component {
 
     componentDidMount(){
         getFilamentCSV();
-
-        //console.log("resultHello",resultHello)
-
-        //console.log("filament:",filament)
-        
-        
     }
 
     render() {

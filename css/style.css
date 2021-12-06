@@ -116,14 +116,17 @@ div#twohundred, div#fourohsix, div#fourohfour{
 
 p.popupMsg{
     text-align: center;
-    font-size: 3vh;
+    font-size: 3vw;
     font-weight: 700;
 }
 /* End badge in popup CSS */
 
-
 div.badgeIn{
-    
+    display: flex;
+    flex-direction: column;
+    top: 25%;
+    position: absolute;
+    width: 100%;
 }
 
 div.arrow{
@@ -143,23 +146,81 @@ div.arrow:before{
     margin: 0 5px;
     background: currentColor;
     clip-path: polygon(0 10px,calc(100% - 15px) 10px,calc(100% - 15px) 0,100% 50%,calc(100% - 15px) 100%,calc(100% - 15px) calc(100% - 10px),0 calc(100% - 10px));
-    animation: a3 .5s infinite alternate;
+    animation: arrow-bounce .5s infinite alternate;
 }
 
-@keyframes a3 {
-    0%  {transform: scaleX(var(--s,1)) translate(-4px)}
-    100%{transform: scaleX(var(--s,1)) translate( 4px)}
+@keyframes arrow-bounce {
+    0%  {transform: scaleX(var(--s,1)) translate(-6px)}
+    100%{transform: scaleX(var(--s,1)) translate( 6px)}
 }
 
 h1#pleaseBadgeIn{
     font-weight: 900;
     text-align: center;
+    font-size: 5vw;
 }
 
-button#newMemberButton{}
+a#newMemberButton{
+    display: flex;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 2vw;
+}
 
 input#badgeInTextInput{
     border: none;
     outline: none;
-    /*color: white;*/
+    color: white;
+}
+
+div.form-container{
+    text-align: center;
+}
+
+a#manualBadgeIn{
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    border: solid black;
+    padding: 4px;
+    text-decoration: none;
+    color: black;
+    font-weight: 600;
+}
+
+a#manualBadgeIn:hover{
+    background-color:salmon;
+}
+
+div.left-arrow{
+    border: solid black;
+    border-width: 0 3px 3px 0;
+    display: inline-block;
+    padding: 3px;
+    transform: rotate(135deg);
+    -webkit-transform: rotate(135deg);
+    top: -1px;
+    position: relative;
+}
+
+div.field{
+    display: flex;
+}
+
+div.formComponent div input#NameInput, div.formComponent select{
+    left: 15px;
+    position: relative;
+}
+
+div#formName, div#formRadios, div#formMajor, div#formGrad{
+    display: inline-flex;
+    justify-content: center;
+}
+
+form#newMember{
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    top: 20px;
+    position: relative;
 }

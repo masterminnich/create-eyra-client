@@ -1,6 +1,9 @@
 import { resolveHref } from 'next/dist/shared/lib/router/router';
 import React, { Component, useState } from 'react';
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { SearchResult } from 'semantic-ui-react';
+import { useRouter } from 'next/router';
 //import activity from './api/activity';
 //import connectToDatabase from '../utils/connectToDatabase';
 
@@ -79,18 +82,38 @@ function timeout(delay) {
   return new Promise( res => setTimeout(res, delay) );
 }
 
+function checkFocus(){
+  // This function is run when the badgeInInputText element is un-focused. It automatically re-focuses the element.
+  if(document.getElementById("badgeInTextInput") !== document.activeElement){
+    document.getElementById("badgeInTextInput").focus()
+  }
+}
+
 function createPopUp(msg,code){
   let f = document.getElementsByClassName("herf")[0]
   const p = document.createElement("p");
   const d = document.createElement("div");
+  
+  passData()
+  
   d.id = code
   p.className = "popupMsg"
   p.innerText = msg
   d.appendChild(p)
   f.appendChild(d);
-  let T = timeout(350000);
+  if(code !== "twohundred"){
+    const a = document.createElement("a")
+    a.href="newMember"
+    a.id="newMemberButton"
+    a.innerText="New Member Sign-Up"
+    d.appendChild(a);
+  }
+
+  this.props.history.push({pathname: "/newMember", data: "d1"});
+
+  let T = timeout(3500);
   T.then((a) =>{
-    document.getElementsByClassName("popupMsg")[0].remove();
+    document.getElementById(code).remove();
   });
 }
 
@@ -107,7 +130,6 @@ const searchForRFID = async (RFID_UID_input) => {
         let response = res.json()
         response.then((resp) => {
             let memberData = resp.data;
-            //console.log(memberData.Name,"badged in?")
 
             if (res.status == 406){ 
                 let fullMsg = "Search failed. More than one user share this RFID."
@@ -129,7 +151,6 @@ const searchForRFID = async (RFID_UID_input) => {
                 createPopUp(fullMsg,"twohundred")
             } else { return "something really wrong happened"};
         });
-        //router.push("/");
     } catch (error) {
         console.log(error);
         return "something really wrong happened (2)";
@@ -142,6 +163,7 @@ class App extends Component {
   };
 
   handleKeyDown = e => {
+    checkFocus()
     RFID_UID_input += e.key;
     console.log("keypress: ", e.key);
 
@@ -166,16 +188,16 @@ class App extends Component {
   render() {
       return (
         <React.Fragment>
-          <input id="badgeInTextInput" type='text' 
-            ref={(input) => { this.nameInput = input; }} //autoFocus wasn't working for some reason. Solution from StackOverflow: https://stackoverflow.com/questions/28889826/how-to-set-focus-on-an-input-field-after-rendering?rq=1
-            onKeyDown={this.handleKeyDown}/>
           <div className="badgeIn">
+          <input id="badgeInTextInput" spellcheck="false" type='text' 
+            ref={(input) => { this.nameInput = input; }} //autoFocus wasn't working for some reason. Solution from StackOverflow: https://stackoverflow.com/questions/28889826/how-to-set-focus-on-an-input-field-after-rendering?rq=1
+            onKeyDown={this.handleKeyDown} onBlur={checkFocus}/>
             <h1 id="pleaseBadgeIn">Please Badge In!</h1>
             <div className="arrow"></div>
-            <a href="newMember" id="newMemberButton">New Member Sign-Up</a>
             <div className="herf"></div>
           </div>
         </React.Fragment>
+        
       );
   }
 }

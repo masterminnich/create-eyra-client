@@ -4,7 +4,6 @@ import Member from '../../../models/Member';
 connectToDatabase();
 
 const updateMemberBadgeInStatus = async (member) => {
-    //const router = routee();
     try {
         const bagdgeInStatusBefore = member.badgedIn;
         member.badgedIn = !member.badgedIn;
@@ -44,7 +43,6 @@ const updateMemberBadgeInStatus = async (member) => {
             },
             body: JSON.stringify(member)
         })
-        //router.push("/");
     } catch (error) {
         console.log(error);
     }
@@ -54,9 +52,6 @@ export default async (req, res) => {
     const rfid_to_find = req.body.rfid;
     try {
         const membersArray = await Member.find({}); //Objects are not valid error...
-
-        //console.log("membersArray: ", membersArray);
-        //console.log("typeof membersArray: ", typeof membersArray);
         const foundMember = findMemberByRFID(membersArray, rfid_to_find);
 
         switch (foundMember) {

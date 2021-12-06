@@ -417,7 +417,7 @@ export default function Home({ isConnected, members, activity }) {
   let dateObj = new Date();
   let edt_offset = -5*60; 
   dateObj.setMinutes(dateObj.getMinutes() + edt_offset);
-  let dateStr = dateObj.getFullYear()+"-"+(dateObj.getMonth()+1)+"-"+dateObj.getDate();
+  let dateStr = dateObj.getFullYear()+"-"+dateObj.toISOString().substring(5,7)+"-"+dateObj.toISOString().substring(8,10);
 
   let todayActivity = activity.filter(act => act.Date == dateStr);
 
@@ -535,8 +535,8 @@ export default function Home({ isConnected, members, activity }) {
       <ul>
         <li>Send failed scans to newMember</li>
         <li>Popups for testBadge GUI</li>
-        <li>STILL NEED TO DO: testBadge adds to activity collection</li>
         <li>CSS</li>
+        <li>newMember page fills out RFID</li>
       </ul>
       <h3>Later on:</h3>
       <ul>

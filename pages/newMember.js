@@ -69,14 +69,14 @@ const NewMember = () => {
     }
 
     const handleRadio = (e) => {
-        if(e.target.value == "Student" || e.target.value == "Makerspace Staff"){
+        if(e.target.value == "Student" || e.target.value == "Makerspace Staff" || e.target.value === undefined){
             document.querySelector('select').style.display = "inline-block"
-            document.querySelectorAll('label')[5].style.display = "inline"
+            document.querySelectorAll('label')[4].style.display = "inline"
         } else { 
             document.querySelector('select').style.display = "none"
-            document.querySelectorAll('label')[5].style.display = "none"
+            document.querySelectorAll('label')[4].style.display = "none"
         }
-        console.log(e.target.name,e.target.value);
+        //console.log("e.target.name:",e.target.name," e.target.value:",e.target.value);
         setForm({
             ...form,
             [e.target.name]: e.target.value
@@ -85,7 +85,7 @@ const NewMember = () => {
     }
 
     const handleSelect = (e) => {
-        console.log("handleSelect",e.target.value)
+        console.log("handleSelect:",e.target.value)
         setForm({
             ...form,
             [e.target.name]: e.target.value
@@ -93,7 +93,7 @@ const NewMember = () => {
     }
 
     const handleSelectMajor = (e) => {
-        console.log("handleSelectMajor",e.target.value)
+        console.log("Major Selected:",e.target.value)
         setForm({
             ...form,
             [e.target.name]: e.target.value
@@ -127,63 +127,73 @@ const NewMember = () => {
 
     return (
         <div className="form-container">
-            <h1>Create Member</h1>
+            <h1>Become a New Member</h1>
+            <p>Please fill out the form below to be added to our database.</p>
             <div>
                 {
                     isSubmitting
                     ? <Loader active inline='centered' />
-                    : <Form onSubmit={handleSubmit}>
-                        <Form.Input
-                            fluid
-                            error={errors.name ? { content: 'Please enter a name', pointing: 'below' } : null}
-                            label='Name'
-                            placeholder='Name'
-                            name='Name'
-                            onChange={handleChange}
-                        />
-                        <label htmlFor="Major">Major: </label>
-                        <select name="Major" onChange={handleSelectMajor}>
-                            {majorsList.map((major) => (
-                                <option key={major} value={major}>{major}</option>
-                            ))}
-                        </select>
-                        <Form.Radio
-                            label="Student"
-                            value="Student"
-                            name="PatronType"
-                            type="radio"
-                            checked={rState == "Student"}
-                            onClick={handleRadio}
-                        />
-                        <Form.Radio
-                            label="Makerspace Staff"
-                            value="Makerspace Staff"
-                            name="PatronType"
-                            type="radio"
-                            checked={rState == "Makerspace Staff"}
-                            onClick={handleRadio}
-                        />
-                        <Form.Radio
-                            label="Faculty"
-                            value="Faculty"
-                            name="PatronType"
-                            type="radio"
-                            checked={rState == "Faculty"}
-                            onClick={handleRadio}
-                        />
-                        <label htmlFor="GraduationYear">Graduation Year: </label>
-                        <select name="GraduationYear" onChange={handleSelect}>
-                            <option value="N/A">N/A</option>
-                            <option value="2021">2021</option>
-                            <option value="2022">2022</option>
-                            <option value="2023">2023</option>
-                            <option value="2024">2024</option>
-                        </select>
+                    : <Form id="newMember" onSubmit={handleSubmit}>
+                        <div className="formComponent" id="formName">
+                            <Form.Input
+                                fluid
+                                error={errors.name ? { content: 'Please enter a name', pointing: 'below' } : null}
+                                label='Name:'
+                                placeholder='Name'
+                                name='Name'
+                                id="NameInput"
+                                onChange={handleChange}
+                            />
+                        </div>
+                        <div className="formComponent" id="formRadios">
+                            <Form.Radio
+                                label="Student"
+                                value="Student"
+                                name="PatronType"
+                                type="radio"
+                                checked={rState == "Student"}
+                                onClick={handleRadio}
+                            />
+                            <Form.Radio
+                                label="Makerspace Staff"
+                                value="Makerspace Staff"
+                                name="PatronType"
+                                type="radio"
+                                checked={rState == "Makerspace Staff"}
+                                onClick={handleRadio}
+                            />
+                            <Form.Radio
+                                label="Faculty"
+                                value="Faculty"
+                                name="PatronType"
+                                type="radio"
+                                checked={rState == "Faculty"}
+                                onClick={handleRadio}
+                            />
+                        </div>
+                        <div className="formComponent" id="formMajor">
+                            <label htmlFor="Major">Major:</label>
+                            <select name="Major" onChange={handleSelectMajor}>
+                                {majorsList.map((major) => (
+                                    <option key={major} value={major}>{major}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="formComponent" id="formGrad">
+                            <label htmlFor="GraduationYear">Graduation Year: </label>
+                            <select name="GraduationYear" onChange={handleSelect}>
+                                <option value="N/A">N/A</option>
+                                <option value="2021">2021</option>
+                                <option value="2022">2022</option>
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                            </select>
+                        </div>
                         <Button type='submit'>Create</Button>
                     </Form>
                 }
             </div>
-            <a href="manualBadgeIn">Badge In</a>
+            <a href="badgeIn" id="manualBadgeIn"><div className="left-arrow"></div>Badge In</a>
         </div>
     )
 }
