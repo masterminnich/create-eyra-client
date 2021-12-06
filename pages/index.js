@@ -536,7 +536,7 @@ export default function Home({ isConnected, members, activity }) {
         <li>Send failed scans to newMember</li>
         <li>Popups for testBadge GUI</li>
         <li>CSS</li>
-        <li>newMember page fills out RFID</li>
+        <li>newMember page fills out RFID!!!!!!! - data gets passed to the page, just have to edit newMember</li>
       </ul>
       <h3>Later on:</h3>
       <ul>

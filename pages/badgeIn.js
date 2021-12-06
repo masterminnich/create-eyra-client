@@ -93,9 +93,7 @@ function createPopUp(msg,code){
   let f = document.getElementsByClassName("herf")[0]
   const p = document.createElement("p");
   const d = document.createElement("div");
-  
-  passData()
-  
+
   d.id = code
   p.className = "popupMsg"
   p.innerText = msg
@@ -103,14 +101,15 @@ function createPopUp(msg,code){
   f.appendChild(d);
   if(code !== "twohundred"){
     const a = document.createElement("a")
-    a.href="newMember"
+    console.log("RFID for link:",RFID_UID_input)
+    let newLink = "newMember?rfid=" + RFID_UID_input.toString()
+    console.log("newLink",newLink)
+    a.href=newLink
     a.id="newMemberButton"
     a.innerText="New Member Sign-Up"
     d.appendChild(a);
   }
-
-  this.props.history.push({pathname: "/newMember", data: "d1"});
-
+  RFID_UID_input=""
   let T = timeout(3500);
   T.then((a) =>{
     document.getElementById(code).remove();
@@ -159,7 +158,8 @@ const searchForRFID = async (RFID_UID_input) => {
 
 class App extends Component {
   state = {
-      badgeStatus: "waiting"
+      badgeStatus: "waiting",
+      rfid: ''
   };
 
   handleKeyDown = e => {
@@ -172,12 +172,15 @@ class App extends Component {
         console.log("Searching database for RFID_UID matching",RFID_UID_input,"...");
         let searchResultPromise = searchForRFID(RFID_UID_input);
 
-        //searchResult = "waiting..."
+        console.log("RFID_UID_input",RFID_UID_input)
+        //this.state.rfid = RFID_UID_input
+        //console.log("rfid",this.state.rfid)
+
+        /*
         searchResultPromise.then((a) => {
-            //this.state = "test69"
-            //console.log("prmose",searchResultPromise)
-        });
-        RFID_UID_input = "";
+        });*/
+
+        //RFID_UID_input gets reset inside createPopUp()
     }
   }
 

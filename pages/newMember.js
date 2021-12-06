@@ -23,6 +23,11 @@ const NewMember = () => {
     const router = useRouter();
     const majorsList = ["Choose a Major...","Accounting","Anthropology and Geography","Art History","Art Studio","Biochemistry","Biology","Chemistry","Communication","Computer Science","Digital Culture and Design","Early Childhood Education","Economics","Elementary Education","Engineering Science","English","Exercise and Sport Science","Finance","Graphic Design","Health Administration Completion Program","History","Hospitality, Resort and Tourism Management","Information Systems","Information Technology","Intelligence and National Security Studies","Interdisciplinary Studies","Languages and Intercultural Studies","Management","Marine Science","Marketing","Mathematics (Applied)","Middle Level Education","Music","Musical Theatre","Nursing BSN","Nursing 2+2 Residential Bridge Program","PGA Golf Management Program","Philosophy","Physical Education/Teacher Education","Physics, Applied","Political Science","Psychology","Public Health","Recreation and Sport Management","Sociology","Special Education - Multicategorical","Theatre Arts","Undecided"];  // https://www.coastal.edu/admissions/programs/
 
+    let RQ = router.query;
+    console.log("RQ:",RQ);
+    console.log("RFID:",RQ.rfid);
+    const globalRFID = RQ.rfid;
+
     useEffect(() => {
         if (isSubmitting) {
             if (Object.keys(errors).length === 0) {
@@ -189,6 +194,14 @@ const NewMember = () => {
                                 <option value="2024">2024</option>
                             </select>
                         </div>
+                        <Form.Input
+                                fluid
+                                error={errors.name ? { content: 'Please enter a name', pointing: 'below' } : null}
+                                label='RFID:'
+                                placeholder={globalRFID}
+                                name='RFID'
+                                id="RFIDInput"
+                            />
                         <Button type='submit'>Create</Button>
                     </Form>
                 }
