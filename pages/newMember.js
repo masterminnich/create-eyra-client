@@ -129,7 +129,6 @@ const NewMember = () => {
         <div className="form-container">
             <h1>Create Member</h1>
             <div>
-                <p>Add RFID value to form</p>
                 {
                     isSubmitting
                     ? <Loader active inline='centered' />

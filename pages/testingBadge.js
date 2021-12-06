@@ -88,7 +88,7 @@ function createPopUp(msg,code){
   p.innerText = msg
   d.appendChild(p)
   f.appendChild(d);
-  let T = timeout(3500);
+  let T = timeout(350000);
   T.then((a) =>{
     document.getElementsByClassName("popupMsg")[0].remove();
   });
@@ -135,11 +135,6 @@ const searchForRFID = async (RFID_UID_input) => {
         return "something really wrong happened (2)";
     }
 }
-/*
-const tryingSomething = async (args) => {
-    let res = await searchForRFID(RFID_UID_input); 
-    console.log("res1!",res)
-}*/
 
 class App extends Component {
   state = {
@@ -171,12 +166,15 @@ class App extends Component {
   render() {
       return (
         <React.Fragment>
-          <h1>Please Badge In!</h1>
-          <input type='text'
+          <input id="badgeInTextInput" type='text' 
             ref={(input) => { this.nameInput = input; }} //autoFocus wasn't working for some reason. Solution from StackOverflow: https://stackoverflow.com/questions/28889826/how-to-set-focus-on-an-input-field-after-rendering?rq=1
             onKeyDown={this.handleKeyDown}/>
-          <a href="newMember">New Member Sign-Up</a>
-          <div className="herf"></div>
+          <div className="badgeIn">
+            <h1 id="pleaseBadgeIn">Please Badge In!</h1>
+            <div className="arrow"></div>
+            <a href="newMember" id="newMemberButton">New Member Sign-Up</a>
+            <div className="herf"></div>
+          </div>
         </React.Fragment>
       );
   }

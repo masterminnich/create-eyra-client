@@ -1,3 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap');
+
+* {
+    font-family: 'Lato';
+}
+
 td.true{
     background-color: greenyellow;
 }
@@ -75,10 +81,85 @@ button.addInfoAttn{
     background-color: yellow;
 }
 
+a#stock{
+    color: black;
+    background-color: lightpink;
+    border: 1px solid black;
+    padding: 4px;
+    text-decoration: none;
+    position: absolute;
+    left: calc(100% - 48px - 5px);
+    top: 4px;
+}
+
+
+/* Start badge in popup CSS */
 div#twohundred{
     background-color: green;
 }
 
 div#fourohsix, div#fourohfour{
-    background-color:red;
+    background-color:salmon;
+}
+
+div#twohundred, div#fourohsix, div#fourohfour{
+    width: 75%;
+    height: 25vh;
+    left: 0;
+    right: 0;
+    top: 10%;
+    margin: auto;
+    border: solid black 2px;
+    border-radius: 12px;
+    position: absolute;
+}
+
+p.popupMsg{
+    text-align: center;
+    font-size: 3vh;
+    font-weight: 700;
+}
+/* End badge in popup CSS */
+
+
+div.badgeIn{
+    
+}
+
+div.arrow{
+    display: flex;
+    box-sizing: border-box;
+    width: 70px;
+    height: 30px;
+    transform: scale(5) rotate(90deg);
+    margin: auto;
+    top: 200px;
+    position: relative;
+}
+
+div.arrow:before{
+    content: "";
+    flex: 1;
+    margin: 0 5px;
+    background: currentColor;
+    clip-path: polygon(0 10px,calc(100% - 15px) 10px,calc(100% - 15px) 0,100% 50%,calc(100% - 15px) 100%,calc(100% - 15px) calc(100% - 10px),0 calc(100% - 10px));
+    animation: a3 .5s infinite alternate;
+}
+
+@keyframes a3 {
+    0%  {transform: scaleX(var(--s,1)) translate(-4px)}
+    100%{transform: scaleX(var(--s,1)) translate( 4px)}
+}
+
+h1#pleaseBadgeIn{
+    font-weight: 900;
+    text-align: center;
+}
+
+button#newMemberButton{}
+
+input#badgeInTextInput{
+    border: none;
+    outline: none;
+    /*color: white;*/
 }
