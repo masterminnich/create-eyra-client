@@ -99,18 +99,16 @@ function createPopUp(msg,code){
   p.innerText = msg
   d.appendChild(p)
   f.appendChild(d);
-  if(code !== "twohundred"){
+  if(code !== "twohundred"){ //If there is an error scanning the badge display a button linking to newMember page.
     const a = document.createElement("a")
-    console.log("RFID for link:",RFID_UID_input)
     let newLink = "newMember?rfid=" + RFID_UID_input.toString()
-    console.log("newLink",newLink)
     a.href=newLink
     a.id="newMemberButton"
     a.innerText="New Member Sign-Up"
     d.appendChild(a);
   }
   RFID_UID_input=""
-  let T = timeout(3500);
+  let T = timeout(4000);
   T.then((a) =>{
     document.getElementById(code).remove();
   });
@@ -192,7 +190,7 @@ class App extends Component {
       return (
         <React.Fragment>
           <div className="badgeIn">
-          <input id="badgeInTextInput" spellcheck="false" type='text' 
+          <input id="badgeInTextInput" spellCheck="false" type='text' 
             ref={(input) => { this.nameInput = input; }} //autoFocus wasn't working for some reason. Solution from StackOverflow: https://stackoverflow.com/questions/28889826/how-to-set-focus-on-an-input-field-after-rendering?rq=1
             onKeyDown={this.handleKeyDown} onBlur={checkFocus}/>
             <h1 id="pleaseBadgeIn">Please Badge In!</h1>

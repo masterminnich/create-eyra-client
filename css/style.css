@@ -104,14 +104,15 @@ div#fourohsix, div#fourohfour{
 
 div#twohundred, div#fourohsix, div#fourohfour{
     width: 75%;
-    height: 25vh;
+    height: 25vw;
     left: 0;
     right: 0;
-    top: 10%;
+    top: 0;
+    bottom: 0;
     margin: auto;
     border: solid black 2px;
     border-radius: 12px;
-    position: absolute;
+    position: fixed;
 }
 
 p.popupMsg{
@@ -164,7 +165,14 @@ a#newMemberButton{
     display: flex;
     justify-content: center;
     font-weight: 700;
-    font-size: 2vw;
+    font-size: 3.6vw;
+    border: solid black;
+    width: max-content;
+    margin: auto;
+    padding: 1.4vw;
+    border-radius: 1vw;
+    background: lightblue;
+    color: mediumblue;
 }
 
 input#badgeInTextInput{
@@ -223,4 +231,9 @@ form#newMember{
     gap: 15px;
     top: 20px;
     position: relative;
+}
+
+#newMemberSubmit{
+    width: 35%;
+    margin: auto;
 }

@@ -8,26 +8,26 @@ var rState="N/A"
 
 const NewMember = () => {
 
+    const router = useRouter();
+    const majorsList = ["Choose a Major...","N/A","Undecided","Accounting","Anthropology and Geography","Art History","Art Studio","Biochemistry","Biology","Chemistry","Communication","Computer Science","Digital Culture and Design","Early Childhood Education","Economics","Elementary Education","Engineering Science","English","Exercise and Sport Science","Finance","Graphic Design","Health Administration Completion Program","History","Hospitality, Resort and Tourism Management","Information Systems","Information Technology","Intelligence and National Security Studies","Interdisciplinary Studies","Languages and Intercultural Studies","Management","Marine Science","Marketing","Mathematics (Applied)","Middle Level Education","Music","Musical Theatre","Nursing BSN","Nursing 2+2 Residential Bridge Program","PGA Golf Management Program","Philosophy","Physical Education/Teacher Education","Physics, Applied","Political Science","Psychology","Public Health","Recreation and Sport Management","Sociology","Special Education - Multicategorical","Theatre Arts"];  // https://www.coastal.edu/admissions/programs/
+
     //Convert UTC to local time
     let currDate = new Date();
     let edt_offset = -5*60; //alternativelly,  currDate.getTimezoneOffset();
     currDate.setMinutes(currDate.getMinutes() + edt_offset);
 
+    //Get RFID UID from the URL. Looks like this:  localhost:300/newMember?rfid=abcdefghij
+    let RQ = router.query;
+    const globalRFID = RQ.rfid; 
+
     const [form, setForm] = useState({ 
-        Name: '', Major: '', PatronType:"", GraduationYear:"N/A", badgedIn: false, lastBadgeIn: currDate, joinedDate: currDate, rfid:'xxxxxxxxxx', sessions:[],
+        Name: '', Major: '', PatronType:"", GraduationYear:"N/A", badgedIn: false, lastBadgeIn: currDate, joinedDate: currDate, rfid:globalRFID, sessions:[],
         FourAxisMillCertified: false, BantamMillCertified: false, GlowforgeCertified: false, P9000Certified: false, SewingCertified: false, SilhouetteCertified: false, UltimakerCertified: false,
         CuraCertified: false, VectorCADCertified: false, CircuitDesignCertified: false
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
-    const router = useRouter();
-    const majorsList = ["Choose a Major...","Accounting","Anthropology and Geography","Art History","Art Studio","Biochemistry","Biology","Chemistry","Communication","Computer Science","Digital Culture and Design","Early Childhood Education","Economics","Elementary Education","Engineering Science","English","Exercise and Sport Science","Finance","Graphic Design","Health Administration Completion Program","History","Hospitality, Resort and Tourism Management","Information Systems","Information Technology","Intelligence and National Security Studies","Interdisciplinary Studies","Languages and Intercultural Studies","Management","Marine Science","Marketing","Mathematics (Applied)","Middle Level Education","Music","Musical Theatre","Nursing BSN","Nursing 2+2 Residential Bridge Program","PGA Golf Management Program","Philosophy","Physical Education/Teacher Education","Physics, Applied","Political Science","Psychology","Public Health","Recreation and Sport Management","Sociology","Special Education - Multicategorical","Theatre Arts","Undecided"];  // https://www.coastal.edu/admissions/programs/
-
-    let RQ = router.query;
-    console.log("RQ:",RQ);
-    console.log("RFID:",RQ.rfid);
-    const globalRFID = RQ.rfid;
-
+        
     useEffect(() => {
         if (isSubmitting) {
             if (Object.keys(errors).length === 0) {
@@ -43,8 +43,7 @@ const NewMember = () => {
 
     const createMember = async () => {
         try {
-            console.log("form : ",form);
-            console.log(JSON.stringify(form));
+            console.log("Adding new member to DB: ",form);
             const res = await fetch('http://localhost:3000/api/members', {
                 method: 'POST',
                 headers: {
@@ -59,7 +58,15 @@ const NewMember = () => {
         }
     }
 
+    const ensureRFIDSet = () => {
+        setForm({
+            ...form,
+            "rfid": globalRFID
+        })
+    }
+
     const handleSubmit = (e) => {
+        ensureRFIDSet(); //Ensures that the user's RFID has been stripped from the URL. Sometimes refreshing or other actions cause weird behavior otherwise.
         e.preventDefault();
         let errs = validate();
         setErrors(errs);
@@ -74,13 +81,15 @@ const NewMember = () => {
     }
 
     const handleRadio = (e) => {
-        if(e.target.value == "Student" || e.target.value == "Makerspace Staff" || e.target.value === undefined){
+        document.querySelector('select').style.display = "inline-block"
+            document.querySelectorAll('label')[4].style.display = "inline"
+        /*if(e.target.value == "Student" || e.target.value == "Makerspace Staff" || e.target.value === undefined){
             document.querySelector('select').style.display = "inline-block"
             document.querySelectorAll('label')[4].style.display = "inline"
         } else { 
             document.querySelector('select').style.display = "none"
             document.querySelectorAll('label')[4].style.display = "none"
-        }
+        }*/
         //console.log("e.target.name:",e.target.name," e.target.value:",e.target.value);
         setForm({
             ...form,
@@ -112,7 +121,7 @@ const NewMember = () => {
         if (!form.Name) {
             err.Name = 'Name is required';
         }
-        if (!form.Major) {
+        if (!form.Major && form.PatronType !== "Faculty") {
             err.Major = 'Major is required';
         }
         if (!form.lastBadgeIn) {
@@ -125,6 +134,9 @@ const NewMember = () => {
         }
         if (!form.PatronType) {
             err.PatronType = 'Patron Type not defined';
+        }
+        if (!form.rfid) {
+            err.rfid = 'No RFID';
         }
 
         return err;
@@ -194,15 +206,7 @@ const NewMember = () => {
                                 <option value="2024">2024</option>
                             </select>
                         </div>
-                        <Form.Input
-                                fluid
-                                error={errors.name ? { content: 'Please enter a name', pointing: 'below' } : null}
-                                label='RFID:'
-                                placeholder={globalRFID}
-                                name='RFID'
-                                id="RFIDInput"
-                            />
-                        <Button type='submit'>Create</Button>
+                        <Button id="newMemberSubmit" type='submit'>Create</Button>
                     </Form>
                 }
             </div>

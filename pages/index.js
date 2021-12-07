@@ -16,7 +16,6 @@ const updateActivityLog = async (activity, newActivity, existing) => {
   let ActivityDay = activity.find(a => a.Date == dateStr) //Get the activity document for the correct day
 
   if (existing){
-    console.log("updating existing activity...")
     let DayEvents = ActivityDay.Events.filter(a => a._id !== editEvent._id) //Remove the event from the ActivityDaily document so we can add it back in.
     let DroppedEvent = ActivityDay.Events.filter(a => a._id == editEvent._id) //Remove the event from the ActivityDaily document so we can add it back in.
     let DayEventsAfter = DayEvents.concat(newActivity); //All events from the day.
@@ -99,12 +98,12 @@ export default function Home({ isConnected, members, activity }) {
     if (isSubmitting) {
         if (Object.keys(errors).length === 0) {
           updateActivityLog(activity,form,false);
-          console.log("activity",activity,"form",form,"members",members)
+          console.log("Adding activity to DB:",form)
+          //console.log("activity",activity,"form",form,"members",members)
 
           //Append a new session to the member
           let foundMember = members.filter(member => member._id == form.MemberID)[0]
           let newSession = {'badgeIn': form.badgeInTime, 'badgeOut':form.badgeOutTime, 'sessionLengthMinutes': form.sessionLengthMinutes};
-          console.log("newSession ",newSession);
           let memberSessionsBefore = foundMember.sessions;
           foundMember.sessions = memberSessionsBefore.concat(newSession);
           foundMember.badgedIn = false;
@@ -127,14 +126,13 @@ export default function Home({ isConnected, members, activity }) {
       if (e.target[reqVariables[i]].value == "") {
         err[reqVariables[i]] = reqVariables[i]+" is required";
       }
-    }*/
+    }
 
-    /*
     if (e.target.sessionLengthMinutes.value == NaN){
       err.sessionLengthMinutes = "sessionLengthMinutes cannot be NaN"
     }*/
 
-    console.log("REMINDER: I still have to finish validation function for popup in index.js")
+    console.log("REMINDER: Popup in index.js does not have a validation function")
     //console.log("(debug) e:",e.target)
 
     return err;
@@ -203,6 +201,7 @@ export default function Home({ isConnected, members, activity }) {
             <option value="Individual">Individual</option>
             <option value="Certification">Certification</option>
             <option value="Class">Class</option>
+            <option value="Quick Visit">Quick Visit</option>
           </select>
         </div>
         <Form.Input
@@ -255,11 +254,11 @@ export default function Home({ isConnected, members, activity }) {
           let activityID = editEvent._id
 
           updateActivityLog(activity,Editform,true);
-          console.log("activity",activity,"Editform",Editform,"members",members)
+          console.log("Updating activity from DB:",Editform)
+          //console.log("activity",activity,"Editform",Editform,"members",members)
 
           //Find and replace member session.
           let foundMember = members.filter(member => member._id == Editform.MemberID)[0]
-          console.log('badgeIn',Editform.badgeInTime, 'badgeOut',Editform.badgeOutTime, 'sessionLengthMinutes',Editform.sessionLengthMinutes)
           let newSession = {'badgeIn': Editform.badgeInTime, 'badgeOut':Editform.badgeOutTime, 'sessionLengthMinutes': Editform.sessionLengthMinutes};
           let foundSessions = foundMember.sessions.filter(fmem => fmem.badgeOut !== Editform.prevBadgeOutTime)
           foundMember.sessions = foundSessions.concat(newSession);
@@ -329,6 +328,7 @@ export default function Home({ isConnected, members, activity }) {
             <option value="Individual">Individual</option>
             <option value="Certification">Certification</option>
             <option value="Class">Class</option>
+            <option value="Quick Visit">Quick Visit</option>
           </select>
         </div>
         <Form.Input
@@ -381,7 +381,6 @@ export default function Home({ isConnected, members, activity }) {
     let edt_offset = -5*60; //alternativelly,  currDate.getTimezoneOffset();
     currDate.setMinutes(currDate.getMinutes() + edt_offset);
 
-    console.log("test!!!!!!!!",member.lastBadgeIn)
     vSession = {'badgeIn':member.lastBadgeIn, 'badgeOut':currDate.toISOString()}//member.sessions[member.sessions.length-1].badgeIn}
     
     vMember = member //save member to a global variable
@@ -405,8 +404,6 @@ export default function Home({ isConnected, members, activity }) {
   }
 
   const editActivity = async (actEvent) => {
-    console.log("actEvent!!!!!!!!!",actEvent)
-    console.log("Make sure everything loads right including visit type!!!! Then make sure it updates both member and activity. and editIsOpen = false")
     seteditIsOpen(true) //Open popup
     editEvent = actEvent;
     vSession = {'badgeIn':actEvent.badgeInTime,'badgeOut':actEvent.badgeOutTime, 'visitType':actEvent.event,"machineUtilized":actEvent.machineUtilized}
@@ -501,13 +498,13 @@ export default function Home({ isConnected, members, activity }) {
         </table>
       </section>
       <section>
-        <table>
+        <table id="recentActivity">
           <caption>Recent Activity</caption>
           <thead>
             <tr>
-              <th>Info</th>
+              <th>Member Name</th>
               <th>Visit Type</th>
-              <th>Button</th>
+              <th>Edit Activity</th>
             </tr>
           </thead>
           <tbody>
@@ -533,15 +530,13 @@ export default function Home({ isConnected, members, activity }) {
       </section>
       <h3>Next up:</h3>
       <ul>
-        <li>Send failed scans to newMember</li>
-        <li>Popups for testBadge GUI</li>
-        <li>CSS</li>
-        <li>newMember page fills out RFID!!!!!!! - data gets passed to the page, just have to edit newMember</li>
+        <li>Stats page!</li>
+        <li>Auto update index page</li>
       </ul>
       <h3>Later on:</h3>
       <ul>
+        <li>Add member stats to badgeOut popup?</li>
         <li>check if user badgeIn time is from a different day. Alert the user.</li>
-        <li>create a script to determine popularity of each day.... Nope - activity log!</li>
       </ul>
     </div>
   )
