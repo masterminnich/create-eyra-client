@@ -6,6 +6,74 @@ import { Button, Form, Loader, Radio, Dropdown } from 'semantic-ui-react';
 
 var rState="N/A"
 
+
+const getActivitiesCollection = async (newMemberData) => {
+    try {
+        const res = await fetch('http://localhost:3000/api/activity', {
+            method: 'GET',
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+        })
+        console.log("newMemberData",newMemberData)
+        let response = res.json();
+        response.then((resp) => {
+            updateActivityLog(resp.data,newMemberData)
+        })
+    } catch (error) { console.log("error @ getActivitiesCollection(): ",error); }
+}
+
+//Copied from index.js and badgeIn.js -- Make sure to update any changes to both documents.
+const updateActivityLog = async (activities, newMemberData) => {
+    //Get today's date
+    let dateObj = new Date();
+    let edt_offset = -5*60; 
+    dateObj.setMinutes(dateObj.getMinutes() + edt_offset); //Convert UTC to local time
+    let dateStr = dateObj.getFullYear()+"-"+dateObj.toISOString().substring(5,7)+"-"+dateObj.toISOString().substring(8,10);
+
+    let ActivityDay = activities.find(a => a.Date == dateStr) //Get the activity document for the correct day
+    let newActivity = {MemberID: newMemberData._id, Name: newMemberData.Name, badgeInTime: dateObj, badgeOutTime: dateObj, event: "New Member Registered",machineUtilized: [], sessionLengthMinutes: 0}
+
+    if (ActivityDay){
+        console.log("found Activities w/ date",dateStr);
+        try {
+          let acitivitiesBefore = ActivityDay.Events
+          let activitiesAfter = acitivitiesBefore.concat(newActivity);
+    
+          const res = await fetch(`http://localhost:3000/api/activity`, {
+              method: 'PUT',
+              headers: {
+                  "Accept": "application/json",
+                  "Content-Type": "application/json"
+              },
+              body: JSON.stringify({Date: dateStr, Events: activitiesAfter})
+          })
+          
+        } catch (error) {
+          console.log("Error adding to Activity collection.",error);
+        }
+    
+
+      } else { 
+        //No acitivities yet today... adding a new date to the Activity collection.
+        console.log("No activity with date",dateStr);
+        try {
+          const res = await fetch(`http://localhost:3000/api/activity`, {
+              method: 'POST',
+              headers: {
+                  "Accept": "application/json",
+                  "Content-Type": "application/json"
+              },
+              body: JSON.stringify({Date: dateStr, Events: newActivity})
+          })
+    
+        } catch (error) {
+          console.log("Error adding to Activity collection.",error);
+        }
+      }
+}
+
 const NewMember = () => {
 
     const router = useRouter();
@@ -21,7 +89,7 @@ const NewMember = () => {
     const globalRFID = RQ.rfid; 
 
     const [form, setForm] = useState({ 
-        Name: '', Major: '', PatronType:"", GraduationYear:"N/A", badgedIn: false, lastBadgeIn: currDate, joinedDate: currDate, rfid:globalRFID, sessions:[],
+        Name: '', Major: '', PatronType:"", GraduationYear:"N/A", badgedIn: false, lastBadgeIn: currDate, joinedDate: currDate, rfid:"globalRFID", sessions:[],
         FourAxisMillCertified: false, BantamMillCertified: false, GlowforgeCertified: false, P9000Certified: false, SewingCertified: false, SilhouetteCertified: false, UltimakerCertified: false,
         CuraCertified: false, VectorCADCertified: false, CircuitDesignCertified: false
     });
@@ -52,6 +120,11 @@ const NewMember = () => {
                 },
                 body: JSON.stringify(form)
             })
+            let response = res.json();
+            response.then((resp) => {
+                getActivitiesCollection(resp.data)
+            })
+            
             router.push("/");
         } catch (error) {
             console.log(error);
@@ -61,7 +134,7 @@ const NewMember = () => {
     const ensureRFIDSet = () => {
         setForm({
             ...form,
-            "rfid": globalRFID
+            "rfid": globalRFID.toString()
         })
     }
 

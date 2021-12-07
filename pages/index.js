@@ -438,6 +438,7 @@ export default function Home({ isConnected, members, activity }) {
           </h2>
         )}
         <a id="stock" href="/stock">Stock</a>
+        <a id="stats" href="/stats">Stats</a>
       </main>
 
       
@@ -531,6 +532,7 @@ export default function Home({ isConnected, members, activity }) {
       <h3>Next up:</h3>
       <ul>
         <li>Stats page!</li>
+        <li>New Member gets added to activity... fixed!</li>
         <li>Auto update index page</li>
       </ul>
       <h3>Later on:</h3>

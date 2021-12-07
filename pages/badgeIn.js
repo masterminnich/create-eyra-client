@@ -1,13 +1,4 @@
-import { resolveHref } from 'next/dist/shared/lib/router/router';
 import React, { Component, useState } from 'react';
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
-import { useHistory } from "react-router-dom";
-import { SearchResult } from 'semantic-ui-react';
-import { useRouter } from 'next/router';
-//import activity from './api/activity';
-//import connectToDatabase from '../utils/connectToDatabase';
-
-//connectToDatabase();
 
 //This page allows users to manually type in their RFID number to badge in.
 //This file contains functionality to search for the RFID, record key strokes.

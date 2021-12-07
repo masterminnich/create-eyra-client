@@ -92,6 +92,21 @@ a#stock{
     top: 4px;
 }
 
+a#stock:hover { background-color: palevioletred; }
+
+a#stats{
+    color: black;
+    background-color: lightskyblue;
+    border: 1px solid black;
+    padding: 4px;
+    text-decoration: none;
+    position: absolute;
+    left: 5px;
+    top: 4px;
+}
+
+a#stats:hover { background-color: rgb(57, 166, 209); }
+
 
 /* Start badge in popup CSS */
 div#twohundred{
