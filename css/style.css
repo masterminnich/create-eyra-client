@@ -4,6 +4,10 @@
     font-family: 'Lato';
 }
 
+h2.subtitle {
+    text-align: CENTER;
+}
+
 td.true{
     background-color: greenyellow;
 }

@@ -1,37 +1,74 @@
 import React, { Component, useState } from 'react';
 
-const callbackFn = (activities) =>{
-    console.log("activities",activities)
+function fetchAllStats(activtiesCollection){
+    //console.log("activities",activtiesCollection)
+
+    function getActivityDay(dateObj){
+        let DateStr = dateObj.getFullYear()+"-"+dateObj.toISOString().substring(5,7)+"-"+dateObj.toISOString().substring(8,10);
+        return DateStr
+    }
 
     //Find Today's Stats
-    let dateObj = new Date();
+    let todayDateObj = new Date();
     let edt_offset = -5*60; 
-    dateObj.setMinutes(dateObj.getMinutes() + edt_offset); //Convert UTC to local time
-    let dateStr = dateObj.getFullYear()+"-"+dateObj.toISOString().substring(5,7)+"-"+dateObj.toISOString().substring(8,10);
-    let ActivityDay = activities.find(a => a.Date == dateStr)
-    if(ActivityDay){
-        console.log("ActivityDay:",ActivityDay);
+    todayDateObj.setMinutes(todayDateObj.getMinutes() + edt_offset); //Convert UTC to local time
+    let ActivityDate = getActivityDay(todayDateObj)
+    let returnedVal = fetchDataOneDay(ActivityDate,activtiesCollection)
+    console.log("Today's Stats:",returnedVal)
 
+    //Find This Week's Stats
+    let sundayDate = new Date();
+    var dateOffset = (24*60*60*1000);
+    let dayOfWeek = todayDateObj.getDay() //How many days into the week are we?
+    sundayDate.setTime(todayDateObj.getTime() - dateOffset * dayOfWeek) //Find the beggining (Sunday) of the week
+
+    //Get stats for each day of the week
+    let thisWeekStats = {}
+    for (let i = 0; i < dayOfWeek+1; i++) {
+        let d3 = new Date();
+        d3.setTime(sundayDate.getTime() + dateOffset * i)
+        let ActivityDate = getActivityDay(d3)
+        let returnedVal = fetchDataOneDay(ActivityDate,activtiesCollection)
+        let dateNickName = d3.toString().substring(0,15)
+        thisWeekStats[dateNickName] = returnedVal
+    }
+    console.log("thisWeekStats:",thisWeekStats)
+
+    //Find this Semester's Stats
+}
+
+const fetchDataOneDay = (ActivityDate,activitiesCollection) =>{
+    let collectedStats = {
+        "Total visits":0,
+        "cumSessionMinutes":0,
+        "avgSessionMinutes":0,
+        "eventTypeCount":{}
+    };
+
+    let ActivityDay = activitiesCollection.find(a => a.Date == ActivityDate)
+
+    if(ActivityDay !== undefined){
         let numberEvents = ActivityDay.Events.length
-        console.log("Total Visits Today:",numberEvents)
+        collectedStats["Total visits"] = numberEvents;
 
         //Calculate the cummulative amount of session minutes
         let cumSessionMinutes = 0;
         ActivityDay.Events.forEach(event => cumSessionMinutes += event.sessionLengthMinutes)
-        console.log("cumSessionMinutes",cumSessionMinutes)
+        collectedStats["cumSessionMinutes"] = cumSessionMinutes;
 
         let avgSessionMinutes = cumSessionMinutes / numberEvents
-        console.log("avgSessionMinutes",avgSessionMinutes)
+        collectedStats["avgSessionMinutes"] = avgSessionMinutes;
 
         //Count each type of visit.
         let eventTypeCount = {"Undefined":0,"Individual":0,"Certification":0,"Class":0,"Quick Visit":0,"New Member Registered":0}
         ActivityDay.Events.forEach(event => eventTypeCount[event.event] += 1)
-        console.log(eventTypeCount)
+        collectedStats["eventTypeCount"] = eventTypeCount;
 
-    } else { console.log("No activities found with today's date.")}
+    } else { console.log("No activities found with date",ActivityDate) }
+    return collectedStats
 }
 
-const getActivitiesCollection = async (memberData) => {
+const getActivitiesCollection = async () => {
     try {
         const res = await fetch('http://localhost:3000/api/activity', {
             method: 'GET',
@@ -42,11 +79,7 @@ const getActivitiesCollection = async (memberData) => {
         })
         let response = res.json();
         response.then((resp) => {
-            console.log("1",resp.data)
-            callbackFn(resp.data)
-            return response //resp.data
-            //
-            //updateActivityLog(resp.data, memberData);
+            fetchAllStats(resp.data);
         })
     } catch (error) { console.log("error @ getActivitiesCollection(): ",error); }
 }
