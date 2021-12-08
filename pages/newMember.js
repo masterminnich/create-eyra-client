@@ -125,7 +125,7 @@ const NewMember = () => {
                 getActivitiesCollection(resp.data)
             })
             
-            router.push("/");
+            router.push("/codeOfConduct");
         } catch (error) {
             console.log(error);
         }

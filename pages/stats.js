@@ -14,7 +14,6 @@ function fetchAllStats(activtiesCollection){
     todayDateObj.setMinutes(todayDateObj.getMinutes() + edt_offset); //Convert UTC to local time
     let ActivityDate = getActivityDay(todayDateObj)
     let returnedVal = fetchDataOneDay(ActivityDate,activtiesCollection)
-    console.log("Today's Stats:",returnedVal)
 
     //Find This Week's Stats
     let sundayDate = new Date();
@@ -32,6 +31,7 @@ function fetchAllStats(activtiesCollection){
         let dateNickName = d3.toString().substring(0,15)
         thisWeekStats[dateNickName] = returnedVal
     }
+    console.log("Today's Stats:",returnedVal)
     console.log("thisWeekStats:",thisWeekStats)
 
     //Find this Semester's Stats
