@@ -31,10 +31,47 @@ function fetchAllStats(activtiesCollection){
         let dateNickName = d3.toString().substring(0,15)
         thisWeekStats[dateNickName] = returnedVal
     }
-    console.log("Today's Stats:",returnedVal)
-    console.log("thisWeekStats:",thisWeekStats)
 
     //Find this Semester's Stats
+
+    //Find all stats. Compiles all activities in the DB.
+    let allStats = {}
+    for (let j = 0; j < activtiesCollection.length; j++) {
+        let dateStr = activtiesCollection[j].Date
+        let returnedVal = fetchDataOneDay(dateStr,activtiesCollection)
+        allStats[dateStr] = returnedVal
+    }
+
+    // WOW, nesting these if statements was a terrible idea. I'm sorry future me that is reading this code. It takes the allStats object and adds up like properties.
+    let cumStats = {"eventTypeCount":{}}
+    for(const date in allStats){
+        let oneDayOfData = allStats[date]
+        for(const prop in oneDayOfData){
+            if(prop=="eventTypeCount"){ //If the property is eventType, unpack it further.
+                for(const eventType in oneDayOfData["eventTypeCount"]){
+                    if(cumStats["eventTypeCount"][eventType] == undefined){ //If the property hasn't been instatiated, set its value
+                        cumStats["eventTypeCount"][eventType] = oneDayOfData["eventTypeCount"][eventType]
+                    } else { //If the property has been instantiated, take its current value and add the next value.
+                        cumStats["eventTypeCount"][eventType] = cumStats["eventTypeCount"][eventType] + oneDayOfData["eventTypeCount"][eventType]
+                    }
+                }
+            } else {
+                if(cumStats[prop] == undefined){ //If the property hasn't been instatiated, set its value
+                    cumStats[prop] = 0
+                } else { //If the property has been instantiated, take its current value and add the next value.
+                    cumStats[prop] = cumStats[prop] + oneDayOfData[prop]
+                }
+            }
+        }
+    }
+    // avgSessionMinutes needs to be recalculated. Because of the code above avgSessionMinutes = Sum(avgDay1 + avgDay2...). Instead it should take cumSessionMinutes and divide by total visits.
+    cumStats["avgSessionMinutes"] = cumStats["cumSessionMinutes"]/cumStats["Total visits"]
+
+    //Print stats to console
+    console.log("Today's Stats:",returnedVal)
+    console.log("thisWeekStats:",thisWeekStats)
+    console.log("All Stats:",allStats)
+    console.log("cumStats:",cumStats)
 }
 
 const fetchDataOneDay = (ActivityDate,activitiesCollection) =>{
