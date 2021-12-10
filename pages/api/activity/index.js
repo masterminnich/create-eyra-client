@@ -1,9 +1,22 @@
+import Cors from 'cors'
+import initMiddleware from '../../../lib/init-middleware'
 import connectToDatabase from '../../../utils/connectToDatabase';
 import Activity from '../../../models/Activity';
 
-connectToDatabase();
 
-export default async (req, res) => {
+// Initialize the cors middleware. You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
+const cors = initMiddleware(
+   Cors({
+    methods: ['GET', 'POST', 'OPTIONS', "PUT", "DELETE"], // Only allow requests with GET, POST and OPTIONS
+  })
+)
+
+export default async function handler(req, res) {
+    // Run cors
+    await cors(req, res)
+
+    connectToDatabase();
+
     const { method } = req;
     
     switch (method) {

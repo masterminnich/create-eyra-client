@@ -31,7 +31,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
     //console.log("vMember",vMember,"droppedEvent",droppedEvent,"keepEvents",keepEvents)
 
     try {
-      const res = await fetch(`http://localhost:3000/api/activity`, {
+      const res = await fetch(`/api/activity`, {
           method: 'PUT',
           headers: {
               "Accept": "application/json",
@@ -48,7 +48,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
       let acitivitiesBefore = ActivityDay.Events
       let activitiesAfter = acitivitiesBefore.concat(newActivity);
 
-      const res = await fetch(`http://localhost:3000/api/activity`, {
+      const res = await fetch(`/api/activity`, {
           method: 'PUT',
           headers: {
               "Accept": "application/json",
@@ -64,7 +64,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
     //No acitivities yet today... adding a new date to the Activity collection.
     console.log("No activity with date",dateStr);
     try {
-      const res = await fetch(`http://localhost:3000/api/activity`, {
+      const res = await fetch(`/api/activity`, {
           method: 'POST',
           headers: {
               "Accept": "application/json",
@@ -390,7 +390,7 @@ export default function Home({ isConnected, members, activity }) {
 
   const updateMemberBadgeInStatus = async (member) => {
     try {  
-        const res = await fetch(`http://localhost:3000/api/members/${member._id}`, {
+        const res = await fetch(`/api/members/${member._id}`, {
             method: 'PUT',
             headers: {
                 "Accept": "application/json",

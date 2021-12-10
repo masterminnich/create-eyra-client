@@ -9,7 +9,7 @@ var rState="N/A"
 
 const getActivitiesCollection = async (newMemberData) => {
     try {
-        const res = await fetch('http://localhost:3000/api/activity', {
+        const res = await fetch('/api/activity', {
             method: 'GET',
             headers: {
                 "Accept": "application/json",
@@ -41,7 +41,7 @@ const updateActivityLog = async (activities, newMemberData) => {
           let acitivitiesBefore = ActivityDay.Events
           let activitiesAfter = acitivitiesBefore.concat(newActivity);
     
-          const res = await fetch(`http://localhost:3000/api/activity`, {
+          const res = await fetch(`/api/activity`, {
               method: 'PUT',
               headers: {
                   "Accept": "application/json",
@@ -59,7 +59,7 @@ const updateActivityLog = async (activities, newMemberData) => {
         //No acitivities yet today... adding a new date to the Activity collection.
         console.log("No activity with date",dateStr);
         try {
-          const res = await fetch(`http://localhost:3000/api/activity`, {
+          const res = await fetch(`/api/activity`, {
               method: 'POST',
               headers: {
                   "Accept": "application/json",
@@ -84,7 +84,7 @@ const NewMember = () => {
     let edt_offset = -5*60; //alternativelly,  currDate.getTimezoneOffset();
     currDate.setMinutes(currDate.getMinutes() + edt_offset);
 
-    //Get RFID UID from the URL. Looks like this:  localhost:300/newMember?rfid=abcdefghij
+    //Get RFID UID from the URL. Looks like this:  /newMember?rfid=abcdefghij
     let RQ = router.query;
     const globalRFID = RQ.rfid; 
 
@@ -112,7 +112,7 @@ const NewMember = () => {
     const createMember = async () => {
         try {
             console.log("Adding new member to DB: ",form);
-            const res = await fetch('http://localhost:3000/api/members', {
+            const res = await fetch('/api/members', {
                 method: 'POST',
                 headers: {
                     "Accept": "application/json",

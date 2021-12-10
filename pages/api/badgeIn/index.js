@@ -1,7 +1,16 @@
+import Cors from 'cors'
+import initMiddleware from '../../../lib/init-middleware'
 import connectToDatabase from '../../../utils/connectToDatabase';
 import Member from '../../../models/Member';
 
-connectToDatabase();
+
+// Initialize the cors middleware. You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
+const cors = initMiddleware(
+   Cors({
+    methods: ['GET', 'POST', 'OPTIONS', "PUT", "DELETE"], // Only allow requests with GET, POST and OPTIONS
+  })
+)
+
 
 const updateMemberBadgeInStatus = async (member) => {
     try {
@@ -34,21 +43,53 @@ const updateMemberBadgeInStatus = async (member) => {
         if (member.badgedIn){
           member.lastBadgeIn = currDate.toISOString();
         }
-  
-        const res = await fetch(`http://localhost:3000/api/members/${member._id}`, {
-            method: 'PUT',
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(member)
-        })
+        
+        let res = {};
+        try {
+            //Update Member
+            const member2 = await Member.findByIdAndUpdate(member._id, member, {
+                new: true,
+                runValidators: true
+            });
+
+            /*if (!member) {
+                return res.status(400).json({ success: false });
+            }*/
+            if (member.badgedIn){ 
+                console.log(member2.Name,"badged in!"); 
+            } else { 
+                console.log(member2.Name,"badged out!") 
+            }
+        } catch (error) {
+            console.log("Error at api/badgeIn... error:", error)
+        }
+
     } catch (error) {
         console.log(error);
     }
 }
 
-export default async (req, res) => {
+function findMemberByRFID(membersArray, rfid_to_find) {
+    console.log("Searching for member with rfid",rfid_to_find,"...");
+    const foundMember = membersArray.filter(member => {return member.rfid === rfid_to_find})
+    if (foundMember.length === 1){
+        console.log("Found member", foundMember[0].Name," w/ rfid",foundMember[0].rfid);
+        return foundMember;
+    } else if (foundMember.length > 1){
+        return 406; //Search failed. More than one user share this RFID.
+    } else if (foundMember.length === 0){
+        return 404; //Search failed. No member with this RFID.
+    } else { return 400; }
+    
+}
+
+
+export default async function handler(req, res) {
+    // Run cors
+    await cors(req, res)
+
+    connectToDatabase();
+
     const rfid_to_find = req.body.rfid;
     try {
         const membersArray = await Member.find({}); //Objects are not valid error...
@@ -79,19 +120,4 @@ export default async (req, res) => {
     } catch (error) {
         res.status(400).json({ success: false });
     }
-}
-
-
-function findMemberByRFID(membersArray, rfid_to_find) {
-    console.log("Searching for member with rfid",rfid_to_find,"...");
-    const foundMember = membersArray.filter(member => {return member.rfid === rfid_to_find})
-    if (foundMember.length === 1){
-        console.log("Found member", foundMember[0].Name," w/ rfid",foundMember[0].rfid);
-        return foundMember;
-    } else if (foundMember.length > 1){
-        return 406; //Search failed. More than one user share this RFID.
-    } else if (foundMember.length === 0){
-        return 404; //Search failed. No member with this RFID.
-    } else { return 400; }
-    
 }

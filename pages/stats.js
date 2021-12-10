@@ -107,7 +107,7 @@ const fetchDataOneDay = (ActivityDate,activitiesCollection) =>{
 
 const getActivitiesCollection = async () => {
     try {
-        const res = await fetch('http://localhost:3000/api/activity', {
+        const res = await fetch('/api/activity', {
             method: 'GET',
             headers: {
                 "Accept": "application/json",

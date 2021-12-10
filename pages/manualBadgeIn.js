@@ -15,7 +15,7 @@ var searchResult = {code: 0,msg: "waiting for scan..."}
 
 const getActivitiesCollection = async (memberData) => {
     try {
-        const res = await fetch('http://localhost:3000/api/activity', {
+        const res = await fetch('/api/activity', {
             method: 'GET',
             headers: {
                 "Accept": "application/json",
@@ -43,7 +43,7 @@ const updateActivityLog = async (activity, memberData) => {
           let acitivitiesBefore = ActivityDay.Events
           let activitiesAfter = acitivitiesBefore.concat(newActivity);
     
-          const res = await fetch(`http://localhost:3000/api/activity`, {
+          const res = await fetch(`/api/activity`, {
               method: 'PUT',
               headers: {
                   "Accept": "application/json",
@@ -61,7 +61,7 @@ const updateActivityLog = async (activity, memberData) => {
         //No acitivities yet today... adding a new date to the Activity collection.
         console.log("No activity with date",dateStr);
         try {
-          const res = await fetch(`http://localhost:3000/api/activity`, {
+          const res = await fetch(`/api/activity`, {
               method: 'POST',
               headers: {
                   "Accept": "application/json",
@@ -78,7 +78,7 @@ const updateActivityLog = async (activity, memberData) => {
 
 const searchForRFID = async (RFID_UID_input) => {
     try {
-        const res = await fetch('http://localhost:3000/api/badgeIn', {
+        const res = await fetch('/api/badgeIn', {
             method: 'POST',
             headers: {
                 "Accept": "application/json",
