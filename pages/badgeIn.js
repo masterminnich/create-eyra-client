@@ -153,10 +153,13 @@ class App extends Component {
 
   handleKeyDown = e => {
     checkFocus()
-    RFID_UID_input += e.key;
-    console.log("keypress: ", e.key);
 
-    if (RFID_UID_input.length == 10){
+    if (e.key !== "Shift"){ //Ignore Shift Keypresses
+      RFID_UID_input += e.key;
+      console.log("keypress: ", e.key);
+    }
+
+    if (RFID_UID_input.length == 16){
         //When all characters of RFID are entered. Check if in database.
         console.log("Searching database for RFID_UID matching",RFID_UID_input,"...");
         let searchResultPromise = searchForRFID(RFID_UID_input);
@@ -185,6 +188,7 @@ class App extends Component {
             ref={(input) => { this.nameInput = input; }} //autoFocus wasn't working for some reason. Solution from StackOverflow: https://stackoverflow.com/questions/28889826/how-to-set-focus-on-an-input-field-after-rendering?rq=1
             onKeyDown={this.handleKeyDown} onBlur={checkFocus}/>
             <h1 id="pleaseBadgeIn">Please Badge In!</h1>
+            <h2 id="pleaseBadgeIn">(Hold your CINO ID to the reader until you hear a beep)</h2>
             <div className="arrow"></div>
             <div className="herf"></div>
           </div>

@@ -531,8 +531,8 @@ export default function Home({ isConnected, members, activity }) {
       </section>
       <h3>Next up:</h3>
       <ul>
-        <li>Stats page!</li>
-        <li>New Member gets added to activity... fixed!</li>
+        <li>Automatically badge in Members after they register.</li>
+        <li>Finish Stats page GUI!</li>
         <li>Auto update index page</li>
       </ul>
       <h3>Later on:</h3>

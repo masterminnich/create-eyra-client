@@ -273,10 +273,11 @@ const NewMember = () => {
                             <label htmlFor="GraduationYear">Graduation Year: </label>
                             <select name="GraduationYear" onChange={handleSelect}>
                                 <option value="N/A">N/A</option>
-                                <option value="2021">2021</option>
                                 <option value="2022">2022</option>
                                 <option value="2023">2023</option>
                                 <option value="2024">2024</option>
+                                <option value="2024">2025</option>
+                                <option value="2024">2026</option>
                             </select>
                         </div>
                         <Button id="newMemberSubmit" type='submit'>Create</Button>

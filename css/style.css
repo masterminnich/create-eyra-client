@@ -144,7 +144,7 @@ p.popupMsg{
 div.badgeIn{
     display: flex;
     flex-direction: column;
-    top: 25%;
+    top: 5%;
     position: absolute;
     width: 100%;
 }
@@ -154,7 +154,7 @@ div.arrow{
     box-sizing: border-box;
     width: 70px;
     height: 30px;
-    transform: scale(5) rotate(90deg);
+    transform: scale(5) rotate(35deg);
     margin: auto;
     top: 200px;
     position: relative;
@@ -178,6 +178,11 @@ h1#pleaseBadgeIn{
     font-weight: 900;
     text-align: center;
     font-size: 5vw;
+}
+
+h2#pleaseBadgeIn{
+    text-align: CENTER;
+    margin-top: 0;
 }
 
 a#newMemberButton{
