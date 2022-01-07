@@ -1,6 +1,7 @@
 ## Dependencies
  - XAMPP
  - PACSProbe
+ - Node.JS / npm
 
 ## Example app using MongoDB
 
