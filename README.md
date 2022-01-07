@@ -3,6 +3,16 @@
  - PACSProbe
  - Node.JS / npm
 
+## How to start the server
+ - Install Dependecies + git clone BadgingSystem
+ - Configure XAMPP to point towards BadgingSystem
+   - In XAMPP, under Apache click "config" and open https.conf, now change DocumentRoot to point to the path of BadgingSystem
+   - Alternatively, you can move BadgingSystem into C:\xampp\htdocs
+ - Create .env.local file (MongoDB URI)
+ - Find hostname of the machine you are hosting the server from. (Use "ipconfig" on windows, "iwconfig" on linux)
+ - "npm run dev" from BadgingSystem to start the server
+ - Connect to the server using localhost:3000 or [hostname]:3000
+
 ## Example app using MongoDB
 
 [MongoDB](https://www.mongodb.com/) is a general purpose, document-based, distributed database built for modern application developers and for the cloud era. This example will show you how to connect to and use MongoDB as your backend for your Next.js app.
