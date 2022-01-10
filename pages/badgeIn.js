@@ -5,6 +5,7 @@ import React, { Component, useState } from 'react';
 
 var createReactClass = require('create-react-class');
 var RFID_UID_input = "";
+var last_RFID_UID_input = "";
 
 const getActivitiesCollection = async (memberData) => {
     try {
@@ -81,6 +82,7 @@ function checkFocus(){
 }
 
 function createPopUp(msg,code){
+  console.log("rfid:",last_RFID_UID_input)
   console.log("createPopUp")
   let f = document.getElementsByClassName("herf")[0]
   const p = document.createElement("p");
@@ -100,7 +102,7 @@ function createPopUp(msg,code){
       RFID_UID_input="" 
     }
     d.appendChild(a2);
-    let newLink = "newMember?rfid=" + RFID_UID_input.toString()
+    let newLink = "newMember?rfid=" + last_RFID_UID_input.toString()
     a.href=newLink
     a.id="newMemberButton"
     a.innerText="New Member Sign-Up"
@@ -116,11 +118,12 @@ function createPopUp(msg,code){
 }
 
 function closeNewMemberMsg(){
-  document.getElementById("newMemberMsg").remove()
+  document.getElementById("newMemberMsg").remove();
 }
 
 function showNewMemberMsg(){
-  document.getElementById("newMemberMsg").style.display = "block"
+  document.getElementById("newMemberMsg").style.display = "block";
+  console.log("2222")
 }
 
 const searchForRFID = async (RFID_UID_input) => {
@@ -188,10 +191,10 @@ class App extends Component {
         if (lengthBefore < RFID_UID_input.length){
           console.log("removed leading characters...")
         } else {
-          RFID_UID_input = RFID_UID_input.slice(-RFID_LENGTH)
-          console.log("Searching database for RFID_UID matching",RFID_UID_input,"...");
-          searchForRFID(RFID_UID_input);
-          console.log("RFID_UID_input",RFID_UID_input)
+          last_RFID_UID_input = RFID_UID_input.slice(-RFID_LENGTH)
+          console.log("Searching database for RFID_UID matching",last_RFID_UID_input,"...");
+          searchForRFID(last_RFID_UID_input);
+          console.log("last_RFID_UID_input",last_RFID_UID_input)
           RFID_UID_input = ""
         }
       }, 200);
@@ -200,7 +203,7 @@ class App extends Component {
 
   componentDidMount(){
     this.nameInput.focus(); 
-    if(window.location.search == "?new"){showNewMemberMsg};
+    if(window.location.search == "?new"){showNewMemberMsg()};
   }
 
   render() {

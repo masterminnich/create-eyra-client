@@ -62,7 +62,7 @@ div#newMemberMsg{
     border: solid black 1px;
     border-radius: 20px;
     width: 80%;
-    height: 75%;
+    height: 75vh;
     top: 12.5%;
     left: 10%;
     position: absolute;
