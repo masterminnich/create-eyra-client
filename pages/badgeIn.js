@@ -81,6 +81,7 @@ function checkFocus(){
 }
 
 function createPopUp(msg,code){
+  console.log("createPopUp")
   let f = document.getElementsByClassName("herf")[0]
   const p = document.createElement("p");
   const d = document.createElement("div");
@@ -92,6 +93,13 @@ function createPopUp(msg,code){
   f.appendChild(d);
   if(code !== "twohundred"){ //If there is an error scanning the badge display a button linking to newMember page.
     const a = document.createElement("a")
+    const a2 = document.createElement("a")
+    a2.className = "close-button"
+    a2.onclick = function closePopUp(){
+      document.getElementsByClassName("popupMsg")[0].parentNode.remove()
+      RFID_UID_input="" 
+    }
+    d.appendChild(a2);
     let newLink = "newMember?rfid=" + RFID_UID_input.toString()
     a.href=newLink
     a.id="newMemberButton"
@@ -99,13 +107,24 @@ function createPopUp(msg,code){
     d.appendChild(a);
   }
   RFID_UID_input=""
-  let T = timeout(4000);
-  T.then((a) =>{
-    document.getElementById(code).remove();
-  });
+  if(code == "twohundred"){
+    let T = timeout(4000);
+    T.then((a) =>{
+      document.getElementById(code).remove();
+    });
+  }
+}
+
+function closeNewMemberMsg(){
+  document.getElementById("newMemberMsg").remove()
+}
+
+function showNewMemberMsg(){
+  document.getElementById("newMemberMsg").style.display = "block"
 }
 
 const searchForRFID = async (RFID_UID_input) => {
+  console.log("searchRFID")
     try {
         const res = await fetch('/api/badgeIn', {
             method: 'POST',
@@ -118,6 +137,7 @@ const searchForRFID = async (RFID_UID_input) => {
         let response = res.json()
         response.then((resp) => {
             let memberData = resp.data;
+            console.log("!!!!",resp.data)
 
             if (res.status == 406){ 
                 let fullMsg = "Search failed. More than one user share this RFID."
@@ -159,25 +179,28 @@ class App extends Component {
       console.log("keypress: ", e.key);
     }
 
-    if (RFID_UID_input.length == 16){
-        //When all characters of RFID are entered. Check if in database.
-        console.log("Searching database for RFID_UID matching",RFID_UID_input,"...");
-        let searchResultPromise = searchForRFID(RFID_UID_input);
+    const RFID_LENGTH = 16
 
-        console.log("RFID_UID_input",RFID_UID_input)
-        //this.state.rfid = RFID_UID_input
-        //console.log("rfid",this.state.rfid)
-
-        /*
-        searchResultPromise.then((a) => {
-        });*/
-
-        //RFID_UID_input gets reset inside createPopUp()
+    if (RFID_UID_input.length >= RFID_LENGTH){ //Wait a short amount of time before searching database for string, if another keypress comes wait until keypresses finish then search last (16) characters. Helps minimize accidental keypresses.
+      window.clearTimeout(Timer)
+      let lengthBefore = RFID_UID_input.length 
+      var Timer = window.setTimeout(function(){
+        if (lengthBefore < RFID_UID_input.length){
+          console.log("removed leading characters...")
+        } else {
+          RFID_UID_input = RFID_UID_input.slice(-RFID_LENGTH)
+          console.log("Searching database for RFID_UID matching",RFID_UID_input,"...");
+          searchForRFID(RFID_UID_input);
+          console.log("RFID_UID_input",RFID_UID_input)
+          RFID_UID_input = ""
+        }
+      }, 200);
     }
   }
 
   componentDidMount(){
     this.nameInput.focus(); 
+    if(window.location.search == "?new"){showNewMemberMsg};
   }
 
   render() {
@@ -191,6 +214,11 @@ class App extends Component {
             <h2 id="pleaseBadgeIn">(Hold your CINO ID to the reader until you hear a beep)</h2>
             <div className="arrow"></div>
             <div className="herf"></div>
+            <div id="newMemberMsg">
+	            <h1>Welcome New Member!</h1>
+	            <p>This database keeps track of your progress in the makerspace. Please <b>remember to badge in everytime you arrive at the makerspace</b> and badge out when you’re leaving.<br/><br/><b>You are NOT badged in yet!</b> If you are sticking around, please scan your card again to badge in for the first time. </p>
+	            <a onClick={closeNewMemberMsg}>Got it!</a>
+              </div>
           </div>
         </React.Fragment>
         

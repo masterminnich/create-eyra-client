@@ -31,7 +31,7 @@ class App extends Component {
                             <li>I understand food and drinks are not allowed inside the lab unless expressly permitted by makerspace staff.</li>
                     </ul>
 
-                    <a id="iAgree" href="/badgeIn">I Agree</a>
+                    <a id="iAgree" href="/badgeIn?new">I Agree</a>
                 </main>
             </>
         );

@@ -46,6 +46,57 @@ section.badgeOutPopUp{
     z-index: 1;
 }
 
+a.close-button::before{
+    position: absolute;
+    top: -30px;
+    bottom: 0;
+    right: 15px;
+    content: "\2A2F";
+    font-size: 100px; 
+    color: #FFF;
+}
+
+/* Start NewMemberMsg PopUp CSS */
+div#newMemberMsg{
+    text-align: center;
+    border: solid black 1px;
+    border-radius: 20px;
+    width: 80%;
+    height: 75%;
+    top: 12.5%;
+    left: 10%;
+    position: absolute;
+    background: white;
+    display: none;
+}
+
+#newMemberMsg a,p{
+    text-align: center;
+}
+
+#newMemberMsg a{
+    background-color: rgb(109, 185, 109);
+    border: solid black 2px;
+    padding: 10px 16px;
+    font-size: 24px;
+    border-radius: 5px;
+    position: absolute;
+    bottom: 30px;
+    left: 45%;
+}
+
+#newMemberMsg a:hover{
+    background-color: rgb(0, 185, 0);
+}
+
+#newMemberMsg p {
+    width: 80%;
+    left: 10%;
+    font-size: 22px;
+    position: absolute;
+}
+/*End NewMemberMsg PopUp CSS*/
+
 /*div.checkboxes div{
     display: flex;
     flex-direction: column;
