@@ -1,9 +1,0 @@
- - Changed direction arrow points.
- - Changed expected input to 16 chars.
- - Ignore "Shift" keypresses.
- - Please Badge In! (Hold your CINO ID to the reader until you hear a beep)
-
-CSS
-- 35 deg
-- top 150px (div.arrow)
-top: 25% (div.badgeIn)
