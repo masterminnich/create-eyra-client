@@ -97,7 +97,7 @@ const fetchDataOneDay = (ActivityDate,activitiesCollection) =>{
         collectedStats["avgSessionMinutes"] = avgSessionMinutes;
 
         //Count each type of visit.
-        let eventTypeCount = {"Undefined":0,"Individual":0,"Certification":0,"Class":0,"Quick Visit":0,"New Member Registered":0}
+        let eventTypeCount = {"Undefined":0,"Individual":0,"Certification":0,"Class":0,"Quick Visit":0,"New Member Registered":0,"Staff on Duty":0}
         ActivityDay.Events.forEach(event => eventTypeCount[event.event] += 1)
         collectedStats["eventTypeCount"] = eventTypeCount;
 

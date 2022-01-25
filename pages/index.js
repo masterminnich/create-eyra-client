@@ -238,6 +238,7 @@ export default function Home({ isConnected, members, activity }) {
             <option value="Certification">Certification</option>
             <option value="Class">Class</option>
             <option value="Quick Visit">Quick Visit</option>
+            <option value="Staff on Duty">Staff on Duty</option>
           </select>
         </div>
         <Form.Input
@@ -367,6 +368,7 @@ export default function Home({ isConnected, members, activity }) {
             <option value="Certification">Certification</option>
             <option value="Class">Class</option>
             <option value="Quick Visit">Quick Visit</option>
+            <option value="Staff on Duty">Staff on Duty</option>
           </select>
         </div>
         <Form.Input
