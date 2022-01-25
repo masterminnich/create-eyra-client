@@ -7,9 +7,18 @@ import Member from '../../../models/Member';
 // Initialize the cors middleware. You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
 const cors = initMiddleware(
    Cors({
-    methods: ['GET', 'POST', 'OPTIONS', "PUT", "DELETE"], // Only allow requests with GET, POST and OPTIONS
+    methods: ['GET', 'POST', 'OPTIONS', "PUT"], // Only allow requests with GET, POST and OPTIONS
   })
 )
+
+
+function toEDTString(dateObj){
+    // Converts a DateObj into a DateStr in local EDT time (YYYY-MM-DDTHH:MM:SS). Based on a modified ISO format.
+    let dateUTCOffsetAdded = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000))
+    var dateEDTStr = dateUTCOffsetAdded.toISOString().substring(0,19); 
+    console.log("dateEDTStr",dateEDTStr)
+    return dateEDTStr
+}
 
 
 const updateMemberBadgeInStatus = async (member) => {
@@ -22,26 +31,24 @@ const updateMemberBadgeInStatus = async (member) => {
             console.log("ERROR! Failed to change badge in status.")
         } else { console.log("Successfully changed members badge in status to",member.badgedIn) }
   
-        //Convert UTC to local time
         let currDate = new Date();
-        let edt_offset = -5*60; //alternativelly,  currDate.getTimezoneOffset();
-        currDate.setMinutes(currDate.getMinutes() + edt_offset);
+        let dateEDTStr = toEDTString(currDate) //YYYY-MM-DDTHH:MM:SS
   
         if (!member.badgedIn){
           //If member is badging out, create a newSession and append to the member's document.
           let memberSessionsBefore = member.sessions;
 
           //Calculate sessionLengthMinutes
-          let outDate = new Date(currDate.toISOString())
+          let outDate = currDate
           let inDate = new Date(member.lastBadgeIn)
           let sessionLengthMinutes = Math.round(outDate - inDate)/60000
 
-          let newSession = {'badgeIn': member.lastBadgeIn, 'badgeOut':currDate.toISOString(), 'sessionLengthMinutes':sessionLengthMinutes};
+          let newSession = {'badgeIn': member.lastBadgeIn, 'badgeOut':dateEDTStr, 'sessionLengthMinutes':sessionLengthMinutes};
           console.log(newSession);
           member.sessions = memberSessionsBefore.concat(newSession);
         }
         if (member.badgedIn){
-          member.lastBadgeIn = currDate.toISOString();
+          member.lastBadgeIn = dateEDTStr;
         }
         
         let res = {};

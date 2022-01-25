@@ -7,6 +7,33 @@ var vMember = {};
 var vSession = [];
 var editEvent = {};
 
+let GlobalRecentActivityDate = new Date() //This variable keeps track of which day Recent Activity compononet is current displaying. This is important because otherwise state updates would set Recent Activity day to current date. 
+
+function ensureCertifications(form, member){
+  console.log("member",member)
+  if (form.event == "Certification"){
+    if (form.machineUtilized.includes("FourAxisMill")){ member.FourAxisMillCertified = true }
+    if (form.machineUtilized.includes("BantamMill")){ member.BantamMillCertified = true }
+    if (form.machineUtilized.includes("Glowforge")){ member.GlowforgeCertified = true }
+    if (form.machineUtilized.includes("P9000")){ member.P9000Certified = true }
+    if (form.machineUtilized.includes("Sewing")){ member.SewingCertified = true }
+    if (form.machineUtilized.includes("Silhouette")){ member.SilhouetteCertified = true }
+    if (form.machineUtilized.includes("Ultimaker")){ member.UltimakerCertified = true }
+    if (form.machineUtilized.includes("Cura")){ member.CuraCertified = true }
+    if (form.machineUtilized.includes("VectorCAD")){ member.VectorCADCertified = true }
+    if (form.machineUtilized.includes("CircuitDesign")){ member.CircuitDesignCertified = true }
+  }
+  return member
+}
+
+function toEDTString(dateObj){
+  // Converts a DateObj into a DateStr in local EDT time (YYYY-MM-DDTHH:MM:SS). Based on a modified ISO format.
+  let dateUTCOffsetAdded = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000))
+  var dateEDTStr = dateUTCOffsetAdded.toISOString()//.substring(0,19); 
+  return dateEDTStr
+}
+
+
 //creates a new activity upon badge out
 const updateActivityLog = async (activity, newActivity, existing) => {
   //console.log('activity',activity);
@@ -30,6 +57,8 @@ const updateActivityLog = async (activity, newActivity, existing) => {
     //console.log("prevBadgeInTime",prevBadgeInTime,"keepEvents",keepEvents)
     //console.log("vMember",vMember,"droppedEvent",droppedEvent,"keepEvents",keepEvents)
 
+    console.log("keepEvents",keepEvents,"DayEventsAfter",DayEventsAfter)
+
     try {
       const res = await fetch(`/api/activity`, {
           method: 'PUT',
@@ -39,11 +68,12 @@ const updateActivityLog = async (activity, newActivity, existing) => {
           },
           body: JSON.stringify({Date: dateStr, Events: DayEventsAfter})
       })
+      console.log("updateActivityLog(): Success adding event to existing date",dateStr, res);
     } catch (error) { console.log("Error adding to Activity collection.",error) }
 
   } else {
   if (ActivityDay){
-    console.log("date found");
+    console.log("date found. Check the code. This may be redundant...");
     try {
       let acitivitiesBefore = ActivityDay.Events
       let activitiesAfter = acitivitiesBefore.concat(newActivity);
@@ -56,6 +86,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
           },
           body: JSON.stringify({Date: dateStr, Events: activitiesAfter})
       })
+      console.log("updateActivityLog(): Success adding event to existing date (ActivityDay)",dateStr);
       
     } catch (error) {
       console.log("Error adding to Activity collection.",error);
@@ -72,6 +103,8 @@ const updateActivityLog = async (activity, newActivity, existing) => {
           },
           body: JSON.stringify({Date: dateStr, Events: newActivity})
       })
+      console.log("updateActivityLog(): Success adding event to new date ",dateStr);
+
 
     } catch (error) {
       console.log("Error adding to Activity collection.",error);
@@ -98,7 +131,7 @@ export default function Home({ isConnected, members, activity }) {
     if (isSubmitting) {
         if (Object.keys(errors).length === 0) {
           updateActivityLog(activity,form,false);
-          console.log("Adding activity to DB:",form)
+          console.log("Attempting to add activity to DB:",form)
           //console.log("activity",activity,"form",form,"members",members)
 
           //Append a new session to the member
@@ -108,7 +141,9 @@ export default function Home({ isConnected, members, activity }) {
           foundMember.sessions = memberSessionsBefore.concat(newSession);
           foundMember.badgedIn = false;
           foundMember.lastBadgeIn = form.badgeOutTime;
-          updateMemberBadgeInStatus(foundMember);
+          console.log("form",form)
+          let memberEnsured = ensureCertifications(form, foundMember)
+          updateMemberBadgeInStatus(memberEnsured);
         }
         else {
             setIsSubmitting(false);
@@ -116,6 +151,7 @@ export default function Home({ isConnected, members, activity }) {
         }
     }
   }, [errors])
+
 
   function validate(e) {
     let err = {};
@@ -160,7 +196,7 @@ export default function Home({ isConnected, members, activity }) {
 
     //Calculate sessionLengthMinutes
     let outDate = new Date(badgedOutTime);
-    let inDate = new Date(String(badgedInTime));
+    let inDate = new Date(badgedInTime);
     let sessionLengthMinutes = Math.round(outDate - inDate)/60000
 
     setForm({
@@ -206,14 +242,14 @@ export default function Home({ isConnected, members, activity }) {
         </div>
         <Form.Input
           label='Badged In: '
-          placeholder={vSession.badgeIn}
-          deafultvalue={vSession.badgeIn}
+          placeholder={toEDTString(new Date(vSession.badgeIn)).substring(0,19)}
+          defaultValue={toEDTString(new Date(vSession.badgeIn)).substring(0,19)}
           name='badgeInTime'
         />
         <Form.Input
           label='Badged Out: '
-          placeholder={vSession.badgeOut}
-          deafultvalue={vSession.badgeOut}
+          placeholder={toEDTString(new Date(vSession.badgeOut)).substring(0,19)}
+          defaultValue={toEDTString(new Date(vSession.badgeOut)).substring(0,19)}
           name='badgeOutTime'
         />
         <div className="checkboxes">
@@ -263,7 +299,9 @@ export default function Home({ isConnected, members, activity }) {
           let foundSessions = foundMember.sessions.filter(fmem => fmem.badgeOut !== Editform.prevBadgeOutTime)
           foundMember.sessions = foundSessions.concat(newSession);
           foundMember.lastBadgeIn = Editform.badgeOutTime;
-          updateMemberBadgeInStatus(foundMember);
+          console.log("form",Editform)
+          let memberEnsured = ensureCertifications(Editform, foundMember)
+          updateMemberBadgeInStatus(memberEnsured);
         }
         else {
             setIsSubmittingEdit(false);
@@ -293,8 +331,8 @@ export default function Home({ isConnected, members, activity }) {
     } else { badgedOutTime = e.target.badgeOutTime.value }
 
     //Calculate sessionLengthMinutes
-    let outDate = new Date(badgedOutTime)
-    let inDate = new Date(String(badgedInTime))
+    let outDate = new Date(badgedOutTime);
+    let inDate = new Date(badgedInTime);
     let sessionLengthMinutes = Math.round(outDate - inDate)/60000  
 
     setEditForm({
@@ -334,13 +372,13 @@ export default function Home({ isConnected, members, activity }) {
         <Form.Input
           label='Badged In: '
           placeholder={vSession.badgeIn}
-          deafultvalue={vSession.badgeIn}
+          defaultValue={vSession.badgeIn}
           name='badgeInTime'
         />
         <Form.Input
           label='Badged Out: '
           placeholder={vSession.badgeOut}
-          deafultvalue={vSession.badgeOut}
+          defaultValue={vSession.badgeOut}
           name='badgeOutTime'
         />
         
@@ -378,10 +416,9 @@ export default function Home({ isConnected, members, activity }) {
   function updateMemberBadgeInStatusManually(member, activity) {
     //Convert UTC to local time
     let currDate = new Date();
-    let edt_offset = -5*60; //alternativelly,  currDate.getTimezoneOffset();
-    currDate.setMinutes(currDate.getMinutes() + edt_offset);
+    let dateEDTStr = toEDTString(currDate).substring(0,19) //Convert DateObj into a dateStr in local EDT time (YYYY-MM-DDTHH:MM:SS)
 
-    vSession = {'badgeIn':member.lastBadgeIn, 'badgeOut':currDate.toISOString()}//member.sessions[member.sessions.length-1].badgeIn}
+    vSession = {'badgeIn':member.lastBadgeIn, 'badgeOut':dateEDTStr}//member.sessions[member.sessions.length-1].badgeIn}
     
     vMember = member //save member to a global variable
 
@@ -404,22 +441,126 @@ export default function Home({ isConnected, members, activity }) {
   }
 
   const editActivity = async (actEvent) => {
-    seteditIsOpen(true) //Open popup
     editEvent = actEvent;
     vSession = {'badgeIn':actEvent.badgeInTime,'badgeOut':actEvent.badgeOutTime, 'visitType':actEvent.event,"machineUtilized":actEvent.machineUtilized}
     vMember = members.filter(m => m._id == actEvent.MemberID)[0] //save member to global variable
+    seteditIsOpen(true) //Open popup
   }
-
-  //Convert UTC to local time
-  let dateObj = new Date();
-  let edt_offset = -5*60; 
-  dateObj.setMinutes(dateObj.getMinutes() + edt_offset);
-  let dateStr = dateObj.getFullYear()+"-"+dateObj.toISOString().substring(5,7)+"-"+dateObj.toISOString().substring(8,10);
-
-  let todayActivity = activity.filter(act => act.Date == dateStr);
 
   const certificationList = ['UltimakerCertified', 'GlowforgeCertified', 'FourAxisMillCertified', 'BantamMillCertified', 'P9000Certified', 'SewingCertified', 'SilhouetteCertified', 'CuraCertified', 'VectorCADCertified', 'CircuitDesignCertified'];
   const certificationNames = ['Ultimaker','Glowforge','Four Axis Mill', 'Bantam Mill', 'P9000', 'Sewing', 'Silhouette', 'Cura', 'VectorCAD', 'CircuitDesign'];
+
+
+  class RecentActivity extends React.Component {
+    constructor(props) {
+      super(props);
+      this.state = { };
+    }
+
+    componentDidMount(){
+      //console.log("RecentActivity Did Mount")
+      console.log("GlobalRecentActivityDate",GlobalRecentActivityDate)
+    }
+    
+    render() {
+      function getActivites(){
+        let activities = activity.filter(act => act.Date == dateStr);
+        console.log("getActivities():",activities)
+        return activities
+      }
+
+      let dateStr = GlobalRecentActivityDate.toISOString().substring(0,10)
+      let currDate = GlobalRecentActivityDate
+      let todayActivity = getActivites();
+
+      function updateActivitiesToDOM(activities){
+        let recentActivitiesTBody = document.querySelectorAll('tbody')[1]
+        while (recentActivitiesTBody.firstChild) { //remove all child elements
+          recentActivitiesTBody.removeChild(recentActivitiesTBody.firstChild);
+        }
+        if (activities.length == 0){
+          let tr = document.createElement("tr")
+          let td = document.createElement("td")
+          td.innerText = "No events yet today."
+          tr.appendChild(td)
+          recentActivitiesTBody.appendChild(tr)
+        } else {
+          console.log(activities[0].Events.length,"events today.")
+          for (let i=0; i < activities[0].Events.length;i++){
+            let tr = document.createElement("tr")
+            let td_Name = document.createElement("td");
+            td_Name.innerText = activities[0].Events[i].Name;
+            let td_event = document.createElement("td");
+            td_event.innerText = activities[0].Events[i].event;
+            let button = document.createElement("button");
+            button.type = "button"
+            button.onclick= () => editActivity(activities[0].Events[i])
+            button.innerText = "Add Info"
+            if(activities[0].Events[i].event == "Undefined"){
+              button.className = "addInfoAttn"
+            } else {
+              button.className = "addInfo"
+            }
+            tr.appendChild(td_Name);
+            tr.appendChild(td_event);
+            tr.appendChild(button)
+            recentActivitiesTBody.appendChild(tr)
+          }
+        }
+      }
+
+      function changeDay(arg){
+        if (arg == "forward-one-day"){
+          currDate.setMinutes(currDate.getMinutes() + 24*60); //Change dateObj to the next day
+        } else if (arg == "backward-one-day"){
+          currDate.setMinutes(currDate.getMinutes() - 24*60); //Change dateObj to the previous day
+        }
+        let dateEDTStr = toEDTString(currDate)
+        dateStr = dateEDTStr.substring(0,10) //YYYY-MM-DD
+        document.getElementById("date").innerText=dateStr;
+        let activities = getActivites();
+        updateActivitiesToDOM(activities);
+        GlobalRecentActivityDate = currDate;
+      }
+
+      return (
+        <>
+        <a id="activitiesForward" onClick={() => changeDay("forward-one-day")}>Forward</a>
+        <a id="activitiesBackward" onClick={() => changeDay("backward-one-day")}>Backward</a>
+        <table id="recentActivity">
+          <caption>Recent Activity</caption>
+          <caption id="date">{dateStr}</caption>
+          <thead>
+            <tr>
+              <th>Member Name</th>
+              <th>Visit Type</th>
+              <th>Edit Activity</th>
+            </tr>
+          </thead>
+          <tbody>
+          {todayActivity.length == 0 ? (
+            <tr>
+              <td>No events yet today.</td>
+            </tr>
+          ) : (
+            todayActivity[0].Events.map((actEvent) => ( 
+              <tr>
+                <td>{actEvent.Name}</td>
+                <td>{actEvent.event}</td>
+                <td>
+                  {actEvent.event == "Undefined" ? (
+                    <Button type='button' className="addInfoAttn" onClick={() => editActivity(actEvent)}>Add Info</Button>
+                  ) : (
+                    <Button type='button' className="addInfo" onClick={() => editActivity(actEvent)}>Add Info</Button>
+                  )}</td>
+              </tr>))
+          )}
+          </tbody>
+        </table>
+        </>
+      );
+    }
+  }
 
   return (
     <div className="container">
@@ -455,7 +596,7 @@ export default function Home({ isConnected, members, activity }) {
       {editIsOpen ? (
         <React.Fragment>
           <section className="badgeOutPopUp">
-            <EditPopup/>
+            <EditPopup new={true}/>
           </section>
         </React.Fragment>
       ) : (
@@ -499,35 +640,7 @@ export default function Home({ isConnected, members, activity }) {
         </table>
       </section>
       <section>
-        <table id="recentActivity">
-          <caption>Recent Activity</caption>
-          <thead>
-            <tr>
-              <th>Member Name</th>
-              <th>Visit Type</th>
-              <th>Edit Activity</th>
-            </tr>
-          </thead>
-          <tbody>
-          {todayActivity.length == 0 ? (
-            <tr>
-              <td>No events yet today.</td>
-            </tr>
-          ) : (
-            todayActivity[0].Events.map((actEvent) => ( 
-              <tr>
-                <td>{actEvent.Name}</td>
-                <td>{actEvent.event}</td>
-                <td>
-                  {actEvent.event == "Undefined" ? (
-                    <Button type='button' className="addInfoAttn" onClick={() => editActivity(actEvent)}>Add Info</Button>
-                  ) : (
-                    <Button type='button' className="addInfo" onClick={() => editActivity(actEvent)}>Add Info</Button>
-                  )}</td>
-              </tr>))
-          )}
-          </tbody>
-        </table>
+        <RecentActivity></RecentActivity>
       </section>
       <h3>Next up:</h3>
       <ul>

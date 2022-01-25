@@ -30,7 +30,7 @@ const updateActivityLog = async (activities, newMemberData) => {
     let dateObj = new Date();
     let edt_offset = -5*60; 
     dateObj.setMinutes(dateObj.getMinutes() + edt_offset); //Convert UTC to local time
-    let dateStr = dateObj.getFullYear()+"-"+dateObj.toISOString().substring(5,7)+"-"+dateObj.toISOString().substring(8,10);
+    let dateStr = dateObj.getFullYear()+"-"+dateObj.toISOString().substring(5,7)+"-"+dateObj.toISOString().substring(8,10); //YYYY-MM-DD
 
     let ActivityDay = activities.find(a => a.Date == dateStr) //Get the activity document for the correct day
     let newActivity = {MemberID: newMemberData._id, Name: newMemberData.Name, badgeInTime: dateObj, badgeOutTime: dateObj, event: "New Member Registered",machineUtilized: [], sessionLengthMinutes: 0}

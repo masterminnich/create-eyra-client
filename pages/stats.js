@@ -4,7 +4,7 @@ function fetchAllStats(activtiesCollection){
     //console.log("activities",activtiesCollection)
 
     function getActivityDay(dateObj){
-        let DateStr = dateObj.getFullYear()+"-"+dateObj.toISOString().substring(5,7)+"-"+dateObj.toISOString().substring(8,10);
+        let DateStr = dateObj.getFullYear()+"-"+dateObj.toISOString().substring(5,7)+"-"+dateObj.toISOString().substring(8,10); //YYYY-MM-DD
         return DateStr
     }
 

@@ -12,6 +12,7 @@ const cors = initMiddleware(
 )
 
 export default async function handler(req, res) {
+
     // Run cors
     await cors(req, res)
 
@@ -45,13 +46,31 @@ export default async function handler(req, res) {
             }
             break;
         case 'PUT':
+            let dateToSearch = req.body.Date
+            let eventsToAdd = req.body.Events
+
+            const activityFound = await Activity.find({Date: dateToSearch}) //Fetches the old activites for this day
+            
+            // Assuming Events already exist for this date... Find the events for that day and replace with request body.
+            try {
+                let activitiesAfter = await Activity.findByIdAndUpdate(activityFound[0]._id, {id: activityFound[0]._id, Date: dateToSearch, Events: eventsToAdd}, {
+                    new: true,
+                    runValidators: true
+                });
+                res.status(201).json({ success: true, date: dateToSearch, found: activityFound, after: activitiesAfter, toAdd: eventsToAdd })
+            } catch (error) {
+                console.log("fail")
+                res.status(400).json({ success: false })
+            }
+
+            /*
             let dateObj = new Date();
             let edt_offset = -5*60; 
             dateObj.setMinutes(dateObj.getMinutes() + edt_offset);
-            let dateStr = dateObj.getFullYear()+"-"+dateObj.toISOString().substring(5,7)+"-"+dateObj.toISOString().substring(8,10);
+            let dateStr = dateObj.toISOString().substring(0,10); //YYYY-MM-DD
 
             const activity1 = await Activity.find({Date: dateStr})
-            
+
             try {
                 const activity2 = await Activity.findByIdAndUpdate(activity1[0]._id, req.body, {
                     new: true,
@@ -59,12 +78,38 @@ export default async function handler(req, res) {
                 });
                 console.log("New activity added to database:",activity2.Date);
 
-                res.status(201).json({ success: true, data: activity2 })
+                res.status(201).json({ success: true, data: activity2, dateStr1:dateStr })
             } catch (error) {
-                res.status(400).json({ success: false });
                 console.log("Error at api/activity/index.js")
+                res.status(400).json({ success: false });
+                console.log(error);
+            }*/
+
+            /* BACKUP
+            
+            let dateObj = new Date();
+            let edt_offset = -5*60; 
+            dateObj.setMinutes(dateObj.getMinutes() + edt_offset);
+            let dateStr = dateObj.toISOString().substring(0,10); //YYYY-MM-DD
+
+            const activity1 = await Activity.find({Date: dateStr})
+
+            try {
+                const activity2 = await Activity.findByIdAndUpdate(activity1[0]._id, req.body, {
+                    new: true,
+                    runValidators: true
+                });
+                console.log("New activity added to database:",activity2.Date);
+
+                res.status(201).json({ success: true, data: activity2, dateStr1:dateStr })
+            } catch (error) {
+                console.log("Error at api/activity/index.js")
+                res.status(400).json({ success: false });
                 console.log(error);
             }
+
+            */
+
             break;/*
         case 'DELETE':
             try {

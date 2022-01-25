@@ -115,6 +115,11 @@ div section form div.field{
     margin-bottom: 5px;
 }
 
+div section form div.field input{
+    /*Badged In, Badged Out input boxes in popup*/
+    width: 24ch;
+}
+
 div section form div.field input, div#visitType select{
     position: absolute;
     left: 12ch;
@@ -134,6 +139,14 @@ div.checkboxes p{
 
 button.addInfoAttn{
     background-color: yellow;
+}
+
+a#activitiesForward,a#activitiesBackward{
+    font-weight: 700;
+}
+
+a#activitiesForward{
+    float: right;
 }
 
 a#stock{

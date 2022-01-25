@@ -20,7 +20,7 @@ const getActivitiesCollection = async (memberData) => {
         response.then((resp) => {
             updateActivityLog(resp.data, memberData);
         })
-    } catch (error) { console.log("error @ manualBadgeIn|getActivitiesCollection(): ",error); }
+    } catch (error) { console.log("error @ badgeIn|getActivitiesCollection(): ",error); }
 }
 
 //Copied from index.js -- Make sure to update any changes to both documents.
@@ -83,7 +83,6 @@ function checkFocus(){
 
 function createPopUp(msg,code){
   console.log("rfid:",last_RFID_UID_input)
-  console.log("createPopUp")
   let f = document.getElementsByClassName("herf")[0]
   const p = document.createElement("p");
   const d = document.createElement("div");
@@ -123,11 +122,9 @@ function closeNewMemberMsg(){
 
 function showNewMemberMsg(){
   document.getElementById("newMemberMsg").style.display = "block";
-  console.log("2222")
 }
 
 const searchForRFID = async (RFID_UID_input) => {
-  console.log("searchRFID")
     try {
         const res = await fetch('/api/badgeIn', {
             method: 'POST',
@@ -140,7 +137,7 @@ const searchForRFID = async (RFID_UID_input) => {
         let response = res.json()
         response.then((resp) => {
             let memberData = resp.data;
-            console.log("!!!!",resp.data)
+            console.log("searchForRFID(): resp.data:",resp.data)
 
             if (res.status == 406){ 
                 let fullMsg = "Search failed. More than one user share this RFID."
@@ -149,7 +146,6 @@ const searchForRFID = async (RFID_UID_input) => {
             } else if (res.status == 404){
                 let fullMsg = "Search failed. No member with this RFID."
                 console.log(fullMsg);
-                console.log("redirect to new member page?");
                 createPopUp(fullMsg,"fourohfour")
             } else if (res.status == 200) {
                 let msg = ""
