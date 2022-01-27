@@ -149,22 +149,8 @@ a#activitiesForward{
     float: right;
 }
 
-a#stock{
+a.cornerButton {/* Navigation buttons in top corners */
     color: black;
-    background-color: lightpink;
-    border: 1px solid black;
-    padding: 4px;
-    text-decoration: none;
-    position: absolute;
-    left: calc(100% - 48px - 5px);
-    top: 4px;
-}
-
-a#stock:hover { background-color: palevioletred; }
-
-a#stats{
-    color: black;
-    background-color: lightskyblue;
     border: 1px solid black;
     padding: 4px;
     text-decoration: none;
@@ -173,8 +159,45 @@ a#stats{
     top: 4px;
 }
 
+a#stock{
+    background-color: lightpink;
+    left: calc(100% - 48px - 5px);
+}
+
+a#stock:hover { background-color: palevioletred; }
+
+a#stats{ background-color: lightskyblue; }
+
 a#stats:hover { background-color: rgb(57, 166, 209); }
 
+a#backEndButton{ background-color: #42e36d; }
+
+a#backEndButton:hover{ background-color: #32a852; }
+
+/* Start stats page*/
+div#calendarChart{
+    top: 37px;
+    position: relative;
+}
+
+div.controlCalendarChart{
+    top: 10px;
+    position: relative;
+}
+
+div#selectStats h3, div#selectEventTypes h3 {
+    display: inline-flex;
+}
+
+div#selectStats, div#selectEventTypes {
+    justify-content: space-evenly;
+    display: flex;
+}
+
+.controlCalendarChart p, .controlCalendarChart select{
+    display: inline;
+}
+/* End stats page */
 
 /* Start badge in popup CSS */
 div#twohundred{

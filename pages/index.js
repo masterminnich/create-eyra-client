@@ -582,8 +582,8 @@ export default function Home({ isConnected, members, activity }) {
             for instructions.
           </h2>
         )}
-        <a id="stock" href="/stock">Stock</a>
-        <a id="stats" href="/stats">Stats</a>
+        <a className="cornerButton" id="stock" href="/stock">Stock</a>
+        <a className="cornerButton" id="stats" href="/stats">Stats</a>
       </main>
 
       
