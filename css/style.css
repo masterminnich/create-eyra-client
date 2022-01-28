@@ -44,6 +44,56 @@ a.close-button::before{
     color: #FFF;
 }
 
+/* Start Tooltip CSS */
+.tooltip{
+    position: absolute;
+    background:rgb(57, 166, 209);
+    z-index: 1;
+    width: max-content;
+    transform: translateY(-43%) translateX(10px);
+}
+
+.tooltip:before{ /* Use a pseudo-element to increase the "hit area" */
+    content: "";
+    height: 124%;
+    width: 120%;
+    position: absolute;
+    transform: translate(-3%, -12%);
+}
+
+.tooltipArrow { /*Draw little arrow connecting tooltip*/
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-right: 10px solid rgb(57, 166, 209);
+    content: "";
+    left: -35ch;
+    position: absolute;
+    top: 3.2em;
+}
+
+span.tooltip div{ 
+    width: 34ch; 
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    line-height: 0;
+}
+
+p.tooltip_attribute{
+    display: inline;
+    float:left;
+    padding: 0 4px;
+    line-height: 1.5em;
+    margin: 0;
+}
+
+span.tooltip div p:nth-child(1){ font-weight: 600; }
+
+span.tooltip div p:nth-child(2){ float:right; }
+/* End Tooltip CSS */
+
 /* Start Recent Activity */
 table#recentActivity { 
     width: -webkit-fill-available; 

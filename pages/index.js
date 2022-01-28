@@ -6,6 +6,8 @@ import { Button, Form } from 'semantic-ui-react';
 var vMember = {};
 var vSession = [];
 var editEvent = {};
+let isHovering = false; //Whether the user is currently hovering over an element of interest
+let hoverTimerId;
 
 let GlobalRecentActivityDate = new Date() //This variable keeps track of which day Recent Activity compononet is current displaying. This is important because otherwise state updates would set Recent Activity day to current date. 
 
@@ -32,6 +34,85 @@ function toEDTString(dateObj){
   var dateEDTStr = dateUTCOffsetAdded.toISOString()//.substring(0,19); 
   return dateEDTStr
 }
+
+
+/* Start Tooltips Code */
+function hover(params){ //Checks to see if an element has been hovered over for 2 seconds or more. params = [memberDataOrId, parentElement]. parentElement is the element is which the hover originated. 
+  let memberDataOrId = params[0] 
+  let parentElement = params[1].target
+  console.log("target",parentElement)
+  console.log("memberDataOrId:",memberDataOrId,typeof(memberDataOrId))
+  isHovering = true 
+  hoverTimerId = setTimeout(function() { //Start the timer
+    if (isHovering){
+      createMemberTooltip(memberDataOrId,parentElement)
+    }
+  }, 1500)
+}
+
+function hoverOut(){ //Resets timer when done hovering over an element.
+  isHovering = false 
+  clearTimeout(hoverTimerId)
+  console.log("")
+
+  //Delete all tooltips if they exist
+  let tooltipsInTheDOM = document.getElementsByClassName("tooltip")
+  for (let i=0;i<tooltipsInTheDOM.length;i++){ tooltipsInTheDOM[0].remove() }
+}
+
+function createTooltip(memberData,parentElement){
+  console.log("Making tooltip for ",parentElement,"w/ data:",memberData)
+  let dataToKeep = {"Patron Type":memberData["PatronType"],"Major":memberData["Major"],"GraduationYear":memberData["GraduationYear"],"RFID UID":memberData["rfid"],"joinedDate":memberData["joinedDate"]}//,memberData["lastBadgeIn"]
+  let span = document.createElement("span")
+  span.className = "tooltip"
+  let arrow = document.createElement("div")
+  arrow.className="tooltipArrow"
+  span.appendChild(arrow);
+  let dataToKeepKeys = Object.keys(dataToKeep) //The keys are the name of the attribute to be printed
+  for (let i=0;i<dataToKeepKeys.length;i++){ //Create a seperate p element for each attribute.
+    let value = dataToKeep[dataToKeepKeys[i]]
+    let p1 = document.createElement("p")
+    let p2 = document.createElement("p")
+    let div = document.createElement("div")
+    p1.innerText = dataToKeepKeys[i]+": "
+    p1.id = "tooltip_info_p1"+dataToKeepKeys[i]
+    p1.className = "tooltip_attribute"
+    p2.innerText = String(value)
+    p2.id = "tooltip_info_p2"+dataToKeepKeys[i]
+    p2.className = "tooltip_attribute"
+    div.appendChild(p1)
+    div.appendChild(p2)
+    span.appendChild(div)
+  }
+  parentElement.appendChild(span)
+}
+
+const getMemberDataFromID = async (memberID,parentElement) => { //Fetch member data from MongoDB for a specific member
+  try {  
+      const res = await fetch(`/api/members/${memberID}`, {
+          method: 'GET',
+          headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/json"
+          }
+      })
+      let response = res.json();
+      response.then((resp) => {
+        let memberData = resp.data
+        //console.log("Got",memberID," member data",memberData)
+        createTooltip(memberData,parentElement)
+      })
+  } catch (error) { console.log(error); }
+}
+
+function createMemberTooltip(memberDataOrId,parentElement){
+  if (typeof(memberDataOrId) == "object"){ //memberDataOrId is a member object
+    createTooltip(memberDataOrId["member"],parentElement)
+  } else { //memberDataOrId is member._id as a string
+    getMemberDataFromID(memberDataOrId,parentElement);
+  }
+}
+/* End Tooltips Code */
 
 
 //creates a new activity upon badge out
@@ -496,6 +577,8 @@ export default function Home({ isConnected, members, activity }) {
             let tr = document.createElement("tr")
             let td_Name = document.createElement("td");
             td_Name.innerText = activities[0].Events[i].Name;
+            td_Name.addEventListener('mouseenter', e => { hover([activities[0].Events[i].MemberID,e]) });
+            td_Name.addEventListener('mouseleave', e => { hoverOut() });
             let td_event = document.createElement("td");
             td_event.innerText = activities[0].Events[i].event;
             let button = document.createElement("button");
@@ -546,12 +629,12 @@ export default function Home({ isConnected, members, activity }) {
           <tbody>
           {todayActivity.length == 0 ? (
             <tr>
-              <td colspan="3" id="noEvents">No events today.</td>
+              <td colSpan="3" id="noEvents">No events today.</td>
             </tr>
           ) : (
             todayActivity[0].Events.map((actEvent) => ( 
               <tr>
-                <td>{actEvent.Name}</td>
+                <td onMouseEnter={(e) => hover([{actEvent}.actEvent.MemberID,e])} onMouseLeave={hoverOut}>{actEvent.Name}</td>
                 <td>{actEvent.event}</td>
                 <td>
                   {actEvent.event == "Undefined" ? (
@@ -629,7 +712,7 @@ export default function Home({ isConnected, members, activity }) {
           ) : (
             members.filter(member => member.badgedIn == true).map((member) => (
               <tr key="{member._id}">
-                <td>{member.Name}</td>
+                <td onMouseEnter={(e) => hover([{member},e])} onMouseLeave={hoverOut}>{member.Name}</td>
                 <td>{member.Major}</td>
                 { certificationList.map((cert) => 
                   member[cert] ? (
@@ -651,7 +734,6 @@ export default function Home({ isConnected, members, activity }) {
       <h3>Next up:</h3>
       <ul>
         <li>Automatically badge in Members after they register.</li>
-        <li>Finish Stats page GUI!</li>
         <li>Auto update index page</li>
       </ul>
       <h3>Later on:</h3>
