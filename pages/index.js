@@ -485,7 +485,9 @@ export default function Home({ isConnected, members, activity }) {
         if (activities.length == 0){
           let tr = document.createElement("tr")
           let td = document.createElement("td")
-          td.innerText = "No events yet today."
+          td.innerText = "No events today."
+          td.id = "noEvents"
+          td.colSpan="3"
           tr.appendChild(td)
           recentActivitiesTBody.appendChild(tr)
         } else {
@@ -529,8 +531,8 @@ export default function Home({ isConnected, members, activity }) {
 
       return (
         <>
-        <a id="activitiesForward" onClick={() => changeDay("forward-one-day")}>Forward</a>
-        <a id="activitiesBackward" onClick={() => changeDay("backward-one-day")}>Backward</a>
+        <a id="activitiesForward" onClick={() => changeDay("forward-one-day")}></a>
+        <a id="activitiesBackward" onClick={() => changeDay("backward-one-day")}></a>
         <table id="recentActivity">
           <caption>Recent Activity</caption>
           <caption id="date">{dateStr}</caption>
@@ -544,7 +546,7 @@ export default function Home({ isConnected, members, activity }) {
           <tbody>
           {todayActivity.length == 0 ? (
             <tr>
-              <td>No events yet today.</td>
+              <td colspan="3" id="noEvents">No events today.</td>
             </tr>
           ) : (
             todayActivity[0].Events.map((actEvent) => ( 
@@ -643,7 +645,7 @@ export default function Home({ isConnected, members, activity }) {
           </tbody>
         </table>
       </section>
-      <section>
+      <section id="recentActivity">
         <RecentActivity></RecentActivity>
       </section>
       <h3>Next up:</h3>

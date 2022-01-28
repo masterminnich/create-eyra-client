@@ -1,28 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap');
 
-* {
-    font-family: 'Lato';
-}
+* { font-family: 'Lato'; }
 
-h2.subtitle {
-    text-align: CENTER;
-}
+h2.subtitle { text-align: CENTER;}
 
-td.true{
-    background-color: greenyellow;
-}
+td.true{ background-color: greenyellow; }
 
-td.false{
-    background-color: hotpink;
-}
+td.false{ background-color: hotpink; }
 
-thead.badgeInMembers {
-    height: 90px;
-}
+thead.badgeInMembers { height: 90px; }
 
-th {
-    white-space: nowrap;
-}
+th { white-space: nowrap; }
 
 th > div {
     transform: translate(16px,27px) rotate(315deg);
@@ -55,6 +43,37 @@ a.close-button::before{
     font-size: 100px; 
     color: #FFF;
 }
+
+/* Start Recent Activity */
+table#recentActivity { 
+    width: -webkit-fill-available; 
+    text-align: left; 
+}
+
+table#recentActivity th{ width: 50% }
+
+section#recentActivity{ width: 65ch }
+
+table#recentActivity td#noEvents{
+    width: 100%;
+    text-align: center;
+    font-size: 20px;
+}
+
+a#activitiesForward:after,a#activitiesBackward:after { 
+    font-size: 36px; 
+    line-height: 0;
+    top: 40px;
+    position: relative;
+    left: -10ch;
+    content:'\1F846'
+}
+/*a#activitiesForward:after{ content:'\1F846' }*/
+a#activitiesBackward:after{ 
+    content:'\1F844';
+    left: 10ch;
+}
+/* End Recent Activity */
 
 /* Start NewMemberMsg PopUp CSS */
 div#newMemberMsg{
@@ -97,18 +116,9 @@ div#newMemberMsg{
 }
 /*End NewMemberMsg PopUp CSS*/
 
-/*div.checkboxes div{
-    display: flex;
-    flex-direction: column;
-}*/
+button#submitBadgeOutPopup{ float: right; }
 
-button#submitBadgeOutPopup{
-    float: right;
-}
-
-button#cancelPopupButton{
-    float: left;
-}
+button#cancelPopupButton{ float: left; }
 
 div section form div.field{
     display: flex;
@@ -125,29 +135,17 @@ div section form div.field input, div#visitType select{
     left: 12ch;
 }
 
-h1#badgingOutTitle{
-    text-align: center;
-}
+h1#badgingOutTitle{ text-align: center; }
 
-div#visitType{
-    margin-bottom: 5px;
-}
+div#visitType{ margin-bottom: 5px; }
 
-div.checkboxes p{
-    margin-bottom: 5px;
-}
+div.checkboxes p{ margin-bottom: 5px; }
 
-button.addInfoAttn{
-    background-color: yellow;
-}
+button.addInfoAttn{ background-color: yellow; }
 
-a#activitiesForward,a#activitiesBackward{
-    font-weight: 700;
-}
+a#activitiesForward,a#activitiesBackward{ font-weight: 700; }
 
-a#activitiesForward{
-    float: right;
-}
+a#activitiesForward{ float: right; }
 
 a.cornerButton {/* Navigation buttons in top corners */
     color: black;
