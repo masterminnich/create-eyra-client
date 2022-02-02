@@ -91,7 +91,7 @@ const NewMember = () => {
     const [form, setForm] = useState({ 
         Name: '', Major: '', PatronType:"", GraduationYear:"N/A", badgedIn: false, lastBadgeIn: currDate, joinedDate: currDate, rfid:"globalRFID", sessions:[],
         FourAxisMillCertified: false, BantamMillCertified: false, GlowforgeCertified: false, P9000Certified: false, SewingCertified: false, SilhouetteCertified: false, UltimakerCertified: false,
-        CuraCertified: false, VectorCADCertified: false, CircuitDesignCertified: false
+        FusionCertified: false, VectorCADCertified: false, CircuitDesignCertified: false
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
@@ -122,10 +122,12 @@ const NewMember = () => {
             })
             let response = res.json();
             response.then((resp) => {
-                getActivitiesCollection(resp.data)
+                console.log("resp.success",resp.success)
+                if (resp.success == true){ //Only send the user to the next page if member creation is successful.
+                    getActivitiesCollection(resp.data)
+                    router.push("/codeOfConduct");
+                } else { console.log("An error occured when creating member. This probably means the validate() function failed to do its job.")}
             })
-            
-            router.push("/codeOfConduct");
         } catch (error) {
             console.log(error);
         }
@@ -143,6 +145,7 @@ const NewMember = () => {
         e.preventDefault();
         let errs = validate();
         setErrors(errs);
+        console.log("errs",errs)
         setIsSubmitting(true);
     }
 
@@ -196,6 +199,12 @@ const NewMember = () => {
         }
         if (!form.Major && form.PatronType !== "Faculty") {
             err.Major = 'Major is required';
+        }
+        if (!form.Major && form.PatronType == "Faculty") { //If Faculty doesn't select N/A from the list, automatically set it for them instead of throwing an error.
+            setForm({
+                ...form,
+                "Major": "N/A"
+            })
         }
         if (!form.lastBadgeIn) {
             err.lastBadgeIn = 'lastBadgeIn not defined';

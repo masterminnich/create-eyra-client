@@ -21,7 +21,7 @@ function ensureCertifications(form, member){
     if (form.machineUtilized.includes("Sewing")){ member.SewingCertified = true }
     if (form.machineUtilized.includes("Silhouette")){ member.SilhouetteCertified = true }
     if (form.machineUtilized.includes("Ultimaker")){ member.UltimakerCertified = true }
-    if (form.machineUtilized.includes("Cura")){ member.CuraCertified = true }
+    if (form.machineUtilized.includes("Fusion")){ member.FusionCertified = true }
     if (form.machineUtilized.includes("VectorCAD")){ member.VectorCADCertified = true }
     if (form.machineUtilized.includes("CircuitDesign")){ member.CircuitDesignCertified = true }
   }
@@ -129,8 +129,17 @@ const updateActivityLog = async (activity, newActivity, existing) => {
     let DayEventsAfter = DayEvents.concat(newActivity); //All events from the day.
     //console.log("vMember",vMember,"DayEvents",DayEvents,"DayEventsAfter",DayEventsAfter)
 
+    let prevBadgeOutDate = String(editEvent["badgeOutTime"]).substring(0,10);
+    let newBadgeOutDate = newActivity["badgeOutTime"].substring(0,10);
+    if (prevBadgeOutDate !== newBadgeOutDate){
+      //Check if the activity is being moved to another date.
+      console.log("activity is being moved to a different date.")
+      console.log("TO DO: delete the old activity.")
+      console.log("TO DO: does member Collection still look okay? It should update the dates instead of making a new event.")
+    }
+
     //update Member Session.  Search vMember for prevBadgeInTime, then drop that session and save back to vMember
-    const prevBadgeInTime = String(DroppedEvent[0].badgeInTime);
+    const prevBadgeInTime = String(editEvent["badgeOutTime"]);//DroppedEvent[0].badgeInTime);
     let keepEvents = vMember.sessions.filter(vm => vm.badgeIn !== prevBadgeInTime)
     let droppedEvent = vMember.sessions.filter(vm => vm.badgeIn == prevBadgeInTime)
     let newSession = {badgeInTime: newActivity.badgeInTime, badgeOutTime: newActivity.badgeOutTime, sessionLengthMinutes: newActivity.sessionLengthMinutes}
@@ -257,7 +266,7 @@ export default function Home({ isConnected, members, activity }) {
 
   const handleSubmit = (e) => {
     //Concatenate checkboxes... All checked boxes get added to an array
-    let machinesList = ["FourAxisMill","BantamMill","Glowforge","P9000","Sewing","Silhouette","Ultimaker","Cura","VectorCAD","CircuitDesign"];
+    let machinesList = ["FourAxisMill","BantamMill","Glowforge","P9000","Sewing","Silhouette","Ultimaker","Fusion","VectorCAD","CircuitDesign"];
     let machinesInUse = [];
     for (let j = 0; j < machinesList.length; j++) {
       if (e.target[machinesList[j]].checked){machinesInUse.push(machinesList[j])}
@@ -351,8 +360,8 @@ export default function Home({ isConnected, members, activity }) {
           <label htmlFor="Silhouette">Silhouette</label></div>
           <div><input type="checkbox" id="Ultimaker" name="Ultimaker"/>
           <label htmlFor="Ultimaker">Ultimaker</label></div>
-          <div><input type="checkbox" id="Cura" name="Cura"/>
-          <label htmlFor="Cura">Cura</label></div>
+          <div><input type="checkbox" id="Fusion" name="Fusion"/>
+          <label htmlFor="Fusion">Fusion</label></div>
           <div><input type="checkbox" id="VectorCAD" name="VectorCAD"/>
           <label htmlFor="VectorCAD">Vector CAD</label></div>
           <div><input type="checkbox" id="CircuitDesign" name="CircuitDesign"/>
@@ -395,7 +404,7 @@ export default function Home({ isConnected, members, activity }) {
 
   const handleEditSubmit = (e) => {
     //Concatenate checkboxes... All checked boxes get added to an array
-    let machinesList = ["FourAxisMill","BantamMill","Glowforge","P9000","Sewing","Silhouette","Ultimaker","Cura","VectorCAD","CircuitDesign"];
+    let machinesList = ["FourAxisMill","BantamMill","Glowforge","P9000","Sewing","Silhouette","Ultimaker", "Fusion","VectorCAD","CircuitDesign"];
     let machinesInUse = [];
     for (let j = 0; j < machinesList.length; j++) {
       if (e.target[machinesList[j]].checked){machinesInUse.push(machinesList[j])}
@@ -456,14 +465,14 @@ export default function Home({ isConnected, members, activity }) {
         </div>
         <Form.Input
           label='Badged In: '
-          placeholder={vSession.badgeIn}
-          defaultValue={vSession.badgeIn}
+          placeholder={toEDTString(new Date(vSession.badgeIn)).substring(0,19)}
+          defaultValue={toEDTString(new Date(vSession.badgeIn)).substring(0,19)}
           name='badgeInTime'
         />
         <Form.Input
           label='Badged Out: '
-          placeholder={vSession.badgeOut}
-          defaultValue={vSession.badgeOut}
+          placeholder={toEDTString(new Date(vSession.badgeOut)).substring(0,19)}
+          defaultValue={toEDTString(new Date(vSession.badgeOut)).substring(0,19)}
           name='badgeOutTime'
         />
         
@@ -483,8 +492,8 @@ export default function Home({ isConnected, members, activity }) {
           <label htmlFor="Silhouette">Silhouette</label></div>
           <div><input type="checkbox" id="Ultimaker" name="Ultimaker" defaultChecked={vSession.machineUtilized.includes("Ultimaker")}/>
           <label htmlFor="Ultimaker">Ultimaker</label></div>
-          <div><input type="checkbox" id="Cura" name="Cura" defaultChecked={vSession.machineUtilized.includes("Cura")}/>
-          <label htmlFor="Cura">Cura</label></div>
+          <div><input type="checkbox" id="Fusion" name="Fusion" defaultChecked={vSession.machineUtilized.includes("Fusion")}/>
+          <label htmlFor="Fusion">Fusion</label></div>
           <div><input type="checkbox" id="VectorCAD" name="VectorCAD" defaultChecked={vSession.machineUtilized.includes("VectorCAD")}/>
           <label htmlFor="VectorCAD">Vector CAD</label></div>
           <div><input type="checkbox" id="CircuitDesign" name="CircuitDesign" defaultChecked={vSession.machineUtilized.includes("CircuitDesign")}/>
@@ -503,7 +512,7 @@ export default function Home({ isConnected, members, activity }) {
     let currDate = new Date();
     let dateEDTStr = toEDTString(currDate).substring(0,19) //Convert DateObj into a dateStr in local EDT time (YYYY-MM-DDTHH:MM:SS)
 
-    vSession = {'badgeIn':member.lastBadgeIn, 'badgeOut':dateEDTStr}//member.sessions[member.sessions.length-1].badgeIn}
+    vSession = {'badgeIn':toEDTString(member.lastBadgeIn).substring(0,19), 'badgeOut':dateEDTStr}//member.sessions[member.sessions.length-1].badgeIn}
     
     vMember = member //save member to a global variable
 
@@ -526,14 +535,15 @@ export default function Home({ isConnected, members, activity }) {
   }
 
   const editActivity = async (actEvent) => {
+    console.log("editActivity()  actEvent",actEvent)
     editEvent = actEvent;
     vSession = {'badgeIn':actEvent.badgeInTime,'badgeOut':actEvent.badgeOutTime, 'visitType':actEvent.event,"machineUtilized":actEvent.machineUtilized}
     vMember = members.filter(m => m._id == actEvent.MemberID)[0] //save member to global variable
     seteditIsOpen(true) //Open popup
   }
 
-  const certificationList = ['UltimakerCertified', 'GlowforgeCertified', 'FourAxisMillCertified', 'BantamMillCertified', 'P9000Certified', 'SewingCertified', 'SilhouetteCertified', 'CuraCertified', 'VectorCADCertified', 'CircuitDesignCertified'];
-  const certificationNames = ['Ultimaker','Glowforge','Four Axis Mill', 'Bantam Mill', 'P9000', 'Sewing', 'Silhouette', 'Cura', 'VectorCAD', 'CircuitDesign'];
+  const certificationList = ['UltimakerCertified', 'GlowforgeCertified', 'FourAxisMillCertified', 'BantamMillCertified', 'P9000Certified', 'SewingCertified', 'SilhouetteCertified', 'FusionCertified', 'VectorCADCertified', 'CircuitDesignCertified'];
+  const certificationNames = ['Ultimaker','Glowforge','Four Axis Mill', 'Bantam Mill', 'P9000', 'Sewing', 'Silhouette', 'Fusion', 'VectorCAD', 'CircuitDesign'];
 
 
   class RecentActivity extends React.Component {
@@ -731,14 +741,20 @@ export default function Home({ isConnected, members, activity }) {
       <section id="recentActivity">
         <RecentActivity></RecentActivity>
       </section>
+      <h3>Bugs:</h3>
+      <ul>
+        <li>Z bageInTime.... I think this is fixed.</li>
+        <li>activity date changed. delete from old day</li>
+        <li>negative session minutes???</li>
+      </ul>
       <h3>Next up:</h3>
       <ul>
-        <li>Automatically badge in Members after they register.</li>
+        <li>Prevent members from accessing this page (the backend)</li>
+        <li style={{textDecoration: "line-through"}}>Automatically badge in Members after they register.</li>
         <li>Auto update index page</li>
       </ul>
       <h3>Later on:</h3>
       <ul>
-        <li>Add member stats to badgeOut popup?</li>
         <li>check if user badgeIn time is from a different day. Alert the user.</li>
       </ul>
     </div>

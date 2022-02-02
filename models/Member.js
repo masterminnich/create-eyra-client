@@ -26,6 +26,8 @@ const MemberSchema = new Schema({
         /*default: false*/
     },
     lastBadgeIn: {
+        //type: String,
+        //default: String(Date.now)
         type: Date,
         default: Date.now
     },
@@ -60,7 +62,7 @@ const MemberSchema = new Schema({
     UltimakerCertified: {
         type: Boolean,
     },
-    CuraCertified: {
+    FusionCertified: {
         type: Boolean,
     },
     VectorCADCertified: {

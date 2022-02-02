@@ -172,8 +172,7 @@ function convert(results){ //Converts nested objects into array of arrays. {stat
             Final[eventTypeName] = prevData
         }
     }
-    console.log("Final after",Final)
-    console.log("type check",typeof(Final["Total visits"][0][0]),Final["Total visits"][0][0])
+    //console.log("Final after",Final)
 
     return Final
 }

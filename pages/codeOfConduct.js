@@ -10,7 +10,7 @@ class App extends Component {
                     <h1 className="header">Almost Done...</h1>
                     <p className="header">Please read and agree to our code of conduct.</p>
 
-                    <h1 class="header">Code of Conduct</h1>
+                    <h1 className="header">Code of Conduct</h1>
                     <ul>
                         <li>I understand the makerspace may only be utilized by CCU students/faculty/staff with a current CINO ID, given that makerspace staff is present.</li>
                         <li>I understand that I am fully responsible for the construction of my own projects.</li>
