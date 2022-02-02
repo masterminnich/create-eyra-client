@@ -652,7 +652,7 @@ export default function Home({ isConnected, members, activity }) {
           for (let i=0; i < activities[0].Events.length;i++){
             let tr = document.createElement("tr")
             tr.key = "event_"+String(i)
-            let td_Name = React.createElement("td");
+            let td_Name = document.createElement("td");
             td_Name.innerText = activities[0].Events[i].Name;
             td_Name.addEventListener('mouseenter', e => { hover([activities[0].Events[i].MemberID,e]) });
             td_Name.addEventListener('mouseleave', e => { hoverOut() });
