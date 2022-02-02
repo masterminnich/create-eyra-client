@@ -651,7 +651,8 @@ export default function Home({ isConnected, members, activity }) {
           console.log(activities[0].Events.length,"events today.")
           for (let i=0; i < activities[0].Events.length;i++){
             let tr = document.createElement("tr")
-            let td_Name = document.createElement("td");
+            tr.key = "event_"+String(i)
+            let td_Name = React.createElement("td");
             td_Name.innerText = activities[0].Events[i].Name;
             td_Name.addEventListener('mouseenter', e => { hover([activities[0].Events[i].MemberID,e]) });
             td_Name.addEventListener('mouseleave', e => { hoverOut() });
@@ -696,7 +697,7 @@ export default function Home({ isConnected, members, activity }) {
           <caption>Recent Activity</caption>
           <caption id="date">{dateStr}</caption>
           <thead>
-            <tr>
+            <tr key={"head_tr"}>
               <th>Member Name</th>
               <th>Visit Type</th>
               <th>Edit Activity</th>
@@ -704,12 +705,12 @@ export default function Home({ isConnected, members, activity }) {
           </thead>
           <tbody>
           {todayActivity.length == 0 ? (
-            <tr>
+            <tr key={"noEvents_tr"}>
               <td colSpan="3" id="noEvents">No events today.</td>
             </tr>
           ) : (
             todayActivity[0].Events.map((actEvent) => ( 
-              <tr>
+              <tr key={actEvent.id}>
                 <td onMouseEnter={(e) => hover([{actEvent}.actEvent.MemberID,e])} onMouseLeave={hoverOut}>{actEvent.Name}</td>
                 <td>{actEvent.event}</td>
                 <td>
@@ -773,10 +774,10 @@ export default function Home({ isConnected, members, activity }) {
           <caption>Badged In Members</caption>
           <thead className="badgeInMembers">
             <tr>
-              <th>Name</th>
-              <th>Major</th>
+              <th key={"NameHeader"}>Name</th>
+              <th key={"MajorHeader"}>Major</th>
               { certificationNames.map((cert) => 
-                <th className="rotated"><div><span>{cert}</span></div></th>
+                <th key={cert+"_th"} className="rotated"><div><span>{cert}</span></div></th>
                 )}
             </tr>
           </thead>
@@ -789,13 +790,13 @@ export default function Home({ isConnected, members, activity }) {
             </tr>
           ) : (
             members.filter(member => member.badgedIn == true).map((member) => (
-              <tr key="{member._id}">
+              <tr key={member._id+"_tr"}>
                 <td onMouseEnter={(e) => hover([{member},e])} onMouseLeave={hoverOut}>{member.Name}</td>
                 <td>{member.Major}</td>
                 { certificationList.map((cert) => 
                   member[cert] ? (
-                    <td className="true"></td>
-                    ) : ( <td className="false"></td>)
+                    <td key={member.id+"_"+cert+"_td"} className="true"></td>
+                    ) : ( <td key={member.id+"_"+cert+"_td"} className="false"></td>)
                 )}
                 <td>
                   <button type="button" onClick={() => updateMemberBadgeInStatusManually(member, activity)}>Badge Out</button>
@@ -811,18 +812,18 @@ export default function Home({ isConnected, members, activity }) {
       </section>
       <h3>Bugs:</h3>
       <ul>
-        <li>Change date of activity.... Fix duplicates in members collection</li>
-        <li>negative session minutes???</li>
+        <li key="Notes1">Change date of activity.... Fix duplicates in members collection</li>
+        <li key="Notes2">negative session minutes???</li>
       </ul>
       <h3>Next up:</h3>
       <ul>
-        <li>Prevent members from accessing this page (the backend)</li>
-        <li style={{textDecoration: "line-through"}}>Automatically badge in Members after they register.</li>
-        <li>Auto update index page</li>
+        <li key="Notes3">Prevent members from accessing this page (the backend)</li>
+        <li key="Notes4" style={{textDecoration: "line-through"}}>Automatically badge in Members after they register.</li>
+        <li key="Notes5">Auto update index page</li>
       </ul>
       <h3>Later on:</h3>
       <ul>
-        <li>check if user badgeIn time is from a different day. Alert the user.</li>
+        <li key="Notes6">check if user badgeIn time is from a different day. Alert the user.</li>
       </ul>
     </div>
   )
