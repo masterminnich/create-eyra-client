@@ -237,7 +237,7 @@ const NewMember = () => {
                             <Form.Input
                                 fluid
                                 error={errors.name ? { content: 'Please enter a name', pointing: 'below' } : null}
-                                label='Name:'
+                                label='Full Name:'
                                 placeholder='Name'
                                 name='Name'
                                 id="NameInput"

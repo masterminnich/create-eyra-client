@@ -41,8 +41,7 @@ function toEDTString(dateObj){
 function hover(params){ //Checks to see if an element has been hovered over for 2 seconds or more. params = [memberDataOrId, parentElement]. parentElement is the element is which the hover originated. 
   let memberDataOrId = params[0] 
   let parentElement = params[1].target
-  console.log("target",parentElement)
-  console.log("memberDataOrId:",memberDataOrId,typeof(memberDataOrId))
+  //console.log("target",parentElement,"memberDataOrId:",memberDataOrId,typeof(memberDataOrId))
   isHovering = true 
   hoverTimerId = setTimeout(function() { //Start the timer
     if (isHovering){
@@ -54,7 +53,6 @@ function hover(params){ //Checks to see if an element has been hovered over for 
 function hoverOut(){ //Resets timer when done hovering over an element.
   isHovering = false 
   clearTimeout(hoverTimerId)
-  console.log("")
 
   //Delete all tooltips if they exist
   let tooltipsInTheDOM = document.getElementsByClassName("tooltip")
@@ -116,40 +114,17 @@ function createMemberTooltip(memberDataOrId,parentElement){
 /* End Tooltips Code */
 
 
-//creates a new activity upon badge out
-const updateActivityLog = async (activity, newActivity, existing) => {
-  //console.log('activity',activity);
-  //console.log('newActivity',newActivity);
-
-  let dateStr = newActivity.badgeOutTime.substring(0,10); //Get Date
-  let ActivityDay = activity.find(a => a.Date == dateStr) //Get the activity document for the correct day
-
+const moveEvent = async (activity, ActivityToMove, existing) => {
+  let eventsAfter;
+  let dateStr = ActivityToMove.badgeOutTime.substring(0,10); //Get Date
+  console.log("activity is being moved to a different date.")
   if (existing){
-    let DayEvents = ActivityDay.Events.filter(a => a._id !== editEvent._id) //Remove the event from the ActivityDaily document so we can add it back in.
-    let DroppedEvent = ActivityDay.Events.filter(a => a._id == editEvent._id) //Remove the event from the ActivityDaily document so we can add it back in.
-    let DayEventsAfter = DayEvents.concat(newActivity); //All events from the day.
-    //console.log("vMember",vMember,"DayEvents",DayEvents,"DayEventsAfter",DayEventsAfter)
-
-    let prevBadgeOutDate = String(editEvent["badgeOutTime"]).substring(0,10);
-    let newBadgeOutDate = newActivity["badgeOutTime"].substring(0,10);
-    if (prevBadgeOutDate !== newBadgeOutDate){
-      //Check if the activity is being moved to another date.
-      console.log("activity is being moved to a different date.")
-      console.log("TO DO: delete the old activity.")
-      console.log("TO DO: does member Collection still look okay? It should update the dates instead of making a new event.")
-    }
-
-    //update Member Session.  Search vMember for prevBadgeInTime, then drop that session and save back to vMember
-    const prevBadgeInTime = String(editEvent["badgeOutTime"]);//DroppedEvent[0].badgeInTime);
-    let keepEvents = vMember.sessions.filter(vm => vm.badgeIn !== prevBadgeInTime)
-    let droppedEvent = vMember.sessions.filter(vm => vm.badgeIn == prevBadgeInTime)
-    let newSession = {badgeInTime: newActivity.badgeInTime, badgeOutTime: newActivity.badgeOutTime, sessionLengthMinutes: newActivity.sessionLengthMinutes}
-    vMember.sessions = keepEvents
-    //console.log("prevBadgeInTime",prevBadgeInTime,"keepEvents",keepEvents)
-    //console.log("vMember",vMember,"droppedEvent",droppedEvent,"keepEvents",keepEvents)
-
-    console.log("keepEvents",keepEvents,"DayEventsAfter",DayEventsAfter)
-
+    //Get existing events, Append new event to the end, Update the activity.
+    console.log("ActivityDay already exists")
+    let ActivityDay = activity.find(a => a.Date == dateStr)
+    let eventsBefore = ActivityDay.Events
+    eventsBefore.push(ActivityToMove)
+    eventsAfter = eventsBefore
     try {
       const res = await fetch(`/api/activity`, {
           method: 'PUT',
@@ -157,11 +132,103 @@ const updateActivityLog = async (activity, newActivity, existing) => {
               "Accept": "application/json",
               "Content-Type": "application/json"
           },
-          body: JSON.stringify({Date: dateStr, Events: DayEventsAfter})
+          body: JSON.stringify({Date: dateStr, Events: eventsAfter})
       })
-      console.log("updateActivityLog(): Success adding event to existing date",dateStr, res);
-    } catch (error) { console.log("Error adding to Activity collection.",error) }
+      console.log("moveEvent(): Success adding event to existing date",dateStr, res);
+    } catch (error) { console.log("Error adding to Activity collection. moveEvent()",error) }
+  } else {
+    //Append the new event, Create the ActivityDay.
+    console.log("Creating new ActivityDay")
+    eventsAfter = ActivityToMove
+    try {
+      const res = await fetch(`/api/activity`, {
+          method: 'POST',
+          headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify({Date: dateStr, Events: eventsAfter})
+      })
+      console.log("moveEvent(): Success adding event to existing date",dateStr, res);
+    } catch (error) { console.log("Error adding to Activity collection. moveEvent()",error) }
+  }
+  console.log("TO DO: members Collection is messed up. Delete the event before appending new.")
+}
 
+
+//creates a new activity upon badge out
+const updateActivityLog = async (activity, newActivity, existing) => {
+  //console.log('activity',activity,'newActivity',newActivity);
+
+  let dateStr = newActivity.badgeOutTime.substring(0,10); //Get Date
+  let ActivityDay = activity.find(a => a.Date == dateStr) //Get the activity document for the correct day
+
+  if (existing !== false){ //Updating an existing event
+    let activityID = existing
+    console.log('activity',activity,'newActivity',newActivity,'ActivityDay',ActivityDay,'activityID',activityID);
+
+    let prevBadgeOutDate = String(editEvent["badgeOutTime"]).substring(0,10);
+    let newBadgeOutDate = newActivity["badgeOutTime"].substring(0,10);
+
+    if (prevBadgeOutDate !== newBadgeOutDate){ //Check if the activity is being moved to another date.
+      //Date of the activity has changed. Delete the event from the old activity.
+      let prevDate = document.getElementById("date").innerText //Fetches the date currently being displayed by Recent Activity component
+      let prevActivityDay = activity.find(a => a.Date == prevDate)
+      let prevActivityEvents = prevActivityDay.Events
+      //console.log("prevDate",prevDate,"prevActivityEvents",prevActivityEvents)
+      for (let i=0;i<Object.keys(prevActivityEvents).length;i++){ 
+        if(prevActivityEvents[i]._id == activityID){
+          delete prevActivityEvents[i] //Remove that event from ActivityDay
+          prevActivityEvents = prevActivityEvents.filter(ee => ee[0] !== null) //The previous line replaces the event with empty. This line deletes any empty objects that are created by the previous line.
+          console.log("prevActivityDay After",prevActivityDay)
+
+          //Update the activity Day 
+          try {
+            const res = await fetch(`/api/activity`, {
+                method: 'PUT',
+                headers: {
+                  "Accept": "application/json",
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({Date: prevDate, Events: prevActivityEvents})
+            })
+          } catch (error) { console.log("Error adding to Activity collection.",error) }    
+        
+          //Move the event to the new day.
+          if (ActivityDay){ //If the day we are moving the event to already exists, append this event to the end of that day.
+            moveEvent(activity,newActivity,true)
+          } else{  //If the day we are moving the event to doesn't exist, create a new ActivityDay.
+            moveEvent(activity,newActivity,false)
+          }
+        }
+      }
+    } else { //Event is not being moved to a different day
+
+      let DayEvents = ActivityDay.Events.filter(a => a._id !== editEvent._id) //Remove the event from the ActivityDaily document so we can add it back in.
+      let DroppedEvent = ActivityDay.Events.filter(a => a._id == editEvent._id) //Remove the event from the ActivityDaily document so we can add it back in.
+      let DayEventsAfter = DayEvents.concat(newActivity); //All events from the day.
+      console.log("keepEvents",keepEvents,"DayEventsAfter",DayEventsAfter)
+
+      //update Member Session.  Search vMember for prevBadgeInTime, then drop that session and save back to vMember
+      const prevBadgeInTime = String(editEvent["badgeOutTime"]);//DroppedEvent[0].badgeInTime);
+      let keepEvents = vMember.sessions.filter(vm => vm.badgeIn !== prevBadgeInTime)
+      let droppedEvent = vMember.sessions.filter(vm => vm.badgeIn == prevBadgeInTime)
+      let newSession = {badgeInTime: newActivity.badgeInTime, badgeOutTime: newActivity.badgeOutTime, sessionLengthMinutes: newActivity.sessionLengthMinutes}
+      vMember.sessions = keepEvents
+      //console.log("prevBadgeInTime",prevBadgeInTime,"keepEvents",keepEvents)
+
+      try {
+        const res = await fetch(`/api/activity`, {
+            method: 'PUT',
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({Date: dateStr, Events: DayEventsAfter})
+        })
+        console.log("updateActivityLog(): Success adding event to existing date",dateStr, res);
+      } catch (error) { console.log("Error adding to Activity collection.",error) }
+    }
   } else {
   if (ActivityDay){
     console.log("date found. Check the code. This may be redundant...");
@@ -232,7 +299,6 @@ export default function Home({ isConnected, members, activity }) {
           foundMember.sessions = memberSessionsBefore.concat(newSession);
           foundMember.badgedIn = false;
           foundMember.lastBadgeIn = form.badgeOutTime;
-          console.log("form",form)
           let memberEnsured = ensureCertifications(form, foundMember)
           updateMemberBadgeInStatus(memberEnsured);
         }
@@ -278,8 +344,7 @@ export default function Home({ isConnected, members, activity }) {
     if (e.target.badgeInTime.value == ""){
       badgedInTime = e.target.badgeInTime.placeholder
     } else { 
-      badgedInTime = e.target.badgeInTime.value 
-      console.log("badged in",badgedInTime)
+      badgedInTime = e.target.badgeInTime.value
     }
     if (e.target.badgeOutTime.value == ""){
       badgedOutTime = e.target.badgeOutTime.placeholder
@@ -382,7 +447,7 @@ export default function Home({ isConnected, members, activity }) {
           //Find and replace activity.
           let activityID = editEvent._id
 
-          updateActivityLog(activity,Editform,true);
+          updateActivityLog(activity,Editform,activityID);
           console.log("Updating activity from DB:",Editform)
           //console.log("activity",activity,"Editform",Editform,"members",members)
 
@@ -574,7 +639,7 @@ export default function Home({ isConnected, members, activity }) {
         while (recentActivitiesTBody.firstChild) { //remove all child elements
           recentActivitiesTBody.removeChild(recentActivitiesTBody.firstChild);
         }
-        if (activities.length == 0){
+        if (activities.length == 0 || (activities.length == 1 && activities[0].Events[0] == null)){
           let tr = document.createElement("tr")
           let td = document.createElement("td")
           td.innerText = "No events today."
@@ -713,13 +778,15 @@ export default function Home({ isConnected, members, activity }) {
               { certificationNames.map((cert) => 
                 <th className="rotated"><div><span>{cert}</span></div></th>
                 )}
-              <th></th>
             </tr>
           </thead>
           <tbody>
             
           {members.filter(member => member.badgedIn == true).length == 0 ? (
-            <p>No one badged in...</p>
+            //<p>No one badged in...</p>
+            <tr>
+            <td className="noMembersIn" colSpan="12">No one badged in...</td>
+            </tr>
           ) : (
             members.filter(member => member.badgedIn == true).map((member) => (
               <tr key="{member._id}">
@@ -744,8 +811,7 @@ export default function Home({ isConnected, members, activity }) {
       </section>
       <h3>Bugs:</h3>
       <ul>
-        <li>Z bageInTime.... I think this is fixed.</li>
-        <li>activity date changed. delete from old day</li>
+        <li>Change date of activity.... Fix duplicates in members collection</li>
         <li>negative session minutes???</li>
       </ul>
       <h3>Next up:</h3>

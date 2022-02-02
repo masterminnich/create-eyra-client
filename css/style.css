@@ -102,13 +102,18 @@ table#recentActivity {
 
 table#recentActivity th{ width: 50% }
 
-section#recentActivity{ width: 65ch }
+section#recentActivity{ 
+    width: 65ch;
+    margin-top: 25px;
+}
 
-table#recentActivity td#noEvents{
+table#recentActivity td#noEvents, td.noMembersIn{
     width: 100%;
     text-align: center;
     font-size: 20px;
 }
+
+td.noMembersIn{ padding-top: 0.75em; }
 
 a#activitiesForward:after,a#activitiesBackward:after { 
     font-size: 36px; 
