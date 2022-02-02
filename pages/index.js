@@ -710,7 +710,7 @@ export default function Home({ isConnected, members, activity }) {
             </tr>
           ) : (
             todayActivity[0].Events.map((actEvent) => ( 
-              <tr key={actEvent.id}>
+              <tr key={actEvent._id+"_tr"}>
                 <td onMouseEnter={(e) => hover([{actEvent}.actEvent.MemberID,e])} onMouseLeave={hoverOut}>{actEvent.Name}</td>
                 <td>{actEvent.event}</td>
                 <td>
