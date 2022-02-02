@@ -14,6 +14,7 @@ const cors = initMiddleware(
 
 function toEDTString(dateObj){
     // Converts a DateObj into a DateStr in local EDT time (YYYY-MM-DDTHH:MM:SS). Based on a modified ISO format.
+    if (typeof(dateObj) == "string"){ dateObj = new Date(dateObj) } //If function is passed a dateStr instead of a dateObj cast the date to an object before proceeding. 
     let dateUTCOffsetAdded = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000))
     var dateEDTStr = dateUTCOffsetAdded.toISOString().substring(0,19); 
     console.log("dateEDTStr",dateEDTStr)
