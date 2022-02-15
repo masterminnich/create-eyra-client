@@ -228,7 +228,7 @@ a#backEndButton{ background-color: #42e36d; }
 a#backEndButton:hover{ background-color: #32a852; }
 
 /* Start stats page*/
-div#calendarChart{
+div#calendarChart, div#workshopPopularityPieChart{
     top: 37px;
     position: relative;
 }
@@ -247,9 +247,26 @@ div#selectStats, div#selectEventTypes {
     display: flex;
 }
 
-.controlCalendarChart p, .controlCalendarChart select{
+.controlCalendarChart p, .controlCalendarChart select,.controlMemberPieChart p, .controlMemberPieChart select{
     display: inline;
 }
+
+div.PieCharts{
+    top: 19px;
+    display: flex;
+    position: relative;
+}
+
+div#workshopPopularityPieChart, div#memberPieChart, div.controlMemberPieChart{
+    top: 0;
+}
+
+div.controlMemberPieChart{ 
+    z-index: 1;
+    transform: translate(50%);
+}
+
+div#memberPieChart, div.controlMemberPieChart{ position: absolute; }
 /* End stats page */
 
 /* Start badge in popup CSS */

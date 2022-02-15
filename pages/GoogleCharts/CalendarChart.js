@@ -38,7 +38,6 @@ function CalendarChart ({google, calStats}) {
                 calStats[varOfInterest][i][0] = addOffset(new Date(one[0]))
             }
         }
-        //console.log("dates look like...",calStats[varOfInterest][0][0])
 
         dataTable.addRows(
             calStats[varOfInterest]
@@ -61,7 +60,7 @@ function CalendarChart ({google, calStats}) {
     useEffect(() => { // This is called everytime varOfInterest changes.
         if (google){ // Ensure google charts is loaded before trying to render a chart
             loadChart()
-        } else {console.log("damn2")}
+        } else {console.log("CalendarChart.js error: google not loaded.")}
     },[varOfInterest]);
 
     useEffect(() => {

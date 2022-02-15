@@ -812,18 +812,22 @@ export default function Home({ isConnected, members, activity }) {
       </section>
       <h3>Bugs:</h3>
       <ul>
-        <li key="Notes1">Change date of activity.... Fix duplicates in members collection</li>
-        <li key="Notes2">negative session minutes???</li>
+        <li>Change date of activity.... Fix duplicates in members collection</li>
+        <li>negative session minutes???</li>
       </ul>
       <h3>Next up:</h3>
       <ul>
-        <li key="Notes3">Prevent members from accessing this page (the backend)</li>
-        <li key="Notes4" style={{textDecoration: "line-through"}}>Automatically badge in Members after they register.</li>
-        <li key="Notes5">Auto update index page</li>
+        <li>Create a badge In member button. Lets you search a member</li>
+        <li>Change failed badge in message. Remove "Failed search". Change colors? Maybe, 'New Member? n/ Register [button]' Already Signed Up?, Try scanning again</li>
+        <li>Stats page: Add distribution of Faculty/MakerspaceStaff/1stYr/2ndYr/3rdYr/4thYr</li>
+        <li>Add Homework/ClassProj to VisitType</li>
+        <li>Prevent members from accessing this page (the backend)</li>
+        <li style={{textDecoration: "line-through"}}>Automatically badge in Members after they register.</li>
+        <li>Auto update index page (using state changes)</li>
       </ul>
       <h3>Later on:</h3>
       <ul>
-        <li key="Notes6">check if user badgeIn time is from a different day. Alert the user.</li>
+        <li>check if user badgeIn time is from a different day. Alert the user.</li>
       </ul>
     </div>
   )

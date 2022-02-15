@@ -3,6 +3,8 @@ import initMiddleware from '../../../lib/init-middleware'
 import connectToDatabase from '../../../utils/connectToDatabase';
 import Activity from '../../../models/Activity';
 
+// This code processing data for the Calendar on the stats page.
+
 // Initialize the cors middleware. You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
 const cors = initMiddleware(
    Cors({
