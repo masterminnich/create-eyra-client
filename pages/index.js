@@ -155,6 +155,22 @@ const moveEvent = async (activity, ActivityToMove, existing) => {
   console.log("TO DO: members Collection is messed up. Delete the event before appending new.")
 }
 
+const badgeInByRFID = async (RFID_UID_input) => {
+  try {
+    const res = await fetch('/api/badgeIn', {
+      method: 'POST',
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({rfid: RFID_UID_input})
+    });
+    let response = res.json();
+    response.then((resp) => {
+      console.log(resp.data);
+    });
+  } catch (error) { console.log("Error badging in member",error) }
+}
 
 //creates a new activity upon badge out
 const updateActivityLog = async (activity, newActivity, existing) => {
@@ -611,6 +627,106 @@ export default function Home({ isConnected, members, activity }) {
   const certificationList = ['UltimakerCertified', 'GlowforgeCertified', 'FourAxisMillCertified', 'BantamMillCertified', 'P9000Certified', 'SewingCertified', 'SilhouetteCertified', 'FusionCertified', 'VectorCADCertified', 'CircuitDesignCertified'];
   const certificationNames = ['Ultimaker','Glowforge','Four Axis Mill', 'Bantam Mill', 'P9000', 'Sewing', 'Silhouette', 'Fusion', 'VectorCAD', 'CircuitDesign'];
 
+  class SearchMemberBadgeIn extends React.Component{
+    constructor(props){
+      super(props);
+      this.state = {
+        results: [],
+        showResults: false,
+        selectionMade: false,
+        selection: ""
+      }
+    }
+
+    onKeyUpCapture(e){
+      function BadgeInMemberSearch(members){
+        //Searches for a member by name, then badges in the member.
+        let searchInput = e.target.value
+        let listOfMembers = members.map(x => [x.Name,x._id,x.rfid])
+        /*let listOfMemberNames = [] //Get a list of all member names
+        let listOfMemberIds = [] //Save member name and id
+        for(let i=0; i<listOfMembers.length; i++){
+          listOfMemberNames.push(listOfMembers[i][0])
+          //listOfMemberIds.push(listOfMembers[i][1])
+          listOfMemberRFID.push(listOfMembers[i][2])
+        }*/
+        const regexSearch = new RegExp("(.*"+searchInput+".*)","i") //Create a regex rule to match the search input exactly and capture the entire names of any matching searches. i flag ignores case sensitivity.
+        const memberNamesMatchingSearch = listOfMembers.filter(memberName => regexSearch.test(memberName[0]));
+        //console.log("members:",memberNamesMatchingSearch)
+        return memberNamesMatchingSearch
+      }
+
+      let searchResults = BadgeInMemberSearch(this.props.members)
+      this.setState({results:searchResults})
+    }
+
+    onFocus(e){ //When the user focuses on the search bar show the search results
+      this.setState({showResults:true})
+    }
+
+    onBlur(e){ //When the user stops focusing on the search bar hide the search results
+      setTimeout(() => { this.setState({showResults:false}) }, 200);
+    }
+
+    handleSelect(e){
+      setTimeout(() => { 
+        this.setState({selection:[e.target.innerText,e.target.id], selectionMade:true})
+        document.getElementById("searchMemberBadgeIn").value = e.target.innerText
+      }, 200);
+    }
+
+    handleSubmit(e){
+      console.log("Badging in Member",this.state.selection[0],"w/ RFID UID:",this.state.selection[1])
+      badgeInByRFID(this.state.selection[1])
+    }
+    
+    render(){
+      return(
+        <>
+        <div style={{"text-align": "center"}}>
+        <p style={{display: "inline"}}>Badge someone in: </p>
+        <input onFocus={this.onFocus.bind(this)} onBlur={this.onBlur.bind(this)} onKeyUpCapture={this.onKeyUpCapture.bind(this)} id='searchMemberBadgeIn'></input> 
+        {this.state.showResults && this.state.results.length > 0 ? 
+          <SearchResults handleSelect={this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
+          :  <div></div> }
+        {this.state.selectionMade ? 
+          <SubmitSelection result={this.state.selection} handleSubmit={this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
+          : <div></div>}
+        </div>
+        </>
+      ) 
+    }
+  }
+
+  class SearchResults extends React.Component{
+    constructor(props){
+      super(props);
+      this.state = {}
+    }
+
+    render(){
+      return(
+        <div className="searchResultsDropdown">
+          {this.props.results?.map((result) => (
+            <div id={result[2]} onClick={this.props.handleSelect}>{result[0]}</div>  
+          ))}
+        </div>
+      )
+    }
+  }
+
+  class SubmitSelection extends React.Component{
+    constructor(props){
+      super(props);
+      this.state = {}
+    }
+
+    render(){
+      return(
+        <button onClick={this.props.handleSubmit}>Badge In {this.props.selectionMade}</button>
+      )
+    }
+  }
 
   class RecentActivity extends React.Component {
     constructor(props) {
@@ -769,61 +885,69 @@ export default function Home({ isConnected, members, activity }) {
         <div></div>
       )}
 
-      <section>
-        <table>
-          <caption>Badged In Members</caption>
-          <thead className="badgeInMembers">
+      <section class="fit">
+        {members.filter(member => member.badgedIn == true).length == 0 ? (
+          <p style={{"text-align":"center"}}>No one badged in...</p>
+          /*<tbody>
             <tr>
-              <th key={"NameHeader"}>Name</th>
-              <th key={"MajorHeader"}>Major</th>
-              { certificationNames.map((cert) => 
-                <th key={cert+"_th"} className="rotated"><div><span>{cert}</span></div></th>
-                )}
+              <td className="noMembersIn" colSpan="12">No one badged in...</td>
             </tr>
-          </thead>
-          <tbody>
-            
-          {members.filter(member => member.badgedIn == true).length == 0 ? (
-            //<p>No one badged in...</p>
-            <tr>
-            <td className="noMembersIn" colSpan="12">No one badged in...</td>
-            </tr>
-          ) : (
-            members.filter(member => member.badgedIn == true).map((member) => (
-              <tr key={member._id+"_tr"}>
-                <td onMouseEnter={(e) => hover([{member},e])} onMouseLeave={hoverOut}>{member.Name}</td>
-                <td>{member.Major}</td>
-                { certificationList.map((cert) => 
-                  member[cert] ? (
-                    <td key={member.id+"_"+cert+"_td"} className="true"></td>
-                    ) : ( <td key={member.id+"_"+cert+"_td"} className="false"></td>)
-                )}
-                <td>
-                  <button type="button" onClick={() => updateMemberBadgeInStatusManually(member, activity)}>Badge Out</button>
-                </td>
-              </tr>
-            ))
-          )}
-          </tbody>
-        </table>
+          </tbody>*/
+        ) : (
+          <>
+            <table>
+              <caption>Badged In Members</caption>
+              <thead className="badgeInMembers">
+                <tr>
+                  <th key={"NameHeader"}>Name</th>
+                  <th key={"MajorHeader"}>Major</th>
+                  { certificationNames.map((cert) => 
+                    <th key={cert+"_th"} className="rotated"><div><span>{cert}</span></div></th>
+                    )}
+                </tr>
+              </thead>
+              <tbody>
+                {members.filter(member => member.badgedIn == true).map((member) => (
+                  <tr key={member._id+"_tr"}>
+                    <td onMouseEnter={(e) => hover([{member},e])} onMouseLeave={hoverOut}>{member.Name}</td>
+                    <td>{member.Major}</td>
+                    { certificationList.map((cert) => 
+                      member[cert] ? (
+                        <td key={member.id+"_"+cert+"_td"} className="true"></td>
+                        ) : ( <td key={member.id+"_"+cert+"_td"} className="false"></td>)
+                    )}
+                    <td>
+                      <button type="button" onClick={() => updateMemberBadgeInStatusManually(member, activity)}>Badge Out</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+        <SearchMemberBadgeIn members={members}></SearchMemberBadgeIn>
       </section>
-      <section id="recentActivity">
+      <section id="recentActivity" class="fit">
         <RecentActivity></RecentActivity>
       </section>
       <h3>Bugs:</h3>
       <ul>
+        <li>?new gets removed</li>
+        <li>Ignore caps lock on badgeIn page and on member creation</li>
+        <li>Ignore escape key and other bs. must be alphanumeric</li>
         <li>Change date of activity.... Fix duplicates in members collection</li>
-        <li>negative session minutes???</li>
+        <li>validation: no negative session minutes</li>
       </ul>
       <h3>Next up:</h3>
       <ul>
-        <li>Create a badge In member button. Lets you search a member</li>
+        <li>Add a delete button to the editActivityPopUp</li>
         <li>Change failed badge in message. Remove "Failed search". Change colors? Maybe, 'New Member? n/ Register [button]' Already Signed Up?, Try scanning again</li>
-        <li>Stats page: Add distribution of Faculty/MakerspaceStaff/1stYr/2ndYr/3rdYr/4thYr</li>
         <li>Add Homework/ClassProj to VisitType</li>
         <li>Prevent members from accessing this page (the backend)</li>
-        <li style={{textDecoration: "line-through"}}>Automatically badge in Members after they register.</li>
         <li>Auto update index page (using state changes)</li>
+        <li style={{textDecoration: "line-through"}}>CSS: index.js | conditionally render header row of Badge In Members table</li>
+        <li style={{textDecoration: "line-through"}}>Automatically badge in Members after they register.</li>
+        <li style={{textDecoration: "line-through"}}>Create a badge In member button. Lets you search a member</li>
       </ul>
       <h3>Later on:</h3>
       <ul>

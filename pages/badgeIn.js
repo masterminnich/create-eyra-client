@@ -117,7 +117,8 @@ function createPopUp(msg,code){
 }
 
 function closeNewMemberMsg(){
-  document.getElementById("newMemberMsg").remove();
+  //document.getElementById("newMemberMsg").remove();
+  window.location.href = window.location.origin + "/badgeIn" //Remove the ?new search tag from the URL
 }
 
 function showNewMemberMsg(){

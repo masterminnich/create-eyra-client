@@ -44,6 +44,11 @@ a.close-button::before{
     color: #FFF;
 }
 
+section.fit{ 
+    width: fit-content;
+    min-width: 500px;
+}
+
 /* Start Tooltip CSS */
 .tooltip{
     position: absolute;
@@ -93,6 +98,18 @@ span.tooltip div p:nth-child(1){ font-weight: 600; }
 
 span.tooltip div p:nth-child(2){ float:right; }
 /* End Tooltip CSS */
+
+/* Start Search Results for Member Badge In CSS */
+div.searchResultsDropdown{
+    max-height: 11ch;
+    border: 1px solid black;
+    background: lightgray;
+    overflow-y: scroll;
+    width: max-content;
+    position: relative;
+    left: calc(50% - 1ch);
+}
+/* End Search Results for Member Badge In CSS */
 
 /* Start Recent Activity */
 table#recentActivity { 

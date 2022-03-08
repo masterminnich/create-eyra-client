@@ -44,10 +44,17 @@ function CalendarChart ({google, calStats}) {
             //[ new Date(2012, 3, 13), 8 ]
         );
 
+        // Set minValue to 360 for cumSessionMinutes only.
+        if (varOfInterest == "cumSessionMinutes"){
+            let minValue = 360
+        } else {
+            let minValue = 0
+        }
+
         // Set chart options
         var options = {
             title: varOfInterest,
-            colorAxis: {minValue: 0, colors: ['#ffff00', '#ff0000']}
+            colorAxis: {minValue: minValue, colors: ['#ffff00', '#ff0000']}
         };
 
         // Instantiate and draw our chart, passing in some options.
@@ -66,8 +73,7 @@ function CalendarChart ({google, calStats}) {
     useEffect(() => {
         // This is called only once, when the page is loaded.
 
-        //console.log("CalendarChart: calStats",calStats,"type")
-        //console.log("CalendarChart: google",google)
+        //console.log("CalendarChart: calStats",calStats,"CalendarChart: google",google)
         if (google && !chart) { // Ensure google charts is loaded before trying to render a chart
             loadChart() // Create the data table.
         }

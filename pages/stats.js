@@ -1,4 +1,3 @@
-import PizzaChart from "./GoogleCharts/PizzaChart";
 import React from 'react';
 import useGoogleCharts from "./GoogleCharts/useGoogleCharts";
 import GetCalendarChart from './getStatsAndLoadChart'
