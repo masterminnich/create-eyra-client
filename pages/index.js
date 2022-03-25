@@ -932,19 +932,22 @@ export default function Home({ isConnected, members, activity }) {
       </section>
       <h3>Bugs:</h3>
       <ul>
-        <li>?new gets removed</li>
-        <li>Ignore caps lock on badgeIn page and on member creation</li>
-        <li>Ignore escape key and other bs. must be alphanumeric</li>
         <li>Change date of activity.... Fix duplicates in members collection</li>
         <li>validation: no negative session minutes</li>
+        <li style={{textDecoration: "line-through"}}>?new gets removed</li>
+        <li style={{textDecoration: "line-through"}}>Ignore caps lock on badgeIn page and on member creation</li>
+        <li style={{textDecoration: "line-through"}}>Ignore escape key and other bs. must be alphanumeric</li>
       </ul>
       <h3>Next up:</h3>
       <ul>
+        <li>Add button machine, VR to tools list under Other Tools</li>
+        <li>Search function gives additional info on the student. What certs, rfid uid, etc.</li>
         <li>Add a delete button to the editActivityPopUp</li>
         <li>Change failed badge in message. Remove "Failed search". Change colors? Maybe, 'New Member? n/ Register [button]' Already Signed Up?, Try scanning again</li>
         <li>Add Homework/ClassProj to VisitType</li>
         <li>Prevent members from accessing this page (the backend)</li>
         <li>Auto update index page (using state changes)</li>
+        <li>Create a button for people who arrive w/o a CINO ID and haven't become a member yet.</li>
         <li style={{textDecoration: "line-through"}}>CSS: index.js | conditionally render header row of Badge In Members table</li>
         <li style={{textDecoration: "line-through"}}>Automatically badge in Members after they register.</li>
         <li style={{textDecoration: "line-through"}}>Create a badge In member button. Lets you search a member</li>
