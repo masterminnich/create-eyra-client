@@ -11,6 +11,10 @@ let hoverTimerId;
 
 let GlobalRecentActivityDate = new Date() //This variable keeps track of which day Recent Activity compononet is current displaying. This is important because otherwise state updates would set Recent Activity day to current date. 
 
+function reloadPage(){
+
+}
+
 function ensureCertifications(form, member){
   console.log("member",member)
   if (form.event == "Certification"){
@@ -133,7 +137,7 @@ const moveEvent = async (activity, ActivityToMove, existing) => {
               "Content-Type": "application/json"
           },
           body: JSON.stringify({Date: dateStr, Events: eventsAfter})
-      })
+      }).then(setTimeout(() => { window.location.reload() }, 200));
       console.log("moveEvent(): Success adding event to existing date",dateStr, res);
     } catch (error) { console.log("Error adding to Activity collection. moveEvent()",error) }
   } else {
@@ -148,11 +152,79 @@ const moveEvent = async (activity, ActivityToMove, existing) => {
               "Content-Type": "application/json"
           },
           body: JSON.stringify({Date: dateStr, Events: eventsAfter})
-      })
+      }).then(setTimeout(() => { window.location.reload() }, 200));
       console.log("moveEvent(): Success adding event to existing date",dateStr, res);
     } catch (error) { console.log("Error adding to Activity collection. moveEvent()",error) }
   }
   console.log("TO DO: members Collection is messed up. Delete the event before appending new.")
+}
+
+const updateMemberBadgeInStatus = async (member) => {
+  try {  
+    const res = await fetch(`/api/members/${member._id}`, {
+      method: 'PUT',
+      headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+      },
+      body: JSON.stringify(member)
+    }).then(setTimeout(() => { window.location.reload() }, 200));
+    //.then(window.location.reload(true));
+  } catch (error) { console.log("ERROR:",error); }
+}
+
+const updateActivityByDate = async (date, events) => {
+  console.log("date",date,"Evemts",events)
+  try {  
+      const res = await fetch(`/api/activity`, {
+          method: 'PUT',
+          headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify({Date: date, Events: events})
+      })//.then(setTimeout(() => { window.location.reload() }, 200));
+  } catch (error) { console.log("ERROR:",error); }
+}
+
+const createNewActivity = async (date, events) => {
+  try {
+    const res = await fetch(`/api/activity`, {
+        method: 'POST',
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({Date: date, Events: events})
+    })//.then(setTimeout(() => { window.location.reload() }, 200));
+    console.log("date:",date,"res",res);
+  } catch (error) { console.log("ERROR:",error) }
+}
+
+const deleteActivity = async(props) => {
+  let [e,activityCollection,membersCollection,vSession,vMember,existing] = props
+  //console.log("props:",[activityCollection,membersCollection,vSession,vMember,existing])
+  console.log("Attempting to delete an event from the Activities collection...")
+  let date = vSession.badgeOut.slice(0,10)
+  if(existing){ //If deleting an event that exists in the DB
+    let activityDay = activityCollection.find(e => e.Date == date)//Find the correct day inside the activityCollection
+    let remainingEvents = activityDay.Events.filter(event => event._id !== e.target.name)
+    let foundEvent = activityDay.Events.filter(event => event._id == e.target.name)//e.badgeOutTime == vSession.badgeOut && e.badgeInTime == vSession.badgeIn)//Find the correct day inside the activityCollection
+
+    if(foundEvent.length == 1){
+      console.log("Found event, attempting to delete:",foundEvent)
+      updateActivityByDate(date, remainingEvents)
+    } else {
+      let trList = document.getElementsByClassName("tr_event");
+      console.log("ERROR deleting event: couldn't find event")
+    }
+  } else { //If deleting an event that hasn't been added to the DB yet
+    console.log("activity not in DB yet...")
+    //Ensure member is badged out
+    //Check if lastIn time changed
+    vMember.badgedIn = false;
+    updateMemberBadgeInStatus(vMember)
+  }
 }
 
 const badgeInByRFID = async (RFID_UID_input) => {
@@ -164,7 +236,7 @@ const badgeInByRFID = async (RFID_UID_input) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({rfid: RFID_UID_input})
-    });
+    }).then(setTimeout(() => { window.location.reload() }, 200));
     let response = res.json();
     response.then((resp) => {
       console.log(resp.data);
@@ -207,7 +279,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
                   "Content-Type": "application/json"
                 },
                 body: JSON.stringify({Date: prevDate, Events: prevActivityEvents})
-            })
+            }).then(setTimeout(() => { window.location.reload() }, 200));
           } catch (error) { console.log("Error adding to Activity collection.",error) }    
         
           //Move the event to the new day.
@@ -241,7 +313,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({Date: dateStr, Events: DayEventsAfter})
-        })
+        }).then(setTimeout(() => { window.location.reload() }, 200));
         console.log("updateActivityLog(): Success adding event to existing date",dateStr, res);
       } catch (error) { console.log("Error adding to Activity collection.",error) }
     }
@@ -259,7 +331,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
               "Content-Type": "application/json"
           },
           body: JSON.stringify({Date: dateStr, Events: activitiesAfter})
-      })
+      }).then(setTimeout(() => { window.location.reload() }, 200));
       console.log("updateActivityLog(): Success adding event to existing date (ActivityDay)",dateStr);
       
     } catch (error) {
@@ -276,7 +348,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
               "Content-Type": "application/json"
           },
           body: JSON.stringify({Date: dateStr, Events: newActivity})
-      })
+      }).then(setTimeout(() => { window.location.reload() }, 200));
       console.log("updateActivityLog(): Success adding event to new date ",dateStr);
 
 
@@ -300,6 +372,8 @@ export default function Home({ isConnected, members, activity }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
   const [errors, setErrors] = useState({});
+  const [reload, setRelaod] = useState({ reload: 1});
+  const [ActivityId, setActivityId] = useState({});
 
   useEffect(() => {
     if (isSubmitting) {
@@ -398,6 +472,7 @@ export default function Home({ isConnected, members, activity }) {
   }
 
   function Popup(props) {
+    console.log("Popup activity",activity)
     return (
     <>
       <h1 id="badgingOutTitle">Badging out {vMember.Name}...</h1>
@@ -427,7 +502,7 @@ export default function Home({ isConnected, members, activity }) {
           name='badgeOutTime'
         />
         <div className="checkboxes">
-        <p>Machines Utilized:</p>
+        <p>Machines Utilized (Certification Required):</p>
           <div><input type="checkbox" id="FourAxisMill" name="FourAxisMill"/>
           <label htmlFor="FourAxisMill">Four Axis Mill</label></div>
           <div><input type="checkbox" id="BantamMill" name="BantamMill"/>
@@ -450,7 +525,9 @@ export default function Home({ isConnected, members, activity }) {
           <label htmlFor="CircuitDesign">Circuit Design</label></div>
         </div>
 
-        <Button type='submit' id="submitBadgeOutPopup">Submit</Button>
+        <Button type='button' id="deleteActivityButton" onClick={(e) => deleteActivity([e,activity, members, vSession, vMember,false])}></Button>
+
+        <Button type='submit' id="submitBadgeOutPopup">Badge Out</Button>
         <Button type='button' id="cancelPopupButton" onClick={() => closePopup()}>Cancel</Button>
       </Form>
     </>
@@ -559,7 +636,7 @@ export default function Home({ isConnected, members, activity }) {
         />
         
         <div className="checkboxes">
-        <p>Machines Utilized:</p>
+        <p>Machines Utilized (Certification Required):</p>
           <div><input type="checkbox" id="FourAxisMill" name="FourAxisMill" defaultChecked={vSession.machineUtilized.includes("FourAxisMill")}/>
           <label htmlFor="FourAxisMill">Four Axis Mill</label></div>
           <div><input type="checkbox" id="BantamMill" name="BantamMill" defaultChecked={vSession.machineUtilized.includes("BantamMill")}/>
@@ -582,7 +659,10 @@ export default function Home({ isConnected, members, activity }) {
           <label htmlFor="CircuitDesign">Circuit Design</label></div>
         </div>
 
-        <Button type='submit' id="submitBadgeOutPopup">Submit</Button>
+        
+        <Button type='button' name={ActivityId} id="deleteActivityButton" onClick={(e) => deleteActivity([e,activity, members, vSession, vMember, true])}></Button>
+
+        <Button type='submit' id="submitBadgeOutPopup">Update</Button>
         <Button type='button' id="cancelPopupButton" onClick={() => closeEditPopup()}>Cancel</Button>
       </Form>
     </>
@@ -601,31 +681,219 @@ export default function Home({ isConnected, members, activity }) {
     setisOpen(true) //This renders the Popup component
   }
 
-  const updateMemberBadgeInStatus = async (member) => {
-    try {  
-        const res = await fetch(`/api/members/${member._id}`, {
-            method: 'PUT',
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(member)
-        })
-    } catch (error) {
-        console.log(error);
-    }
-  }
-
   const editActivity = async (actEvent) => {
     console.log("editActivity()  actEvent",actEvent)
     editEvent = actEvent;
+    console.log("idddd",actEvent._id)
     vSession = {'badgeIn':actEvent.badgeInTime,'badgeOut':actEvent.badgeOutTime, 'visitType':actEvent.event,"machineUtilized":actEvent.machineUtilized}
     vMember = members.filter(m => m._id == actEvent.MemberID)[0] //save member to global variable
     seteditIsOpen(true) //Open popup
+    setActivityId(actEvent._id)
   }
 
   const certificationList = ['UltimakerCertified', 'GlowforgeCertified', 'FourAxisMillCertified', 'BantamMillCertified', 'P9000Certified', 'SewingCertified', 'SilhouetteCertified', 'FusionCertified', 'VectorCADCertified', 'CircuitDesignCertified'];
   const certificationNames = ['Ultimaker','Glowforge','Four Axis Mill', 'Bantam Mill', 'P9000', 'Sewing', 'Silhouette', 'Fusion', 'VectorCAD', 'CircuitDesign'];
+
+  class VisitType extends React.Component{
+    render(){
+      return(
+        <>
+          <div id="visitType" style={{"display":"flex"}}>
+            <label htmlFor="event">Visit Type: </label>
+            <select name="event">
+              <option value="Undefined">Undefined</option>
+              <option value="Individual">Individual</option>
+              <option value="Certification">Certification</option>
+              <option value="Class">Class</option>
+              <option value="Quick Visit">Quick Visit</option>
+              <option value="Staff on Duty">Staff on Duty</option>
+              <option value="Event">Event</option>
+            </select>
+          </div>
+        </>
+      )
+    }
+  }
+
+  class MachinesUtilized extends React.Component{
+    constructor(props){
+      super(props);
+      this.state = {
+        machines: [] //List of machines utilize
+      }
+    }
+
+    updateState = (e) => {
+      let machinesInUse = this.state.machines
+      if (e.target.checked){
+        machinesInUse.push(e.target.id)
+      } else { 
+        machinesInUse = machinesInUse.filter(m => m !== e.target.id)
+        this.setState({"machines":machinesInUse})
+      }      
+    }
+
+    render(){
+      return(
+        <>
+          <div onClick={this.updateState} className="checkboxes">
+            <p>Machines Utilized (Certification Required):</p>
+            <fieldset id="machinesUtilized" style={{"display": "inline-block","position": "relative","textAlign": "initial","float":"left","border":"none"}}>
+              <input type="checkbox" id="FourAxisMill" name="FourAxisMill"/>
+              <label htmlFor="FourAxisMill">Four Axis Mill</label><br/>
+              <input type="checkbox" id="BantamMill" name="BantamMill"/>
+              <label htmlFor="BantamMill">Bantam Mill</label><br/>
+              <input type="checkbox" id="Glowforge" name="Glowforge"/>
+              <label htmlFor="Glowforge">Glowforge</label><br/>
+              <input type="checkbox" id="P9000" name="P9000"/>
+              <label htmlFor="P9000">P9000</label><br/>
+              <input type="checkbox" id="Sewing" name="Sewing"/>
+              <label htmlFor="Sewing">Sewing</label><br/>
+              <input type="checkbox" id="Silhouette" name="Silhouette"/>
+              <label htmlFor="Silhouette">Silhouette</label><br/>
+              <input type="checkbox" id="Ultimaker" name="Ultimaker"/>
+              <label htmlFor="Ultimaker">Ultimaker</label><br/>
+              <input type="checkbox" id="Fusion" name="Fusion"/>
+              <label htmlFor="Fusion">Fusion</label><br/>
+              <input type="checkbox" id="VectorCAD" name="VectorCAD"/>
+              <label htmlFor="VectorCAD">Vector CAD</label><br/>
+              <input type="checkbox" id="CircuitDesign" name="CircuitDesign"/>
+              <label htmlFor="CircuitDesign">Circuit Design</label>
+            </fieldset>
+           </div>
+        </>
+      )
+    }
+  }
+
+  class BadgeInForgotIDPopUp extends React.Component{
+    constructor(props){
+      super(props);
+      this.togglePopup = this.props.togglePopup.bind(this);
+      this.state = {
+        members: [0], //An array whose number of elements corresponds to the number of members being badged in.
+      }
+    }
+
+    numOfMembersChanged(){
+      let numMembersInput = document.getElementById("numMembersToBadgeIn")
+      let arr = Array.from(Array(parseInt(numMembersInput.value)).keys())
+      this.setState({members:arr});
+    }
+
+    onSubmit(){
+      let badgeInAndCreateEvent = document.getElementById("createEventCheckbox").checked
+      let badgeInInput = document.getElementById("badgeInInput")
+      let badgeOutInput = document.getElementById("badgeOutInput")
+      if(badgeInAndCreateEvent){ //If the checkbox is selected create entries in the activities collection
+        let numMembers = document.getElementById("numMembersToBadgeIn").value
+        for(let i=0; i<numMembers; i++){
+          let todaysActivities = activity.filter(a => a.Date==badgeInInput.value.slice(0,10))[0]
+          let searchedTodaysActivities = todaysActivities
+          if (typeof(todaysActivities) == "undefined"){ //No events found
+            console.log("No events found for this day.")
+            let todaysEvents = [] //Create an empty array to append events to
+            todaysActivities = {
+              "Date": badgeInInput.value,
+              "Events": todaysEvents
+            }
+          } else { 
+            let todaysEvents = todaysActivities.Events
+          }
+          //Create New Event
+          //for(let i=0; i< document.getElementById("numMembersToBadgeIn").value; i++){
+            let memberToAppend = document.getElementById("member"+i).value
+            let sessionLengthMinutes = Math.round(new Date(badgeOutInput.value) - new Date(badgeInInput.value))/60000
+
+            //Get Machines Utilized
+            let f = document.getElementById("machinesUtilized").children;
+            let machinesUtilized = []
+            for(let i=0;i<f.length;i++){
+              if(f[i].checked){ machinesUtilized.push(f[i].name) }
+            }
+
+            let eventToAppend = { 
+              "Name": memberToAppend,
+              "badgeInTime" : badgeInInput.value,
+              "badgeOutTime" : badgeOutInput.value,
+              "event": document.getElementsByName("event")[0].value,
+              "machineUtilized": machinesUtilized,
+              "sessionLengthMinutes": sessionLengthMinutes
+            }
+            todaysActivities.Events.push(eventToAppend)
+          //}
+        }
+        if (typeof(searchedTodaysActivities) == "undefined"){ //No events found
+          console.log("Creating new Activity...");
+          createNewActivity(badgeInInput.value.slice(0,10), todaysEvents);
+        } else {
+          console.log("Appending events to existing Activity... date:",badgeInInput.value.slice(0,10));
+          updateActivityByDate(badgeInInput.value.slice(0,10), todaysActivities.Events);
+        }        
+        //document.getElementById("enterInfoNoID").remove()  //Close this component
+      } else { //If the checkbox is not selected badge the members in, an entry to the activities collection will be made upon badge out.
+        console.log("ELSE")
+      }
+    }
+
+    render(){
+      let todaysDate = new Date().toISOString().slice(0,19);
+      return(
+        <>
+          <section id="enterInfoNoID" className="backEndPopUp">
+            <div>
+              <p style={{"display": "inline"}}>Members: </p>
+              <input type="number" min="1" max="35" defaultValue="1" id="numMembersToBadgeIn" onChange={this.numOfMembersChanged.bind(this)} style={{"display": "inline"}}></input>
+            </div>
+            <VisitType/>
+            <label className="enterInfoLabelFixed" htmlFor="badgeInTime">Badged In:
+              <input defaultValue={todaysDate} name="badgeInTime" id="badgeInInput"></input>
+            </label>
+            <label className="enterInfoLabelFixed" htmlFor="badgeOutTime">Badged Out: 
+              <input defaultValue={todaysDate} name="badgeOutTime" id="badgeOutInput"></input>
+            </label>
+            <MachinesUtilized/>
+            <button type="button" onClick={this.togglePopup} style={{"width": "10ch","left":"0","bottom":"0","position":"absolute"}}>Close</button>
+            <button type="button" onClick={ this.onSubmit } style={{"width": "10ch","right":"0","bottom":"0","position":"absolute"}}>Submit</button>
+            {this.state.members.map((char) =>
+              <label className="enterInfoLabel" htmlFor={"member"+char} style={{"marginBottom":"4px"}}>Name:
+                <input type="text" id={"member"+char} defaultValue={"Unknown Member"} style={{"display":"inline-block", "position":"absolute", "left":"7ch", "width": "30ch"}}></input>
+              </label>
+            )}
+            <label className="enterInfoLabel" htmlFor="createEventCheckbox">Badge Out and Create Event?
+              <input type="checkbox" id="createEventCheckbox" name="createEventCheckbox"></input>
+            </label>
+          </section>
+        </>
+      )
+    }
+  }
+
+  class BadgeInForgotIDButton extends React.Component{
+    constructor(props){
+      super(props);
+      this.state = {
+        showPopup: false
+      }
+      this.togglePopup = this.togglePopup.bind(this);
+    }
+
+    togglePopup(){
+      this.setState({showPopup: !this.state.showPopup});
+    }
+
+    render(){
+      return(
+        <>
+          <button onClick={this.togglePopup.bind(this)} type="button">Forgot ID</button>
+          {this.state.showPopup ? 
+            <BadgeInForgotIDPopUp togglePopup={this.togglePopup}/>
+            : <div></div>
+          }
+        </>
+      )
+    }
+  }
 
   class SearchMemberBadgeIn extends React.Component{
     constructor(props){
@@ -683,9 +951,10 @@ export default function Home({ isConnected, members, activity }) {
     render(){
       return(
         <>
-        <div style={{"text-align": "center"}}>
+        <div style={{"textAlign": "center"}}>
         <p style={{display: "inline"}}>Badge someone in: </p>
         <input onFocus={this.onFocus.bind(this)} onBlur={this.onBlur.bind(this)} onKeyUpCapture={this.onKeyUpCapture.bind(this)} id='searchMemberBadgeIn'></input> 
+        <BadgeInForgotIDButton/>
         {this.state.showResults && this.state.results.length > 0 ? 
           <SearchResults handleSelect={this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
           :  <div></div> }
@@ -740,18 +1009,19 @@ export default function Home({ isConnected, members, activity }) {
     }
     
     render() {
-      function getActivites(){
+      function getTodaysActivities(){
         let activities = activity.filter(act => act.Date == dateStr);
-        console.log("getActivities():",activities)
+        console.log("getTodaysActivities():",activities)
         return activities
       }
 
       let dateStr = GlobalRecentActivityDate.toISOString().substring(0,10)
       let currDate = GlobalRecentActivityDate
-      let todayActivity = getActivites();
+      let todayActivity = getTodaysActivities();
+      console.log("todayActivity",todayActivity)
 
       function updateActivitiesToDOM(activities){
-        let recentActivitiesTBody = document.querySelectorAll('tbody')[1]
+        let recentActivitiesTBody = document.getElementById("recentActivityTbody")
         while (recentActivitiesTBody.firstChild) { //remove all child elements
           recentActivitiesTBody.removeChild(recentActivitiesTBody.firstChild);
         }
@@ -768,6 +1038,7 @@ export default function Home({ isConnected, members, activity }) {
           for (let i=0; i < activities[0].Events.length;i++){
             let tr = document.createElement("tr")
             tr.key = "event_"+String(i)
+            tr.className = "tr_event";
             let td_Name = document.createElement("td");
             td_Name.innerText = activities[0].Events[i].Name;
             td_Name.addEventListener('mouseenter', e => { hover([activities[0].Events[i].MemberID,e]) });
@@ -800,7 +1071,7 @@ export default function Home({ isConnected, members, activity }) {
         let dateEDTStr = toEDTString(currDate)
         dateStr = dateEDTStr.substring(0,10) //YYYY-MM-DD
         document.getElementById("date").innerText=dateStr;
-        let activities = getActivites();
+        let activities = getTodaysActivities();
         updateActivitiesToDOM(activities);
         GlobalRecentActivityDate = currDate;
       }
@@ -819,8 +1090,8 @@ export default function Home({ isConnected, members, activity }) {
               <th>Edit Activity</th>
             </tr>
           </thead>
-          <tbody>
-          {todayActivity.length == 0 ? (
+          <tbody id="recentActivityTbody">
+          { todayActivity.length == 0 ? ( //Sometimes todayActivity is [] (a blank array). Sometimes it is [{"Events":[]}]. 
             <tr key={"noEvents_tr"}>
               <td colSpan="3" id="noEvents">No events today.</td>
             </tr>
@@ -831,9 +1102,9 @@ export default function Home({ isConnected, members, activity }) {
                 <td>{actEvent.event}</td>
                 <td>
                   {actEvent.event == "Undefined" ? (
-                    <Button type='button' className="addInfoAttn" onClick={() => editActivity(actEvent)}>Add Info</Button>
+                    <Button type='button' id={"b_"+actEvent._id} className="addInfoAttn" onClick={() => editActivity(actEvent)}>Add Info</Button>
                   ) : (
-                    <Button type='button' className="addInfo" onClick={() => editActivity(actEvent)}>Add Info</Button>
+                    <Button type='button' id={"b_"+actEvent._id} className="addInfo" onClick={() => editActivity(actEvent)}>Add Info</Button>
                   )}</td>
               </tr>))
           )}
@@ -867,7 +1138,7 @@ export default function Home({ isConnected, members, activity }) {
       
       {isOpen ? (
         <React.Fragment>
-          <section className="badgeOutPopUp">
+          <section className="backEndPopUp">
             <Popup/>
           </section>
         </React.Fragment>
@@ -877,7 +1148,7 @@ export default function Home({ isConnected, members, activity }) {
 
       {editIsOpen ? (
         <React.Fragment>
-          <section className="badgeOutPopUp">
+          <section className="backEndPopUp">
             <EditPopup new={true}/>
           </section>
         </React.Fragment>
@@ -885,14 +1156,9 @@ export default function Home({ isConnected, members, activity }) {
         <div></div>
       )}
 
-      <section class="fit">
+      <section className="fit">
         {members.filter(member => member.badgedIn == true).length == 0 ? (
-          <p style={{"text-align":"center"}}>No one badged in...</p>
-          /*<tbody>
-            <tr>
-              <td className="noMembersIn" colSpan="12">No one badged in...</td>
-            </tr>
-          </tbody>*/
+          <p style={{"textAlign":"center"}}>No one badged in...</p>
         ) : (
           <>
             <table>
@@ -927,7 +1193,7 @@ export default function Home({ isConnected, members, activity }) {
         )}
         <SearchMemberBadgeIn members={members}></SearchMemberBadgeIn>
       </section>
-      <section id="recentActivity" class="fit">
+      <section id="recentActivity" className="fit">
         <RecentActivity></RecentActivity>
       </section>
       <h3>Bugs:</h3>
@@ -941,9 +1207,11 @@ export default function Home({ isConnected, members, activity }) {
       <h3>Next up:</h3>
       <ul>
         <li>Add button machine, VR to tools list under Other Tools</li>
-        <li>Search function gives additional info on the student. What certs, rfid uid, etc.</li>
-        <li>Add a delete button to the editActivityPopUp</li>
-        <li>Change failed badge in message. Remove "Failed search". Change colors? Maybe, 'New Member? n/ Register [button]' Already Signed Up?, Try scanning again</li>
+        <li>Add button to badgeIn allowing members to make accounts w/o an ID. We should flag all no id members w/ the same RFID_UID. They can select from the list of all accounts to badgeIn if they made an account already.</li>
+        <li>Add button to backEnd allowing us to create activity entries w/o a RFID_UID for members who didn't use the badgeSystem</li>
+        <li>Change "badge someone in..." to "search members". Have the badgeIn button in addition to info which gives What certs, rfid uid, etc.</li>
+        <li style={{textDecoration: "line-through"}}>Add a delete button to the editActivityPopUp</li>
+        <li style={{textDecoration: "line-through"}}>Change failed badge in message. Remove "Failed search". Change colors? Maybe, 'New Member? n/ Register [button]' Already Signed Up?, Try scanning again</li>
         <li>Add Homework/ClassProj to VisitType</li>
         <li>Prevent members from accessing this page (the backend)</li>
         <li>Auto update index page (using state changes)</li>

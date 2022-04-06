@@ -22,7 +22,7 @@ th > div > span {
     padding: 5px 10px;
 }
 
-section.badgeOutPopUp{
+section.backEndPopUp{
     background-color: lightskyblue;
     display: flex;
     flex-direction: column;
@@ -32,6 +32,20 @@ section.badgeOutPopUp{
     border-radius: 15px;
     margin: 4%;
     z-index: 1;
+}
+
+input#badgeInInput, input#badgeOutInput{ 
+    width: 24ch;
+    position: absolute;
+    left: 12ch;
+}
+
+.enterInfoLabel{ width: fit-content; }
+
+.enterInfoLabelFixed{ 
+    width: 24ch;
+    width: fit-content;
+    margin-bottom: 5px;
 }
 
 a.close-button::before{
@@ -144,6 +158,18 @@ a#activitiesForward:after,a#activitiesBackward:after {
 a#activitiesBackward:after{ 
     content:'\1F844';
     left: 10ch;
+}
+
+button#deleteActivityButton{
+    top: 5px;
+    position: absolute;
+    right: 5px;
+}
+
+button#deleteActivityButton:after{
+    content: '\1F5D1';
+    font-size: 35px;
+    color: black;
 }
 /* End Recent Activity */
 
@@ -313,6 +339,12 @@ p.popupMsg{
     font-size: 3vw;
     font-weight: 700;
 }
+
+p.helpMsg{
+    text-align: center;
+    font-size: 2vw;
+    font-weight: 700;
+}
 /* End badge in popup CSS */
 
 div.badgeIn{
@@ -371,6 +403,11 @@ a#newMemberButton{
     border-radius: 1vw;
     background: lightblue;
     color: mediumblue;
+    text-decoration: none;
+}
+
+a#newMemberButton:hover{
+    background: #93b7c3;
 }
 
 input#badgeInTextInput{

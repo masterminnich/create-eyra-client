@@ -7,7 +7,7 @@ import Activity from '../../../models/Activity';
 // Initialize the cors middleware. You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
 const cors = initMiddleware(
    Cors({
-    methods: ['GET', 'POST', 'OPTIONS', "PUT", "DELETE"], // Only allow requests with GET, POST and OPTIONS
+    methods: ['GET', 'POST', 'OPTIONS', "PUT"], // Only allow requests with GET, POST and OPTIONS
   })
 )
 
@@ -48,9 +48,12 @@ export default async function handler(req, res) {
         case 'PUT':
             let dateToSearch = req.body.Date
             let eventsToAdd = req.body.Events
+            console.log("dateToSearch",dateToSearch)
 
             const activityFound = await Activity.find({Date: dateToSearch}) //Fetches the old activites for this day
-            
+            console.log("activityFound",activityFound)
+
+
             // Assuming Events already exist for this date... Find the events for that day and replace with request body.
             try {
                 let activitiesAfter = await Activity.findByIdAndUpdate(activityFound[0]._id, {id: activityFound[0]._id, Date: dateToSearch, Events: eventsToAdd}, {
@@ -59,7 +62,7 @@ export default async function handler(req, res) {
                 });
                 res.status(201).json({ success: true, date: dateToSearch, found: activityFound, after: activitiesAfter, toAdd: eventsToAdd })
             } catch (error) {
-                console.log("fail")
+                console.log("ERROR:",error)
                 res.status(400).json({ success: false })
             }
 

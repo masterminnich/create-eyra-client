@@ -104,8 +104,12 @@ function createPopUp(msg,code){
     let newLink = "newMember?rfid=" + last_RFID_UID_input.toString()
     a.href=newLink
     a.id="newMemberButton"
-    a.innerText="New Member Sign-Up"
+    a.innerText="Register"
     d.appendChild(a);
+    const helpMsg = document.createElement("p")
+    helpMsg.innerText = "Already registered? Ask makerspace staff for assistance."
+    helpMsg.className = "helpMsg"
+    d.appendChild(helpMsg);
   }
   RFID_UID_input=""
   if(code == "twohundred"){
@@ -141,11 +145,11 @@ const searchForRFID = async (RFID_UID_input) => {
             console.log("searchForRFID(): resp.data:",resp.data)
 
             if (res.status == 406){ 
-                let fullMsg = "Search failed. More than one user share this RFID."
+                let fullMsg = "Search failed. Multiple members with same RFID." //Already registered? Ask makerspace staff for assistance.
                 console.log(fullMsg);
                 createPopUp(fullMsg,"fourohsix")
             } else if (res.status == 404){
-                let fullMsg = "Search failed. No member with this RFID."
+                let fullMsg = "New member? Create an account!"
                 console.log(fullMsg);
                 createPopUp(fullMsg,"fourohfour")
             } else if (res.status == 200) {

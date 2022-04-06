@@ -7,7 +7,7 @@ import Member from '../../../models/Member';
 // Initialize the cors middleware. You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
 const cors = initMiddleware(
    Cors({
-    methods: ['GET', 'POST', 'OPTIONS', "PUT", "DELETE"], // Only allow requests with GET, POST and OPTIONS
+    methods: ['GET', 'POST', 'OPTIONS', "PUT"], // Only allow requests with GET, POST and OPTIONS
   })
 )
 

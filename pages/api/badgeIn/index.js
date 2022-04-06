@@ -60,9 +60,9 @@ const updateMemberBadgeInStatus = async (member) => {
                 runValidators: true
             });
 
-            /*if (!member) {
+            if (!member2) {
                 return res.status(400).json({ success: false });
-            }*/
+            }
             if (member.badgedIn){ 
                 console.log(member2.Name,"badged in!"); 
             } else { 
