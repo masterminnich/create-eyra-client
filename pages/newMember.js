@@ -77,7 +77,7 @@ const updateActivityLog = async (activities, newMemberData) => {
 const NewMember = () => {
 
     const router = useRouter();
-    const majorsList = ["Choose a Major...","N/A","Undecided","Accounting","Anthropology and Geography","Art History","Art Studio","Biochemistry","Biology","Chemistry","Communication","Computer Science","Digital Culture and Design","Early Childhood Education","Economics","Elementary Education","Engineering Science","English","Exercise and Sport Science","Finance","Graphic Design","Health Administration Completion Program","History","Hospitality, Resort and Tourism Management","Information Systems","Information Technology","Intelligence and National Security Studies","Interdisciplinary Studies","Languages and Intercultural Studies","Management","Marine Science","Marketing","Mathematics (Applied)","Middle Level Education","Music","Musical Theatre","Nursing BSN","Nursing 2+2 Residential Bridge Program","PGA Golf Management Program","Philosophy","Physical Education/Teacher Education","Physics, Applied","Political Science","Psychology","Public Health","Recreation and Sport Management","Sociology","Special Education - Multicategorical","Theatre Arts"];  // https://www.coastal.edu/admissions/programs/
+    const majorsList = ["Choose a Major...","N/A","Undecided","Accounting","Anthropology and Geography","Art History","Art Studio","Biochemistry","Biology","Chemistry","Communication","Computer Science","Digital Culture and Design","Early Childhood Education","Economics","Elementary Education","Engineering Science","English","Exercise and Sport Science","Finance","Graphic Design","Health Administration Completion Program","History","Hospitality, Resort and Tourism Management","Information Systems","Information Technology","Intelligence and National Security Studies","Interdisciplinary Studies","Languages and Intercultural Studies","Management","Marine Science","Marketing","Mathematics (Applied)","Middle Level Education","Music","Musical Theatre","Nursing BSN","Nursing 2+2 Residential Bridge Program","PGA Golf Management Program","Philosophy and Religious Studies","Physical Education/Teacher Education","Physics, Applied","Political Science","Psychology","Public Health","Recreation and Sport Management","Sociology","Special Education - Multicategorical","Theatre Arts"];  // https://www.coastal.edu/admissions/programs/
 
     //Convert UTC to local time
     let currDate = new Date();
@@ -236,15 +236,16 @@ const NewMember = () => {
                         <div className="formComponent" id="formName">
                             <Form.Input
                                 fluid
-                                error={errors.name ? { content: 'Please enter a name', pointing: 'below' } : null}
-                                label='Full Name:'
+                                error={errors.Name ? { content: 'Please enter a name', pointing: 'left' } : null}
+                                style={ errors.Name ? { border:"red solid" } : {  }}
+                                label='Full Name: '
                                 placeholder='Name'
                                 name='Name'
                                 id="NameInput"
                                 onChange={handleChange}
                             />
                         </div>
-                        <div className="formComponent" id="formRadios">
+                        <div className="formComponent" id="formRadios" style={ errors.PatronType ? { border:"red solid" } : {  }}>
                             <Form.Radio
                                 label="Student"
                                 value="Student"
@@ -272,7 +273,7 @@ const NewMember = () => {
                         </div>
                         <div className="formComponent" id="formMajor">
                             <label htmlFor="Major">Major:</label>
-                            <select name="Major" onChange={handleSelectMajor}>
+                            <select name="Major" onChange={handleSelectMajor} style={ errors.Major ? { border:"red solid" } : {  }}>
                                 {majorsList.map((major) => (
                                     <option key={major} value={major}>{major}</option>
                                 ))}
@@ -280,7 +281,7 @@ const NewMember = () => {
                         </div>
                         <div className="formComponent" id="formGrad">
                             <label htmlFor="GraduationYear">Graduation Year: </label>
-                            <select name="GraduationYear" onChange={handleSelect}>
+                            <select name="GraduationYear" onChange={handleSelect} style={ errors.GraduationYear ? { border:"red solid" } : {  }}>
                                 <option value="N/A">N/A</option>
                                 <option value="2022">2022</option>
                                 <option value="2023">2023</option>

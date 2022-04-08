@@ -455,6 +455,8 @@ div.formComponent div input#NameInput, div.formComponent select{
     position: relative;
 }
 
+input#NameInput{ position: sticky !important; }
+
 div#formName, div#formRadios, div#formMajor, div#formGrad{
     display: inline-flex;
     justify-content: center;

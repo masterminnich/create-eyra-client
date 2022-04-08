@@ -169,7 +169,6 @@ const updateMemberBadgeInStatus = async (member) => {
       },
       body: JSON.stringify(member)
     }).then(setTimeout(() => { window.location.reload() }, 200));
-    //.then(window.location.reload(true));
   } catch (error) { console.log("ERROR:",error); }
 }
 
@@ -183,7 +182,7 @@ const updateActivityByDate = async (date, events) => {
               "Content-Type": "application/json"
           },
           body: JSON.stringify({Date: date, Events: events})
-      })//.then(setTimeout(() => { window.location.reload() }, 200));
+      }).then(setTimeout(() => { window.location.reload() }, 200));
   } catch (error) { console.log("ERROR:",error); }
 }
 
@@ -295,15 +294,16 @@ const updateActivityLog = async (activity, newActivity, existing) => {
       let DayEvents = ActivityDay.Events.filter(a => a._id !== editEvent._id) //Remove the event from the ActivityDaily document so we can add it back in.
       let DroppedEvent = ActivityDay.Events.filter(a => a._id == editEvent._id) //Remove the event from the ActivityDaily document so we can add it back in.
       let DayEventsAfter = DayEvents.concat(newActivity); //All events from the day.
-      console.log("keepEvents",keepEvents,"DayEventsAfter",DayEventsAfter)
 
       //update Member Session.  Search vMember for prevBadgeInTime, then drop that session and save back to vMember
       const prevBadgeInTime = String(editEvent["badgeOutTime"]);//DroppedEvent[0].badgeInTime);
-      let keepEvents = vMember.sessions.filter(vm => vm.badgeIn !== prevBadgeInTime)
-      let droppedEvent = vMember.sessions.filter(vm => vm.badgeIn == prevBadgeInTime)
-      let newSession = {badgeInTime: newActivity.badgeInTime, badgeOutTime: newActivity.badgeOutTime, sessionLengthMinutes: newActivity.sessionLengthMinutes}
-      vMember.sessions = keepEvents
-      //console.log("prevBadgeInTime",prevBadgeInTime,"keepEvents",keepEvents)
+      if(typeof(vMember)!=="undefined"){ //Check to make sure vMember exists. This value is undefined while editing events from unknown members.
+        let keepEvents = vMember.sessions.filter(vm => vm.badgeIn !== prevBadgeInTime)
+        let droppedEvent = vMember.sessions.filter(vm => vm.badgeIn == prevBadgeInTime)
+        let newSession = {badgeInTime: newActivity.badgeInTime, badgeOutTime: newActivity.badgeOutTime, sessionLengthMinutes: newActivity.sessionLengthMinutes}
+        vMember.sessions = keepEvents
+        console.log("keepEvents",keepEvents,"DayEventsAfter",DayEventsAfter)
+      }
 
       try {
         const res = await fetch(`/api/activity`, {
@@ -372,8 +372,8 @@ export default function Home({ isConnected, members, activity }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
   const [errors, setErrors] = useState({});
-  const [reload, setRelaod] = useState({ reload: 1});
   const [ActivityId, setActivityId] = useState({});
+  const [ActivityName, setActivityName] = useState({});
 
   useEffect(() => {
     if (isSubmitting) {
@@ -419,6 +419,33 @@ export default function Home({ isConnected, members, activity }) {
     //console.log("(debug) e:",e.target)
 
     return err;
+  }
+
+  class VisitType extends React.Component{
+    constructor(props){
+      super(props);
+      this.selectValue = this.props.selectValue;
+    }
+    
+    render(){
+      return(
+        <>
+          <div id="visitType" style={{"display":"flex"}}>
+            <label htmlFor="event">Visit Type: </label>
+            <select defaultValue={this.selectValue} name="event">
+              <option value="Undefined">Undefined</option>
+              <option value="Individual">Personal Project</option>
+              <option value="Certification">Certification</option>
+              <option value="Homework / Class Project">Homework / Class Project</option>
+              <option value="Class">Class</option>
+              <option value="Event">Event</option>
+              <option value="Quick Visit">Quick Visit</option>
+              <option value="Staff on Duty">Staff on Duty</option>
+            </select>
+          </div>
+        </>
+      )
+    }
   }
 
   const handleSubmit = (e) => {
@@ -477,18 +504,7 @@ export default function Home({ isConnected, members, activity }) {
     <>
       <h1 id="badgingOutTitle">Badging out {vMember.Name}...</h1>
       <Form onSubmit={handleSubmit}>
-        <div id="visitType">
-          <label htmlFor="event">Visit Type: </label>
-          <select name="event">
-            <option value="Undefined">Undefined</option>
-            <option value="Individual">Individual</option>
-            <option value="Certification">Certification</option>
-            <option value="Class">Class</option>
-            <option value="Quick Visit">Quick Visit</option>
-            <option value="Staff on Duty">Staff on Duty</option>
-            <option value="Event">Event</option>
-          </select>
-        </div>
+        <VisitType/>
         <Form.Input
           label='Badged In: '
           placeholder={toEDTString(new Date(vSession.badgeIn)).substring(0,19)}
@@ -536,28 +552,30 @@ export default function Home({ isConnected, members, activity }) {
 
   useEffect(() => {
     if (isSubmittingEdit) {
-        if (Object.keys(errors).length === 0) {
-          //Find and replace activity.
-          let activityID = editEvent._id
+      if (Object.keys(errors).length === 0) {
+        //Find and replace activity.
+        let activityID = editEvent._id
 
-          updateActivityLog(activity,Editform,activityID);
-          console.log("Updating activity from DB:",Editform)
-          //console.log("activity",activity,"Editform",Editform,"members",members)
+        console.log("Updating activity from DB:",Editform)
+        updateActivityLog(activity,Editform,activityID);
+        //console.log("activity",activity,"Editform",Editform,"members",members)
 
-          //Find and replace member session.
-          let foundMember = members.filter(member => member._id == Editform.MemberID)[0]
+        //Find and replace member session.
+        let foundMemberList = members.filter(member => member._id == Editform.MemberID)
+        if(foundMemberList.length == 1){ //Make sure only one member fits the search. This will fail if the member is unknown (they aren't in the members collection)
+          let foundMember = foundMemberList[0] 
           let newSession = {'badgeIn': Editform.badgeInTime, 'badgeOut':Editform.badgeOutTime, 'sessionLengthMinutes': Editform.sessionLengthMinutes};
           let foundSessions = foundMember.sessions.filter(fmem => fmem.badgeOut !== Editform.prevBadgeOutTime)
           foundMember.sessions = foundSessions.concat(newSession);
           foundMember.lastBadgeIn = Editform.badgeOutTime;
-          console.log("form",Editform)
           let memberEnsured = ensureCertifications(Editform, foundMember)
           updateMemberBadgeInStatus(memberEnsured);
         }
-        else {
-            setIsSubmittingEdit(false);
-            console.log("Error submitting form.",errors)
-        }
+      }
+      else {
+        setIsSubmittingEdit(false);
+        console.log("Error submitting form.",errors)
+      }
     }
   }, [errors])
 
@@ -575,7 +593,6 @@ export default function Home({ isConnected, members, activity }) {
       badgedInTime = e.target.badgeInTime.placeholder
     } else { 
       badgedInTime = e.target.badgeInTime.value 
-      console.log("badged in",badgedInTime)
     }
     if (e.target.badgeOutTime.value == ""){
       badgedOutTime = e.target.badgeOutTime.placeholder
@@ -586,11 +603,21 @@ export default function Home({ isConnected, members, activity }) {
     let inDate = new Date(badgedInTime);
     let sessionLengthMinutes = Math.round(outDate - inDate)/60000  
 
+
+    let memberName = ""; let memberID = "";
+    if(typeof(vMember)=="undefined"){ //If vMember.Name doesn't exist. (This happens when editing events of Unknown Members)
+      memberName = ActivityName;
+      memberID = ActivityId;
+    }else{ 
+      memberName = vMember.Name;
+      memberID = vMember['_id'];
+    }
+
     setEditForm({
       ...Editform,
       ["event"]: e.target.event.value,
-      ["Name"]: vMember.Name,
-      ['MemberID']: vMember['_id'],
+      ["Name"]: memberName,
+      ['MemberID']: memberID,
       ["badgeOutTime"]: badgedOutTime,
       ["badgeInTime"]: badgedInTime,
       ["sessionLengthMinutes"]: sessionLengthMinutes,
@@ -601,7 +628,7 @@ export default function Home({ isConnected, members, activity }) {
     let errs = validate(e);
     setErrors(errs);
     setIsSubmittingEdit(true);
-    seteditIsOpen(false) //This renders the Popup component
+    seteditIsOpen(false) //This closes the component
   }
 
   function EditPopup(props) {
@@ -609,19 +636,7 @@ export default function Home({ isConnected, members, activity }) {
     <>
       <h1 id="badgingOutTitle">Editing Activity</h1>
       <Form onSubmit={handleEditSubmit}>
-        <div id="visitType">
-          <label htmlFor="event">Visit Type: </label>
-          <select name="event">
-            <option value={vSession.visitType}>{vSession.visitType}</option>
-            <option value="Undefined">Undefined</option>
-            <option value="Individual">Individual</option>
-            <option value="Certification">Certification</option>
-            <option value="Class">Class</option>
-            <option value="Quick Visit">Quick Visit</option>
-            <option value="Staff on Duty">Staff on Duty</option>
-            <option value="Event">Event</option>
-          </select>
-        </div>
+        <VisitType selectValue={vSession.visitType}/>
         <Form.Input
           label='Badged In: '
           placeholder={toEDTString(new Date(vSession.badgeIn)).substring(0,19)}
@@ -684,36 +699,15 @@ export default function Home({ isConnected, members, activity }) {
   const editActivity = async (actEvent) => {
     console.log("editActivity()  actEvent",actEvent)
     editEvent = actEvent;
-    console.log("idddd",actEvent._id)
     vSession = {'badgeIn':actEvent.badgeInTime,'badgeOut':actEvent.badgeOutTime, 'visitType':actEvent.event,"machineUtilized":actEvent.machineUtilized}
     vMember = members.filter(m => m._id == actEvent.MemberID)[0] //save member to global variable
     seteditIsOpen(true) //Open popup
     setActivityId(actEvent._id)
+    setActivityName(actEvent.Name)
   }
 
   const certificationList = ['UltimakerCertified', 'GlowforgeCertified', 'FourAxisMillCertified', 'BantamMillCertified', 'P9000Certified', 'SewingCertified', 'SilhouetteCertified', 'FusionCertified', 'VectorCADCertified', 'CircuitDesignCertified'];
   const certificationNames = ['Ultimaker','Glowforge','Four Axis Mill', 'Bantam Mill', 'P9000', 'Sewing', 'Silhouette', 'Fusion', 'VectorCAD', 'CircuitDesign'];
-
-  class VisitType extends React.Component{
-    render(){
-      return(
-        <>
-          <div id="visitType" style={{"display":"flex"}}>
-            <label htmlFor="event">Visit Type: </label>
-            <select name="event">
-              <option value="Undefined">Undefined</option>
-              <option value="Individual">Individual</option>
-              <option value="Certification">Certification</option>
-              <option value="Class">Class</option>
-              <option value="Quick Visit">Quick Visit</option>
-              <option value="Staff on Duty">Staff on Duty</option>
-              <option value="Event">Event</option>
-            </select>
-          </div>
-        </>
-      )
-    }
-  }
 
   class MachinesUtilized extends React.Component{
     constructor(props){
@@ -759,6 +753,43 @@ export default function Home({ isConnected, members, activity }) {
               <label htmlFor="VectorCAD">Vector CAD</label><br/>
               <input type="checkbox" id="CircuitDesign" name="CircuitDesign"/>
               <label htmlFor="CircuitDesign">Circuit Design</label>
+            </fieldset>
+           </div>
+        </>
+      )
+    }
+  }
+
+  class OtherToolsUtilized extends React.Component{
+    constructor(props){
+      super(props);
+      this.state = {
+        machines: [] //List of machines utilize
+      }
+    }
+
+    updateState = (e) => {
+      let machinesInUse = this.state.machines
+      if (e.target.checked){
+        machinesInUse.push(e.target.id)
+      } else { 
+        machinesInUse = machinesInUse.filter(m => m !== e.target.id)
+        this.setState({"machines":machinesInUse})
+      }      
+    }
+
+    render(){
+      return(
+        <>
+          <div onClick={this.updateState} className="checkboxes">
+            <p>Other Tools Utilized (No Certification Required):</p>
+            <fieldset id="otherToolsUtilized" style={{"display": "inline-block","position": "relative","textAlign": "initial","float":"left","border":"none"}}>
+              <input type="checkbox" id="3DScanner" name="3DScanner"/>
+              <label htmlFor="3DScanner">3DScanner</label><br/>
+              <input type="checkbox" id="ButtonPress" name="ButtonPress"/>
+              <label htmlFor="ButtonPress">ButtonPress</label><br/>
+              <input type="checkbox" id="VR/3DCamera" name="VR/3DCamera"/>
+              <label htmlFor="VR/3DCamera">VR/3DCamera</label><br/>
             </fieldset>
            </div>
         </>
@@ -821,7 +852,6 @@ export default function Home({ isConnected, members, activity }) {
               "sessionLengthMinutes": sessionLengthMinutes
             }
             todaysActivities.Events.push(eventToAppend)
-          //}
         }
         if (typeof(searchedTodaysActivities) == "undefined"){ //No events found
           console.log("Creating new Activity...");
@@ -970,7 +1000,6 @@ export default function Home({ isConnected, members, activity }) {
   class SearchResults extends React.Component{
     constructor(props){
       super(props);
-      this.state = {}
     }
 
     render(){
@@ -1002,11 +1031,6 @@ export default function Home({ isConnected, members, activity }) {
       super(props);
       this.state = { };
     }
-
-    componentDidMount(){
-      //console.log("RecentActivity Did Mount")
-      console.log("GlobalRecentActivityDate",GlobalRecentActivityDate)
-    }
     
     render() {
       function getTodaysActivities(){
@@ -1018,7 +1042,6 @@ export default function Home({ isConnected, members, activity }) {
       let dateStr = GlobalRecentActivityDate.toISOString().substring(0,10)
       let currDate = GlobalRecentActivityDate
       let todayActivity = getTodaysActivities();
-      console.log("todayActivity",todayActivity)
 
       function updateActivitiesToDOM(activities){
         let recentActivitiesTBody = document.getElementById("recentActivityTbody")
@@ -1210,19 +1233,17 @@ export default function Home({ isConnected, members, activity }) {
         <li>Add button to badgeIn allowing members to make accounts w/o an ID. We should flag all no id members w/ the same RFID_UID. They can select from the list of all accounts to badgeIn if they made an account already.</li>
         <li>Add button to backEnd allowing us to create activity entries w/o a RFID_UID for members who didn't use the badgeSystem</li>
         <li>Change "badge someone in..." to "search members". Have the badgeIn button in addition to info which gives What certs, rfid uid, etc.</li>
-        <li style={{textDecoration: "line-through"}}>Add a delete button to the editActivityPopUp</li>
-        <li style={{textDecoration: "line-through"}}>Change failed badge in message. Remove "Failed search". Change colors? Maybe, 'New Member? n/ Register [button]' Already Signed Up?, Try scanning again</li>
-        <li>Add Homework/ClassProj to VisitType</li>
+        <li>check if user badgeIn time is from a different day. Alert the user.</li>
         <li>Prevent members from accessing this page (the backend)</li>
         <li>Auto update index page (using state changes)</li>
-        <li>Create a button for people who arrive w/o a CINO ID and haven't become a member yet.</li>
+        <li>New Member Validation: red borders on missing info + message</li>
+        <li style={{textDecoration: "line-through"}}>Add Homework/ClassProj to VisitType</li>
+        <li style={{textDecoration: "line-through"}}>Add a delete button to the editActivityPopUp</li>
+        <li style={{textDecoration: "line-through"}}>Change failed badge in message. Remove "Failed search". Change colors? Maybe, 'New Member? n/ Register [button]' Already Signed Up?, Try scanning again</li>
+        <li style={{textDecoration: "line-through"}}>Create a button for people who arrive w/o a CINO ID and haven't become a member yet.</li>
         <li style={{textDecoration: "line-through"}}>CSS: index.js | conditionally render header row of Badge In Members table</li>
         <li style={{textDecoration: "line-through"}}>Automatically badge in Members after they register.</li>
         <li style={{textDecoration: "line-through"}}>Create a badge In member button. Lets you search a member</li>
-      </ul>
-      <h3>Later on:</h3>
-      <ul>
-        <li>check if user badgeIn time is from a different day. Alert the user.</li>
       </ul>
     </div>
   )
@@ -1230,13 +1251,6 @@ export default function Home({ isConnected, members, activity }) {
 
 export async function getServerSideProps(context) {
   const client = await clientPromise
-
-  // client.db() will be the default database passed in the MONGODB_URI
-  // You can change the database by calling the client.db() function and specifying a database like:
-  // const db = client.db("myDatabase");
-  // Then you can execute queries against your database like so:
-  // db.find({}) or any of the MongoDB Node Driver commands
-
   const isConnected = await client.isConnected();
 
   //Get "members" Collection
