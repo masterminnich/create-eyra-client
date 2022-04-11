@@ -137,7 +137,7 @@ const moveEvent = async (activity, ActivityToMove, existing) => {
               "Content-Type": "application/json"
           },
           body: JSON.stringify({Date: dateStr, Events: eventsAfter})
-      })//.then(setTimeout(() => { window.location.reload() }, 200));
+      }).then(setTimeout(() => { window.location.reload() }, 200));
       console.log("moveEvent(): Success adding event to existing date",dateStr, res);
     } catch (error) { console.log("Error adding to Activity collection. moveEvent()",error) }
   } else {
@@ -152,7 +152,7 @@ const moveEvent = async (activity, ActivityToMove, existing) => {
               "Content-Type": "application/json"
           },
           body: JSON.stringify({Date: dateStr, Events: eventsAfter})
-      })//.then(setTimeout(() => { window.location.reload() }, 200));
+      }).then(setTimeout(() => { window.location.reload() }, 200));
       console.log("moveEvent(): Success adding event to existing date",dateStr, res);
     } catch (error) { console.log("Error adding to Activity collection. moveEvent()",error) }
   }
@@ -168,7 +168,7 @@ const updateMemberBadgeInStatus = async (member) => {
           "Content-Type": "application/json"
       },
       body: JSON.stringify(member)
-    })//.then(setTimeout(() => { window.location.reload() }, 200));
+    }).then(setTimeout(() => { window.location.reload() }, 200));
   } catch (error) { console.log("ERROR:",error); }
 }
 
@@ -182,7 +182,7 @@ const updateActivityByDate = async (date, events) => {
               "Content-Type": "application/json"
           },
           body: JSON.stringify({Date: date, Events: events})
-      })//.then(setTimeout(() => { window.location.reload() }, 200));
+      }).then(setTimeout(() => { window.location.reload() }, 200));
   } catch (error) { console.log("ERROR:",error); }
 }
 
@@ -235,7 +235,7 @@ const badgeInByRFID = async (RFID_UID_input) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({rfid: RFID_UID_input})
-    })//.then(setTimeout(() => { window.location.reload() }, 200));
+    }).then(setTimeout(() => { window.location.reload() }, 200));
     let response = res.json();
     response.then((resp) => {
       console.log(resp.data);
@@ -313,7 +313,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({Date: dateStr, Events: DayEventsAfter})
-        })//.then(setTimeout(() => { window.location.reload() }, 200));
+        }).then(setTimeout(() => { window.location.reload() }, 200));
         console.log("updateActivityLog(): Success adding event to existing date",dateStr, res);
       } catch (error) { console.log("Error adding to Activity collection.",error) }
     }
@@ -331,7 +331,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
               "Content-Type": "application/json"
           },
           body: JSON.stringify({Date: dateStr, Events: activitiesAfter})
-      })//.then(setTimeout(() => { window.location.reload() }, 200));
+      }).then(setTimeout(() => { window.location.reload() }, 200));
       console.log("updateActivityLog(): Success adding event to existing date (ActivityDay)",dateStr);
       
     } catch (error) {
@@ -348,7 +348,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
               "Content-Type": "application/json"
           },
           body: JSON.stringify({Date: dateStr, Events: newActivity})
-      })//.then(setTimeout(() => { window.location.reload() }, 200));
+      }).then(setTimeout(() => { window.location.reload() }, 200));
       console.log("updateActivityLog(): Success adding event to new date ",dateStr);
 
 
