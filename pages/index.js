@@ -137,7 +137,7 @@ const moveEvent = async (activity, ActivityToMove, existing) => {
               "Content-Type": "application/json"
           },
           body: JSON.stringify({Date: dateStr, Events: eventsAfter})
-      }).then(setTimeout(() => { window.location.reload() }, 200));
+      })//.then(setTimeout(() => { window.location.reload() }, 200));
       console.log("moveEvent(): Success adding event to existing date",dateStr, res);
     } catch (error) { console.log("Error adding to Activity collection. moveEvent()",error) }
   } else {
@@ -152,7 +152,7 @@ const moveEvent = async (activity, ActivityToMove, existing) => {
               "Content-Type": "application/json"
           },
           body: JSON.stringify({Date: dateStr, Events: eventsAfter})
-      }).then(setTimeout(() => { window.location.reload() }, 200));
+      })//.then(setTimeout(() => { window.location.reload() }, 200));
       console.log("moveEvent(): Success adding event to existing date",dateStr, res);
     } catch (error) { console.log("Error adding to Activity collection. moveEvent()",error) }
   }
@@ -168,7 +168,7 @@ const updateMemberBadgeInStatus = async (member) => {
           "Content-Type": "application/json"
       },
       body: JSON.stringify(member)
-    }).then(setTimeout(() => { window.location.reload() }, 200));
+    })//.then(setTimeout(() => { window.location.reload() }, 200));
   } catch (error) { console.log("ERROR:",error); }
 }
 
@@ -182,7 +182,7 @@ const updateActivityByDate = async (date, events) => {
               "Content-Type": "application/json"
           },
           body: JSON.stringify({Date: date, Events: events})
-      }).then(setTimeout(() => { window.location.reload() }, 200));
+      })//.then(setTimeout(() => { window.location.reload() }, 200));
   } catch (error) { console.log("ERROR:",error); }
 }
 
@@ -235,7 +235,7 @@ const badgeInByRFID = async (RFID_UID_input) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({rfid: RFID_UID_input})
-    }).then(setTimeout(() => { window.location.reload() }, 200));
+    })//.then(setTimeout(() => { window.location.reload() }, 200));
     let response = res.json();
     response.then((resp) => {
       console.log(resp.data);
@@ -278,7 +278,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
                   "Content-Type": "application/json"
                 },
                 body: JSON.stringify({Date: prevDate, Events: prevActivityEvents})
-            }).then(setTimeout(() => { window.location.reload() }, 200));
+            })//.then(setTimeout(() => { window.location.reload() }, 200));
           } catch (error) { console.log("Error adding to Activity collection.",error) }    
         
           //Move the event to the new day.
@@ -313,7 +313,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({Date: dateStr, Events: DayEventsAfter})
-        }).then(setTimeout(() => { window.location.reload() }, 200));
+        })//.then(setTimeout(() => { window.location.reload() }, 200));
         console.log("updateActivityLog(): Success adding event to existing date",dateStr, res);
       } catch (error) { console.log("Error adding to Activity collection.",error) }
     }
@@ -331,7 +331,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
               "Content-Type": "application/json"
           },
           body: JSON.stringify({Date: dateStr, Events: activitiesAfter})
-      }).then(setTimeout(() => { window.location.reload() }, 200));
+      })//.then(setTimeout(() => { window.location.reload() }, 200));
       console.log("updateActivityLog(): Success adding event to existing date (ActivityDay)",dateStr);
       
     } catch (error) {
@@ -348,7 +348,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
               "Content-Type": "application/json"
           },
           body: JSON.stringify({Date: dateStr, Events: newActivity})
-      }).then(setTimeout(() => { window.location.reload() }, 200));
+      })//.then(setTimeout(() => { window.location.reload() }, 200));
       console.log("updateActivityLog(): Success adding event to new date ",dateStr);
 
 
@@ -449,11 +449,11 @@ export default function Home({ isConnected, members, activity }) {
   }
 
   const handleSubmit = (e) => {
-    //Concatenate checkboxes... All checked boxes get added to an array
-    let machinesList = ["FourAxisMill","BantamMill","Glowforge","P9000","Sewing","Silhouette","Ultimaker","Fusion","VectorCAD","CircuitDesign"];
-    let machinesInUse = [];
-    for (let j = 0; j < machinesList.length; j++) {
-      if (e.target[machinesList[j]].checked){machinesInUse.push(machinesList[j])}
+    //Get Machines Utilized
+    let f = document.getElementById("machinesUtilized").children;
+    let machinesUtilized = []
+    for(let i=0;i<f.length;i++){
+      if(f[i].checked){ machinesUtilized.push(f[i].name) }
     }
 
     //Check if input field changed from default value
@@ -517,29 +517,8 @@ export default function Home({ isConnected, members, activity }) {
           defaultValue={toEDTString(new Date(vSession.badgeOut)).substring(0,19)}
           name='badgeOutTime'
         />
-        <div className="checkboxes">
-        <p>Machines Utilized (Certification Required):</p>
-          <div><input type="checkbox" id="FourAxisMill" name="FourAxisMill"/>
-          <label htmlFor="FourAxisMill">Four Axis Mill</label></div>
-          <div><input type="checkbox" id="BantamMill" name="BantamMill"/>
-          <label htmlFor="BantamMill">Bantam Mill</label></div>
-          <div><input type="checkbox" id="Glowforge" name="Glowforge"/>
-          <label htmlFor="Glowforge">Glowforge</label></div>
-          <div><input type="checkbox" id="P9000" name="P9000"/>
-          <label htmlFor="P9000">P9000</label></div>
-          <div><input type="checkbox" id="Sewing" name="Sewing"/>
-          <label htmlFor="Sewing">Sewing</label></div>
-          <div><input type="checkbox" id="Silhouette" name="Silhouette"/>
-          <label htmlFor="Silhouette">Silhouette</label></div>
-          <div><input type="checkbox" id="Ultimaker" name="Ultimaker"/>
-          <label htmlFor="Ultimaker">Ultimaker</label></div>
-          <div><input type="checkbox" id="Fusion" name="Fusion"/>
-          <label htmlFor="Fusion">Fusion</label></div>
-          <div><input type="checkbox" id="VectorCAD" name="VectorCAD"/>
-          <label htmlFor="VectorCAD">Vector CAD</label></div>
-          <div><input type="checkbox" id="CircuitDesign" name="CircuitDesign"/>
-          <label htmlFor="CircuitDesign">Circuit Design</label></div>
-        </div>
+        
+        <MachinesUtilized/>
 
         <Button type='button' id="deleteActivityButton" onClick={(e) => deleteActivity([e,activity, members, vSession, vMember,false])}></Button>
 
@@ -580,12 +559,13 @@ export default function Home({ isConnected, members, activity }) {
   }, [errors])
 
   const handleEditSubmit = (e) => {
-    //Concatenate checkboxes... All checked boxes get added to an array
-    let machinesList = ["FourAxisMill","BantamMill","Glowforge","P9000","Sewing","Silhouette","Ultimaker", "Fusion","VectorCAD","CircuitDesign"];
-    let machinesInUse = [];
-    for (let j = 0; j < machinesList.length; j++) {
-      if (e.target[machinesList[j]].checked){machinesInUse.push(machinesList[j])}
+    //Get Machines Utilized
+    let f = document.getElementById("machinesUtilized").children;
+    let machinesUtilized = []
+    for(let i=0;i<f.length;i++){
+      if(f[i].checked){ machinesUtilized.push(f[i].name) }
     }
+    console.log("machinesUtilized",machinesUtilized)
 
     //Check if input field changed from default value
     let badgedInTime = ''; let badgedOutTime = '';
@@ -621,7 +601,7 @@ export default function Home({ isConnected, members, activity }) {
       ["badgeOutTime"]: badgedOutTime,
       ["badgeInTime"]: badgedInTime,
       ["sessionLengthMinutes"]: sessionLengthMinutes,
-      ['machineUtilized']: machinesInUse,
+      ['machineUtilized']: machinesUtilized,
     })
 
     e.preventDefault();
@@ -632,6 +612,7 @@ export default function Home({ isConnected, members, activity }) {
   }
 
   function EditPopup(props) {
+    console.log("vSessuib",vSession)
     return (
     <>
       <h1 id="badgingOutTitle">Editing Activity</h1>
@@ -650,30 +631,7 @@ export default function Home({ isConnected, members, activity }) {
           name='badgeOutTime'
         />
         
-        <div className="checkboxes">
-        <p>Machines Utilized (Certification Required):</p>
-          <div><input type="checkbox" id="FourAxisMill" name="FourAxisMill" defaultChecked={vSession.machineUtilized.includes("FourAxisMill")}/>
-          <label htmlFor="FourAxisMill">Four Axis Mill</label></div>
-          <div><input type="checkbox" id="BantamMill" name="BantamMill" defaultChecked={vSession.machineUtilized.includes("BantamMill")}/>
-          <label htmlFor="BantamMill">Bantam Mill</label></div>
-          <div><input type="checkbox" id="Glowforge" name="Glowforge" defaultChecked={vSession.machineUtilized.includes("Glowforge")}/>
-          <label htmlFor="Glowforge">Glowforge</label></div>
-          <div><input type="checkbox" id="P9000" name="P9000" defaultChecked={vSession.machineUtilized.includes("P9000")}/>
-          <label htmlFor="P9000">P9000</label></div>
-          <div><input type="checkbox" id="Sewing" name="Sewing" defaultChecked={vSession.machineUtilized.includes("Sewing")}/>
-          <label htmlFor="Sewing">Sewing</label></div>
-          <div><input type="checkbox" id="Silhouette" name="Silhouette" defaultChecked={vSession.machineUtilized.includes("Silhouette")}/>
-          <label htmlFor="Silhouette">Silhouette</label></div>
-          <div><input type="checkbox" id="Ultimaker" name="Ultimaker" defaultChecked={vSession.machineUtilized.includes("Ultimaker")}/>
-          <label htmlFor="Ultimaker">Ultimaker</label></div>
-          <div><input type="checkbox" id="Fusion" name="Fusion" defaultChecked={vSession.machineUtilized.includes("Fusion")}/>
-          <label htmlFor="Fusion">Fusion</label></div>
-          <div><input type="checkbox" id="VectorCAD" name="VectorCAD" defaultChecked={vSession.machineUtilized.includes("VectorCAD")}/>
-          <label htmlFor="VectorCAD">Vector CAD</label></div>
-          <div><input type="checkbox" id="CircuitDesign" name="CircuitDesign" defaultChecked={vSession.machineUtilized.includes("CircuitDesign")}/>
-          <label htmlFor="CircuitDesign">Circuit Design</label></div>
-        </div>
-
+        <MachinesUtilized/>
         
         <Button type='button' name={ActivityId} id="deleteActivityButton" onClick={(e) => deleteActivity([e,activity, members, vSession, vMember, true])}></Button>
 
@@ -713,7 +671,7 @@ export default function Home({ isConnected, members, activity }) {
     constructor(props){
       super(props);
       this.state = {
-        machines: [] //List of machines utilize
+        machines: vSession.machineUtilized //List of machines utilize
       }
     }
 
@@ -724,34 +682,34 @@ export default function Home({ isConnected, members, activity }) {
       } else { 
         machinesInUse = machinesInUse.filter(m => m !== e.target.id)
         this.setState({"machines":machinesInUse})
-      }      
+      } 
     }
 
     render(){
       return(
         <>
-          <div onClick={this.updateState} className="checkboxes">
+          <div onClick={this.updateState} className="checkboxes" style={{display:'flow-root'}}>
             <p>Machines Utilized (Certification Required):</p>
             <fieldset id="machinesUtilized" style={{"display": "inline-block","position": "relative","textAlign": "initial","float":"left","border":"none"}}>
-              <input type="checkbox" id="FourAxisMill" name="FourAxisMill"/>
+              <input type="checkbox" id="FourAxisMill" name="FourAxisMill" defaultChecked={this.state.machines.includes("FourAxisMill")}/>
               <label htmlFor="FourAxisMill">Four Axis Mill</label><br/>
-              <input type="checkbox" id="BantamMill" name="BantamMill"/>
+              <input type="checkbox" id="BantamMill" name="BantamMill" defaultChecked={this.state.machines.includes("BantamMill")}/>
               <label htmlFor="BantamMill">Bantam Mill</label><br/>
-              <input type="checkbox" id="Glowforge" name="Glowforge"/>
+              <input type="checkbox" id="Glowforge" name="Glowforge" defaultChecked={this.state.machines.includes("Glowforge")}/>
               <label htmlFor="Glowforge">Glowforge</label><br/>
-              <input type="checkbox" id="P9000" name="P9000"/>
+              <input type="checkbox" id="P9000" name="P9000" defaultChecked={this.state.machines.includes("P900")}/>
               <label htmlFor="P9000">P9000</label><br/>
-              <input type="checkbox" id="Sewing" name="Sewing"/>
+              <input type="checkbox" id="Sewing" name="Sewing" defaultChecked={this.state.machines.includes("Sewing")}/>
               <label htmlFor="Sewing">Sewing</label><br/>
-              <input type="checkbox" id="Silhouette" name="Silhouette"/>
+              <input type="checkbox" id="Silhouette" name="Silhouette" defaultChecked={this.state.machines.includes("Silhouette")}/>
               <label htmlFor="Silhouette">Silhouette</label><br/>
-              <input type="checkbox" id="Ultimaker" name="Ultimaker"/>
+              <input type="checkbox" id="Ultimaker" name="Ultimaker" defaultChecked={this.state.machines.includes("Ultimaker")}/>
               <label htmlFor="Ultimaker">Ultimaker</label><br/>
-              <input type="checkbox" id="Fusion" name="Fusion"/>
+              <input type="checkbox" id="Fusion" name="Fusion" defaultChecked={this.state.machines.includes("Fusion")}/>
               <label htmlFor="Fusion">Fusion</label><br/>
-              <input type="checkbox" id="VectorCAD" name="VectorCAD"/>
+              <input type="checkbox" id="VectorCAD" name="VectorCAD" defaultChecked={this.state.machines.includes("VectorCAD")}/>
               <label htmlFor="VectorCAD">Vector CAD</label><br/>
-              <input type="checkbox" id="CircuitDesign" name="CircuitDesign"/>
+              <input type="checkbox" id="CircuitDesign" name="CircuitDesign" defaultChecked={this.state.machines.includes("CircuitDesign")}/>
               <label htmlFor="CircuitDesign">Circuit Design</label>
             </fieldset>
            </div>
@@ -1223,9 +1181,6 @@ export default function Home({ isConnected, members, activity }) {
       <ul>
         <li>Change date of activity.... Fix duplicates in members collection</li>
         <li>validation: no negative session minutes</li>
-        <li style={{textDecoration: "line-through"}}>?new gets removed</li>
-        <li style={{textDecoration: "line-through"}}>Ignore caps lock on badgeIn page and on member creation</li>
-        <li style={{textDecoration: "line-through"}}>Ignore escape key and other bs. must be alphanumeric</li>
       </ul>
       <h3>Next up:</h3>
       <ul>
