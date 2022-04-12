@@ -25,7 +25,10 @@ const ActivitySchema = new Schema({
         type: Array,
         // Pick multiple
         //handtools, soldering, CNC machines
-    }
+    },
+    otherToolsUtilized: {
+        type: Array,
+    },
 })
 
 const DailyActivitySchema = new Schema({

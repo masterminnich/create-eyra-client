@@ -410,6 +410,17 @@ a#newMemberButton:hover{
     background: #93b7c3;
 }
 
+fieldset#machinesUtilized label, fieldset#otherToolsUtilized label{
+    display: flex;
+    flex-wrap: row;
+    flex-basis: 50%;
+}
+
+div.equipment{
+    display: flex;
+    flex-direction: row;
+}
+
 input#badgeInTextInput{
     border: none;
     outline: none;

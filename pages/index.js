@@ -15,6 +15,28 @@ function reloadPage(){
 
 }
 
+function getMachinesUtilized(){ //Get list of machinesUtilized from an on-screen PopUp
+  let machinesUtilized = []
+  let machinesFieldset = document.getElementById("machinesUtilized")
+  for(let i=0; i < machinesFieldset.children.length; i++){
+    if (machinesFieldset.children[i].children[0].checked){
+      machinesUtilized.push(machinesFieldset.children[i].children[0].name)
+    }
+  }
+  return machinesUtilized
+}
+
+function getotherToolsUtilized(){ //Get list of otherToolsUtilized from an on-screen PopUp
+  let otherToolsUtilized = []
+  let otherToolsFieldset = document.getElementById("otherToolsUtilized")
+  for(let i=0; i < otherToolsFieldset.children.length; i++){
+    if (otherToolsFieldset.children[i].children[0].checked){
+      otherToolsUtilized.push(otherToolsFieldset.children[i].children[0].name)
+    }
+  }
+  return otherToolsUtilized
+}
+
 function ensureCertifications(form, member){
   console.log("member",member)
   if (form.event == "Certification"){
@@ -195,7 +217,7 @@ const createNewActivity = async (date, events) => {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({Date: date, Events: events})
-    })//.then(setTimeout(() => { window.location.reload() }, 200));
+    }).then(setTimeout(() => { window.location.reload() }, 200));
     console.log("date:",date,"res",res);
   } catch (error) { console.log("ERROR:",error) }
 }
@@ -214,7 +236,7 @@ const deleteActivity = async(props) => {
       console.log("Found event, attempting to delete:",foundEvent)
       updateActivityByDate(date, remainingEvents)
     } else {
-      let trList = document.getElementsByClassName("tr_event");
+      let trList = document.getElementsByClassName("tr_event"); //delete????
       console.log("ERROR deleting event: couldn't find event")
     }
   } else { //If deleting an event that hasn't been added to the DB yet
@@ -278,7 +300,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
                   "Content-Type": "application/json"
                 },
                 body: JSON.stringify({Date: prevDate, Events: prevActivityEvents})
-            })//.then(setTimeout(() => { window.location.reload() }, 200));
+            }).then(setTimeout(() => { window.location.reload() }, 200));
           } catch (error) { console.log("Error adding to Activity collection.",error) }    
         
           //Move the event to the new day.
@@ -302,7 +324,7 @@ const updateActivityLog = async (activity, newActivity, existing) => {
         let droppedEvent = vMember.sessions.filter(vm => vm.badgeIn == prevBadgeInTime)
         let newSession = {badgeInTime: newActivity.badgeInTime, badgeOutTime: newActivity.badgeOutTime, sessionLengthMinutes: newActivity.sessionLengthMinutes}
         vMember.sessions = keepEvents
-        console.log("keepEvents",keepEvents,"DayEventsAfter",DayEventsAfter)
+        //console.log("keepEvents",keepEvents,"DayEventsAfter",DayEventsAfter)
       }
 
       try {
@@ -364,10 +386,10 @@ export default function Home({ isConnected, members, activity }) {
   const [isOpen, setisOpen] = useState(false);
   const [editIsOpen, seteditIsOpen] = useState(false);
   const [form, setForm] = useState({ 
-    badgeInTime: '', Name: '', MemberID: '', badgeInTime: '', badgeOutTime: '', sessionLengthMinutes: '', event: '', machineUtilized: ''
+    badgeInTime: '', Name: '', MemberID: '', badgeInTime: '', badgeOutTime: '', sessionLengthMinutes: '', event: '', machineUtilized: '', otherToolsUtilized: ''
   });
   const [Editform, setEditForm] = useState({ 
-    badgeInTime: '', Name: '', MemberID: '', badgeInTime: '', badgeOutTime: '', sessionLengthMinutes: '', event: '', machineUtilized: '', prevBadgeOutTime: ''
+    badgeInTime: '', Name: '', MemberID: '', badgeInTime: '', badgeOutTime: '', sessionLengthMinutes: '', event: '', machineUtilized: '', otherToolsUtilized: '', prevBadgeOutTime: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
@@ -450,10 +472,16 @@ export default function Home({ isConnected, members, activity }) {
 
   const handleSubmit = (e) => {
     //Get Machines Utilized
-    let f = document.getElementById("machinesUtilized").children;
-    let machinesUtilized = []
-    for(let i=0;i<f.length;i++){
-      if(f[i].checked){ machinesUtilized.push(f[i].name) }
+    let machinesUtilized =  getMachinesUtilized();
+    let otherToolsUtilized = getotherToolsUtilized();
+    
+    //Other Tools Utilized
+    let otherTools = []
+    let otherToolsFieldset = document.getElementById("otherToolsUtilized")
+    for(let i=0; i < otherToolsFieldset.children.length; i++){
+      if (otherToolsFieldset.children[i].children[0].checked){
+        otherTools.push(otherToolsFieldset.children[i].children[0].name)
+      }
     }
 
     //Check if input field changed from default value
@@ -480,7 +508,8 @@ export default function Home({ isConnected, members, activity }) {
       ["badgeOutTime"]: badgedOutTime,
       ["badgeInTime"]: badgedInTime,
       ["sessionLengthMinutes"]: sessionLengthMinutes,
-      ['machineUtilized']: machinesInUse,
+      ['machineUtilized']: machinesUtilized,
+      ['otherToolsUtilized']: otherToolsUtilized,
     })
 
     e.preventDefault();
@@ -499,7 +528,7 @@ export default function Home({ isConnected, members, activity }) {
   }
 
   function Popup(props) {
-    console.log("Popup activity",activity)
+    //console.log("Popup activity",activity)
     return (
     <>
       <h1 id="badgingOutTitle">Badging out {vMember.Name}...</h1>
@@ -518,7 +547,10 @@ export default function Home({ isConnected, members, activity }) {
           name='badgeOutTime'
         />
         
-        <MachinesUtilized/>
+        <div className="equipment">
+          <MachinesUtilized/>
+          <OtherToolsUtilized/>
+        </div>
 
         <Button type='button' id="deleteActivityButton" onClick={(e) => deleteActivity([e,activity, members, vSession, vMember,false])}></Button>
 
@@ -560,13 +592,18 @@ export default function Home({ isConnected, members, activity }) {
 
   const handleEditSubmit = (e) => {
     //Get Machines Utilized
-    let f = document.getElementById("machinesUtilized").children;
-    let machinesUtilized = []
-    for(let i=0;i<f.length;i++){
-      if(f[i].checked){ machinesUtilized.push(f[i].name) }
+    let machinesUtilized =  getMachinesUtilized();
+    let otherToolsUtilized = getotherToolsUtilized();
+    
+    //Other Tools Utilized
+    let otherTools = []
+    let otherToolsFieldset = document.getElementById("otherToolsUtilized")
+    for(let i=0; i < otherToolsFieldset.children.length; i++){
+      if (otherToolsFieldset.children[i].children[0].checked){
+        otherTools.push(otherToolsFieldset.children[i].children[0].name)
+      }
     }
-    console.log("machinesUtilized",machinesUtilized)
-
+  
     //Check if input field changed from default value
     let badgedInTime = ''; let badgedOutTime = '';
     if (e.target.badgeInTime.value == ""){
@@ -602,6 +639,7 @@ export default function Home({ isConnected, members, activity }) {
       ["badgeInTime"]: badgedInTime,
       ["sessionLengthMinutes"]: sessionLengthMinutes,
       ['machineUtilized']: machinesUtilized,
+      ['otherToolsUtilized']: otherToolsUtilized,
     })
 
     e.preventDefault();
@@ -612,7 +650,7 @@ export default function Home({ isConnected, members, activity }) {
   }
 
   function EditPopup(props) {
-    console.log("vSessuib",vSession)
+    //console.log("vSession",vSession)
     return (
     <>
       <h1 id="badgingOutTitle">Editing Activity</h1>
@@ -631,8 +669,11 @@ export default function Home({ isConnected, members, activity }) {
           name='badgeOutTime'
         />
         
-        <MachinesUtilized/>
-        
+        <div className="equipment">
+          <MachinesUtilized/>
+          <OtherToolsUtilized/>
+        </div>
+
         <Button type='button' name={ActivityId} id="deleteActivityButton" onClick={(e) => deleteActivity([e,activity, members, vSession, vMember, true])}></Button>
 
         <Button type='submit' id="submitBadgeOutPopup">Update</Button>
@@ -656,8 +697,8 @@ export default function Home({ isConnected, members, activity }) {
 
   const editActivity = async (actEvent) => {
     console.log("editActivity()  actEvent",actEvent)
-    editEvent = actEvent;
-    vSession = {'badgeIn':actEvent.badgeInTime,'badgeOut':actEvent.badgeOutTime, 'visitType':actEvent.event,"machineUtilized":actEvent.machineUtilized}
+    editEvent = actEvent; //delete?????
+    vSession = {'badgeIn':actEvent.badgeInTime,'badgeOut':actEvent.badgeOutTime, 'visitType':actEvent.event,"machineUtilized":actEvent.machineUtilized,"otherToolsUtilized":actEvent.otherToolsUtilized}
     vMember = members.filter(m => m._id == actEvent.MemberID)[0] //save member to global variable
     seteditIsOpen(true) //Open popup
     setActivityId(actEvent._id)
@@ -670,49 +711,40 @@ export default function Home({ isConnected, members, activity }) {
   class MachinesUtilized extends React.Component{
     constructor(props){
       super(props);
-      this.state = {
-        machines: vSession.machineUtilized //List of machines utilize
+      if(typeof(vSession.machineUtilized)!=="undefined"){
+        this.state = { machines: vSession.machineUtilized } //List of machines utilize
+      } else { 
+        this.state = { machines: [] } //List of machines utilize
       }
     }
 
-    updateState = (e) => {
+    updateState = (e) => {/*
       let machinesInUse = this.state.machines
-      if (e.target.checked){
-        machinesInUse.push(e.target.id)
-      } else { 
+      if (e.target.checked){  
+        machinesInUse.push(e.target.id) 
+      } else {  
         machinesInUse = machinesInUse.filter(m => m !== e.target.id)
-        this.setState({"machines":machinesInUse})
-      } 
+      }
+      //console.log("machines",machinesInUse,"vS",vSession)
+      this.setState({"machines":machinesInUse})*/
     }
 
     render(){
       return(
         <>
-          <div onClick={this.updateState} className="checkboxes" style={{display:'flow-root'}}>
+          <div onClick={this.updateState} className="checkboxes" style={{display:'flow-root', width: "50%"}}>
             <p>Machines Utilized (Certification Required):</p>
             <fieldset id="machinesUtilized" style={{"display": "inline-block","position": "relative","textAlign": "initial","float":"left","border":"none"}}>
-              <input type="checkbox" id="FourAxisMill" name="FourAxisMill" defaultChecked={this.state.machines.includes("FourAxisMill")}/>
-              <label htmlFor="FourAxisMill">Four Axis Mill</label><br/>
-              <input type="checkbox" id="BantamMill" name="BantamMill" defaultChecked={this.state.machines.includes("BantamMill")}/>
-              <label htmlFor="BantamMill">Bantam Mill</label><br/>
-              <input type="checkbox" id="Glowforge" name="Glowforge" defaultChecked={this.state.machines.includes("Glowforge")}/>
-              <label htmlFor="Glowforge">Glowforge</label><br/>
-              <input type="checkbox" id="P9000" name="P9000" defaultChecked={this.state.machines.includes("P900")}/>
-              <label htmlFor="P9000">P9000</label><br/>
-              <input type="checkbox" id="Sewing" name="Sewing" defaultChecked={this.state.machines.includes("Sewing")}/>
-              <label htmlFor="Sewing">Sewing</label><br/>
-              <input type="checkbox" id="Silhouette" name="Silhouette" defaultChecked={this.state.machines.includes("Silhouette")}/>
-              <label htmlFor="Silhouette">Silhouette</label><br/>
-              <input type="checkbox" id="Ultimaker" name="Ultimaker" defaultChecked={this.state.machines.includes("Ultimaker")}/>
-              <label htmlFor="Ultimaker">Ultimaker</label><br/>
-              <input type="checkbox" id="Fusion" name="Fusion" defaultChecked={this.state.machines.includes("Fusion")}/>
-              <label htmlFor="Fusion">Fusion</label><br/>
-              <input type="checkbox" id="VectorCAD" name="VectorCAD" defaultChecked={this.state.machines.includes("VectorCAD")}/>
-              <label htmlFor="VectorCAD">Vector CAD</label><br/>
-              <input type="checkbox" id="CircuitDesign" name="CircuitDesign" defaultChecked={this.state.machines.includes("CircuitDesign")}/>
-              <label htmlFor="CircuitDesign">Circuit Design</label>
+              {["FourAxisMill","BantamMill","Glowforge","P9000","Sewing","Silhouette","Ultimaker","Fusion","VectorCAD","CircuitDesign"].map((CertName) => 
+                <>
+                <label htmlFor={CertName} key={"label_"+CertName}>
+                  <input type="checkbox" id={CertName} name={CertName} key={"input_"+CertName} defaultChecked={this.state.machines.includes(CertName)}></input>
+                  {CertName}
+                </label>
+                </>
+              )}
             </fieldset>
-           </div>
+          </div>
         </>
       )
     }
@@ -721,35 +753,29 @@ export default function Home({ isConnected, members, activity }) {
   class OtherToolsUtilized extends React.Component{
     constructor(props){
       super(props);
-      this.state = {
-        machines: [] //List of machines utilize
-      }
-    }
-
-    updateState = (e) => {
-      let machinesInUse = this.state.machines
-      if (e.target.checked){
-        machinesInUse.push(e.target.id)
+      if(typeof(vSession.otherToolsUtilized)!=="undefined"){
+        this.state = { otherTools: vSession.otherToolsUtilized } //List of other tools that don't require certification
       } else { 
-        machinesInUse = machinesInUse.filter(m => m !== e.target.id)
-        this.setState({"machines":machinesInUse})
-      }      
+        this.state = { otherTools: [] } //List of other tools that don't require certification
+      }
     }
 
     render(){
       return(
         <>
-          <div onClick={this.updateState} className="checkboxes">
+          <div onClick={this.updateState} className="checkboxes" style={{display:'flow-root', width: "50%"}}>
             <p>Other Tools Utilized (No Certification Required):</p>
             <fieldset id="otherToolsUtilized" style={{"display": "inline-block","position": "relative","textAlign": "initial","float":"left","border":"none"}}>
-              <input type="checkbox" id="3DScanner" name="3DScanner"/>
-              <label htmlFor="3DScanner">3DScanner</label><br/>
-              <input type="checkbox" id="ButtonPress" name="ButtonPress"/>
-              <label htmlFor="ButtonPress">ButtonPress</label><br/>
-              <input type="checkbox" id="VR/3DCamera" name="VR/3DCamera"/>
-              <label htmlFor="VR/3DCamera">VR/3DCamera</label><br/>
+              {["ButtonPress","3D Scanners","WacomTablets","VR"].map((ToolName) => 
+                <>
+                <label htmlFor={ToolName} key={"label_"+ToolName}>
+                  <input type="checkbox" id={ToolName} name={ToolName} key={"input_"+ToolName} defaultChecked={this.state.otherTools.includes(ToolName)}></input>
+                  {ToolName}
+                </label>
+                </>
+              )}
             </fieldset>
-           </div>
+          </div>
         </>
       )
     }
@@ -795,11 +821,8 @@ export default function Home({ isConnected, members, activity }) {
             let sessionLengthMinutes = Math.round(new Date(badgeOutInput.value) - new Date(badgeInInput.value))/60000
 
             //Get Machines Utilized
-            let f = document.getElementById("machinesUtilized").children;
-            let machinesUtilized = []
-            for(let i=0;i<f.length;i++){
-              if(f[i].checked){ machinesUtilized.push(f[i].name) }
-            }
+            let machinesUtilized =  getMachinesUtilized();
+            let otherToolsUtilized = getotherToolsUtilized();
 
             let eventToAppend = { 
               "Name": memberToAppend,
@@ -807,7 +830,8 @@ export default function Home({ isConnected, members, activity }) {
               "badgeOutTime" : badgeOutInput.value,
               "event": document.getElementsByName("event")[0].value,
               "machineUtilized": machinesUtilized,
-              "sessionLengthMinutes": sessionLengthMinutes
+              "sessionLengthMinutes": sessionLengthMinutes,
+              "otherToolsUtilized": otherToolsUtilized,
             }
             todaysActivities.Events.push(eventToAppend)
         }
@@ -840,7 +864,10 @@ export default function Home({ isConnected, members, activity }) {
             <label className="enterInfoLabelFixed" htmlFor="badgeOutTime">Badged Out: 
               <input defaultValue={todaysDate} name="badgeOutTime" id="badgeOutInput"></input>
             </label>
-            <MachinesUtilized/>
+            <div className="equipment">
+              <MachinesUtilized/>
+              <OtherToolsUtilized/>
+            </div>
             <button type="button" onClick={this.togglePopup} style={{"width": "10ch","left":"0","bottom":"0","position":"absolute"}}>Close</button>
             <button type="button" onClick={ this.onSubmit } style={{"width": "10ch","right":"0","bottom":"0","position":"absolute"}}>Submit</button>
             {this.state.members.map((char) =>
@@ -1184,7 +1211,7 @@ export default function Home({ isConnected, members, activity }) {
       </ul>
       <h3>Next up:</h3>
       <ul>
-        <li>Add button machine, VR to tools list under Other Tools</li>
+        <li>otherTools needs to be added to Schema and database</li>
         <li>Add button to badgeIn allowing members to make accounts w/o an ID. We should flag all no id members w/ the same RFID_UID. They can select from the list of all accounts to badgeIn if they made an account already.</li>
         <li>Add button to backEnd allowing us to create activity entries w/o a RFID_UID for members who didn't use the badgeSystem</li>
         <li>Change "badge someone in..." to "search members". Have the badgeIn button in addition to info which gives What certs, rfid uid, etc.</li>
@@ -1192,6 +1219,7 @@ export default function Home({ isConnected, members, activity }) {
         <li>Prevent members from accessing this page (the backend)</li>
         <li>Auto update index page (using state changes)</li>
         <li>New Member Validation: red borders on missing info + message</li>
+        <li style={{textDecoration: "line-through"}}>Add button machine, VR to tools list under Other Tools</li>
         <li style={{textDecoration: "line-through"}}>Add Homework/ClassProj to VisitType</li>
         <li style={{textDecoration: "line-through"}}>Add a delete button to the editActivityPopUp</li>
         <li style={{textDecoration: "line-through"}}>Change failed badge in message. Remove "Failed search". Change colors? Maybe, 'New Member? n/ Register [button]' Already Signed Up?, Try scanning again</li>
