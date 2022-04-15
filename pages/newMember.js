@@ -86,7 +86,7 @@ const NewMember = () => {
 
     //Get RFID UID from the URL. Looks like this:  /newMember?rfid=abcdefghij
     let RQ = router.query;
-    const globalRFID = RQ.rfid; 
+    const globalRFID = RQ.rfid;
 
     const [form, setForm] = useState({ 
         Name: '', Major: '', PatronType:"", GraduationYear:"N/A", badgedIn: false, lastBadgeIn: currDate, joinedDate: currDate, rfid:"globalRFID", sessions:[],

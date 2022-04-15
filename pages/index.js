@@ -553,7 +553,6 @@ export default function Home({ isConnected, members, activity }) {
         </div>
 
         <Button type='button' id="deleteActivityButton" onClick={(e) => deleteActivity([e,activity, members, vSession, vMember,false])}></Button>
-
         <Button type='submit' id="submitBadgeOutPopup">Badge Out</Button>
         <Button type='button' id="cancelPopupButton" onClick={() => closePopup()}>Cancel</Button>
       </Form>
@@ -1211,14 +1210,13 @@ export default function Home({ isConnected, members, activity }) {
       </ul>
       <h3>Next up:</h3>
       <ul>
-        <li>otherTools needs to be added to Schema and database</li>
         <li>Add button to badgeIn allowing members to make accounts w/o an ID. We should flag all no id members w/ the same RFID_UID. They can select from the list of all accounts to badgeIn if they made an account already.</li>
-        <li>Add button to backEnd allowing us to create activity entries w/o a RFID_UID for members who didn't use the badgeSystem</li>
         <li>Change "badge someone in..." to "search members". Have the badgeIn button in addition to info which gives What certs, rfid uid, etc.</li>
         <li>check if user badgeIn time is from a different day. Alert the user.</li>
         <li>Prevent members from accessing this page (the backend)</li>
         <li>Auto update index page (using state changes)</li>
-        <li>New Member Validation: red borders on missing info + message</li>
+        <li style={{textDecoration: "line-through"}}>Add button to backEnd allowing us to create activity entries w/o a RFID_UID for members who didn't use the badgeSystem</li>
+        <li style={{textDecoration: "line-through"}}>New Member Validation: red borders on missing info + message</li>
         <li style={{textDecoration: "line-through"}}>Add button machine, VR to tools list under Other Tools</li>
         <li style={{textDecoration: "line-through"}}>Add Homework/ClassProj to VisitType</li>
         <li style={{textDecoration: "line-through"}}>Add a delete button to the editActivityPopUp</li>
