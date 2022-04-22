@@ -74,8 +74,7 @@ const updateActivityLog = async (activities, newMemberData) => {
       }
 }
 
-const NewMember = () => {
-
+const NewMember = () => { //const NewMember = () => {
     const router = useRouter();
     const majorsList = ["Choose a Major...","N/A","Undecided","Accounting","Anthropology and Geography","Art History","Art Studio","Biochemistry","Biology","Chemistry","Communication","Computer Science","Digital Culture and Design","Early Childhood Education","Economics","Elementary Education","Engineering Science","English","Exercise and Sport Science","Finance","Graphic Design","Health Administration Completion Program","History","Hospitality, Resort and Tourism Management","Information Systems","Information Technology","Intelligence and National Security Studies","Interdisciplinary Studies","Languages and Intercultural Studies","Management","Marine Science","Marketing","Mathematics (Applied)","Middle Level Education","Music","Musical Theatre","Nursing BSN","Nursing 2+2 Residential Bridge Program","PGA Golf Management Program","Philosophy and Religious Studies","Physical Education/Teacher Education","Physics, Applied","Political Science","Psychology","Public Health","Recreation and Sport Management","Sociology","Special Education - Multicategorical","Theatre Arts"];  // https://www.coastal.edu/admissions/programs/
 
@@ -86,7 +85,7 @@ const NewMember = () => {
 
     //Get RFID UID from the URL. Looks like this:  /newMember?rfid=abcdefghij
     let RQ = router.query;
-    const globalRFID = RQ.rfid;
+    let globalRFID = RQ.rfid;
 
     const [form, setForm] = useState({ 
         Name: '', Major: '', PatronType:"", GraduationYear:"N/A", badgedIn: false, lastBadgeIn: currDate, joinedDate: currDate, rfid:"globalRFID", sessions:[],
@@ -122,7 +121,6 @@ const NewMember = () => {
             })
             let response = res.json();
             response.then((resp) => {
-                console.log("resp.success",resp.success)
                 if (resp.success == true){ //Only send the user to the next page if member creation is successful.
                     getActivitiesCollection(resp.data)
                     router.push("/codeOfConduct");
@@ -136,8 +134,8 @@ const NewMember = () => {
     const ensureRFIDSet = () => {
         setForm({
             ...form,
-            "rfid": globalRFID.toString()
-        })
+            rfid: RQ.rfid.toString()
+        });
     }
 
     const handleSubmit = (e) => {

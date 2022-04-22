@@ -1214,6 +1214,8 @@ export default function Home({ isConnected, members, activity }) {
         <li>Change "badge someone in..." to "search members". Have the badgeIn button in addition to info which gives What certs, rfid uid, etc.</li>
         <li>check if user badgeIn time is from a different day. Alert the user.</li>
         <li>Prevent members from accessing this page (the backend)</li>
+        <li>Change "Faculty" to "Fac/Staff" on newMember page</li>
+        <li>Add Comb Binder to Other Tools list</li>
         <li>Auto update index page (using state changes)</li>
         <li style={{textDecoration: "line-through"}}>Add button to backEnd allowing us to create activity entries w/o a RFID_UID for members who didn't use the badgeSystem</li>
         <li style={{textDecoration: "line-through"}}>New Member Validation: red borders on missing info + message</li>
