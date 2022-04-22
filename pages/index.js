@@ -6,14 +6,12 @@ import { Button, Form } from 'semantic-ui-react';
 var vMember = {};
 var vSession = [];
 var editEvent = {};
-let isHovering = false; //Whether the user is currently hovering over an element of interest
 let hoverTimerId;
-
+let isHovering = false; //Whether the user is currently hovering over an element of interest
 let GlobalRecentActivityDate = new Date() //This variable keeps track of which day Recent Activity compononet is current displaying. This is important because otherwise state updates would set Recent Activity day to current date. 
-
-function reloadPage(){
-
-}
+const certFullNameList = ['UltimakerCertified', 'GlowforgeCertified', 'FourAxisMillCertified', 'BantamMillCertified', 'P9000Certified', 'SewingCertified', 'SilhouetteCertified', 'FusionCertified', 'VectorCADCertified', 'CircuitDesignCertified',"IndustrialSewingCertified"];
+let certNameList = ["FourAxisMill","BantamMill","Glowforge","P9000","Sewing","Silhouette","Ultimaker","Fusion","VectorCAD","CircuitDesign","IndustrialSewing"]
+let otherToolsNameList = ["ButtonPress","3D Scanners","WacomTablets","VR","Comb Binder"]
 
 function getMachinesUtilized(){ //Get list of machinesUtilized from an on-screen PopUp
   let machinesUtilized = []
@@ -40,16 +38,9 @@ function getotherToolsUtilized(){ //Get list of otherToolsUtilized from an on-sc
 function ensureCertifications(form, member){
   console.log("member",member)
   if (form.event == "Certification"){
-    if (form.machineUtilized.includes("FourAxisMill")){ member.FourAxisMillCertified = true }
-    if (form.machineUtilized.includes("BantamMill")){ member.BantamMillCertified = true }
-    if (form.machineUtilized.includes("Glowforge")){ member.GlowforgeCertified = true }
-    if (form.machineUtilized.includes("P9000")){ member.P9000Certified = true }
-    if (form.machineUtilized.includes("Sewing")){ member.SewingCertified = true }
-    if (form.machineUtilized.includes("Silhouette")){ member.SilhouetteCertified = true }
-    if (form.machineUtilized.includes("Ultimaker")){ member.UltimakerCertified = true }
-    if (form.machineUtilized.includes("Fusion")){ member.FusionCertified = true }
-    if (form.machineUtilized.includes("VectorCAD")){ member.VectorCADCertified = true }
-    if (form.machineUtilized.includes("CircuitDesign")){ member.CircuitDesignCertified = true }
+    for(let t=0;t<certFullNameList.length;t++){
+      if (form.machineUtilized.includes(certNameList[t])){ member[certFullNameList[t]] = true }
+    }  
   }
   return member
 }
@@ -704,7 +695,6 @@ export default function Home({ isConnected, members, activity }) {
     setActivityName(actEvent.Name)
   }
 
-  const certificationList = ['UltimakerCertified', 'GlowforgeCertified', 'FourAxisMillCertified', 'BantamMillCertified', 'P9000Certified', 'SewingCertified', 'SilhouetteCertified', 'FusionCertified', 'VectorCADCertified', 'CircuitDesignCertified'];
   const certificationNames = ['Ultimaker','Glowforge','Four Axis Mill', 'Bantam Mill', 'P9000', 'Sewing', 'Silhouette', 'Fusion', 'VectorCAD', 'CircuitDesign'];
 
   class MachinesUtilized extends React.Component{
@@ -734,7 +724,7 @@ export default function Home({ isConnected, members, activity }) {
           <div onClick={this.updateState} className="checkboxes" style={{display:'flow-root', width: "50%"}}>
             <p>Machines Utilized (Certification Required):</p>
             <fieldset id="machinesUtilized" style={{"display": "inline-block","position": "relative","textAlign": "initial","float":"left","border":"none"}}>
-              {["FourAxisMill","BantamMill","Glowforge","P9000","Sewing","Silhouette","Ultimaker","Fusion","VectorCAD","CircuitDesign"].map((CertName) => 
+              {certNameList.map((CertName) => 
                 <>
                 <label htmlFor={CertName} key={"label_"+CertName}>
                   <input type="checkbox" id={CertName} name={CertName} key={"input_"+CertName} defaultChecked={this.state.machines.includes(CertName)}></input>
@@ -765,7 +755,7 @@ export default function Home({ isConnected, members, activity }) {
           <div onClick={this.updateState} className="checkboxes" style={{display:'flow-root', width: "50%"}}>
             <p>Other Tools Utilized (No Certification Required):</p>
             <fieldset id="otherToolsUtilized" style={{"display": "inline-block","position": "relative","textAlign": "initial","float":"left","border":"none"}}>
-              {["ButtonPress","3D Scanners","WacomTablets","VR"].map((ToolName) => 
+              {otherToolsNameList.map((ToolName) => 
                 <>
                 <label htmlFor={ToolName} key={"label_"+ToolName}>
                   <input type="checkbox" id={ToolName} name={ToolName} key={"input_"+ToolName} defaultChecked={this.state.otherTools.includes(ToolName)}></input>
@@ -1184,7 +1174,7 @@ export default function Home({ isConnected, members, activity }) {
                   <tr key={member._id+"_tr"}>
                     <td onMouseEnter={(e) => hover([{member},e])} onMouseLeave={hoverOut}>{member.Name}</td>
                     <td>{member.Major}</td>
-                    { certificationList.map((cert) => 
+                    { certFullNameList.map((cert) => 
                       member[cert] ? (
                         <td key={member.id+"_"+cert+"_td"} className="true"></td>
                         ) : ( <td key={member.id+"_"+cert+"_td"} className="false"></td>)
