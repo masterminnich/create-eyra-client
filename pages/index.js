@@ -1197,9 +1197,13 @@ export default function Home({ isConnected, members, activity }) {
       <ul>
         <li>Change date of activity.... Fix duplicates in members collection</li>
         <li>validation: no negative session minutes</li>
+        <li>New Member creation time is 5 hours off.</li>
+        <li>Am I updating lastBadge time correctly? It should trigger after manual edits, only if lastBadge = currentDate...?</li>
+        <li>Potential Glitch: Disallow non-alphanumeric characters for Member Name upon sign up</li>
       </ul>
       <h3>Next up:</h3>
       <ul>
+        <li>Add Grad Students to Graduation year List</li>
         <li>Add button to badgeIn allowing members to make accounts w/o an ID. We should flag all no id members w/ the same RFID_UID. They can select from the list of all accounts to badgeIn if they made an account already.</li>
         <li>Change "badge someone in..." to "search members". Have the badgeIn button in addition to info which gives What certs, rfid uid, etc.</li>
         <li>check if user badgeIn time is from a different day. Alert the user.</li>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
+import FileSaver from 'file-saver';
 
 
 function CalendarChart ({google, calStats}) {
@@ -64,6 +65,26 @@ function CalendarChart ({google, calStats}) {
         setChart(newChart);
     }
 
+    function downloadCSV(){
+        let length = calStats["Certification"].length //How many rows of data to be written
+        let vars=Object.keys(calStats) //Get a list of all variable names
+        let headerCSV = "Date," + vars.join() //This is the first line of the CSV which serves as a header, listing all the variables
+        let contentCSV = headerCSV
+
+        for(let i=0; i<length; i++){ //Iterate through each row
+            contentCSV += "\n" //Append a new line
+            contentCSV += calStats["Certification"][i][0] //Apend the date
+            vars.forEach(variable => //Fetch the value for each variable for the given row
+                contentCSV += ","+calStats[variable][i][1]
+            )
+        }
+
+        console.log(contentCSV)
+
+        const csvBlob = new Blob([contentCSV], { type: 'text/csv;charset=utf-8;' });
+        FileSaver.saveAs(csvBlob, 'BadgingSystem Stats.csv');
+    }
+
     useEffect(() => { // This is called everytime varOfInterest changes.
         if (google){ // Ensure google charts is loaded before trying to render a chart
             loadChart()
@@ -100,6 +121,9 @@ function CalendarChart ({google, calStats}) {
                     <option value="Staff on Duty">Staff on Duty</option>
                     <option value="Undefined">Undefined</option>
                 </select>
+                <button type="button" id="downloadCSV" download="" onClick={() => downloadCSV()}>
+                    Download as CSV
+                </button>
             </div>
         </>
     )
