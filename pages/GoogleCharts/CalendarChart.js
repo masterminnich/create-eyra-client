@@ -85,6 +85,138 @@ function CalendarChart ({google, calStats}) {
         FileSaver.saveAs(csvBlob, 'BadgingSystem Stats.csv');
     }
 
+
+    // Stats added after the fact...
+
+    let members;
+    let activities;
+    let statsByMember = {}
+    let statsByMajor = {}
+
+    function computeNewStats(){
+        console.log("members",members,"activities",activities)
+        for(let i=1; i<82; i++){ //Manually specify the date range. Spring 2022 = 1 -> 82
+            let dayActivity = activities[i].Events
+            
+            function getStatsByMember(event){
+                if(Object.keys(statsByMember).includes(event.Name)){
+                    statsByMember[event.Name].visits += 1
+                    statsByMember[event.Name].cumMinutes += event.sessionLengthMinutes
+                    if(event.event=="Certification"){
+                        if(statsByMember[event.Name].certs.length > 0){ //If appending to a list add comma seperator
+                            statsByMember[event.Name].certs += ', '+event.machineUtilized[0]
+                        } else { //If this is the first entry in the list don't append a comma
+                            statsByMember[event.Name].certs += event.machineUtilized[0]  //Assumes that all certification workshops are saved as seperate events.
+                        }
+                        statsByMember[event.Name].numOfCerts += 1
+                    }
+                } else {
+                    statsByMember[event.Name] = {"visits":1,"cumMinutes":event.sessionLengthMinutes,"certs":"","numOfCerts":0}
+                }
+            }
+
+            function getMajorFromName(name){
+                for(let i=0; i<members.length; i++){
+                    if(members[i].Name == name){
+                        return members[i].Major.replace(",","") //Remove any commas that exist in the Major name
+                    }
+                }
+            }
+
+            function getStatsByMajor(event){
+                let major = getMajorFromName(event.Name)
+                if(Object.keys(statsByMajor).includes(major)){
+                    statsByMajor[major].visits += 1
+                    statsByMajor[major].cumMinutes += event.sessionLengthMinutes
+                    if(event.event=="Certification"){
+                        statsByMajor[major].numOfCerts += 1
+                    }
+                } else {
+                    statsByMajor[major] = {"visits":1,"cumMinutes":event.sessionLengthMinutes,"numOfCerts":0}
+                }
+            }
+
+
+            for(let k=0; k<dayActivity.length; k++){
+                getStatsByMember(dayActivity[k])
+                getStatsByMajor(dayActivity[k])
+            }
+
+        }
+        //convert obj to csv
+        function ObjToCSV(obj, filename, header){
+            let csvContent = header
+            let keys = Object.keys(obj)
+            let vars = Object.keys(obj[keys[0]]); 
+                for(let i=0; i<keys.length; i++){ //for each key
+                    csvContent += keys[i]
+                    for(let j=0; j<vars.length; j++){ //for each variable
+                        if(vars[j] == "certs"){ //
+                            csvContent += ",\""+obj[keys[i]][vars[j]]+"\""
+                        } else {
+                            csvContent += ","+obj[keys[i]][vars[j]]
+                        }
+                    }
+                    csvContent += "\n"
+                }
+            console.log(csvContent)
+            const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            FileSaver.saveAs(csvBlob, filename+'.csv');
+        }
+
+        setTimeout(function () {
+            ObjToCSV(statsByMember, "statsByMember", "Name, visits, cumMinutes, certs, numOfCerts \n")
+            ObjToCSV(statsByMajor, "statsByMajor", "Major, visits, cumMinutes, numOfCerts \n")
+            console.log("statsbyMajor",statsByMajor,"\n","statsByMem",statsByMember)
+        }, 2000);
+    }
+
+    const getMembers = async () => { //Fetch member data from MongoDB for a specific member
+        try {  
+            const res = await fetch(`/api/members/`, {
+                method: 'GET',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                }
+            })
+            let response = res.json();
+            response.then((resp) => {
+              let memberData = resp.data
+              members = memberData
+            })
+        } catch (error) { console.log(error); }
+    }
+
+    const getActivities = async () => {
+        try {  
+            const res = await fetch(`/api/activity/`, {
+                method: 'GET',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                }
+            })
+            let response = res.json();
+            response.then((resp) => {
+              let activityData = resp.data
+              activities = activityData
+            })
+        } catch (error) { console.log(error); }
+    }
+
+    function downloadCSV2(){ //Additional Stats
+        //CSV 1: For each major | members registered, total visits, certifications
+        //CSV 2: For each member | Name, major, total visits, certifications
+        
+        getMembers()
+        getActivities()
+        setTimeout(function () {
+            computeNewStats()
+        }, 2000);
+        console.log("finish download")
+    }
+
     useEffect(() => { // This is called everytime varOfInterest changes.
         if (google){ // Ensure google charts is loaded before trying to render a chart
             loadChart()
@@ -123,6 +255,10 @@ function CalendarChart ({google, calStats}) {
                 </select>
                 <button type="button" id="downloadCSV" download="" onClick={() => downloadCSV()}>
                     Download as CSV
+                </button>
+
+                <button type="button" id="downloadCSV2" download="" onClick={() => downloadCSV2()}>
+                    Download stats/member
                 </button>
             </div>
         </>
