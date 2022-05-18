@@ -132,10 +132,9 @@ function CalendarChart ({google, calStats}) {
                         statsByMajor[major].numOfCerts += 1
                     }
                 } else {
-                    statsByMajor[major] = {"visits":1,"cumMinutes":event.sessionLengthMinutes,"numOfCerts":0}
+                    statsByMajor[major] = {"visits":1,"cumMinutes":event.sessionLengthMinutes,"numOfCerts":0,"numOfMembers":0}
                 }
             }
-
 
             for(let k=0; k<dayActivity.length; k++){
                 getStatsByMember(dayActivity[k])
@@ -166,7 +165,7 @@ function CalendarChart ({google, calStats}) {
 
         setTimeout(function () {
             ObjToCSV(statsByMember, "statsByMember", "Name, visits, cumMinutes, certs, numOfCerts \n")
-            ObjToCSV(statsByMajor, "statsByMajor", "Major, visits, cumMinutes, numOfCerts \n")
+            ObjToCSV(statsByMajor, "statsByMajor", "Major, visits, cumMinutes, numOfCerts, numOfMembers \n")
             console.log("statsbyMajor",statsByMajor,"\n","statsByMem",statsByMember)
         }, 2000);
     }
@@ -206,13 +205,21 @@ function CalendarChart ({google, calStats}) {
     }
 
     function downloadCSV2(){ //Additional Stats
-        //CSV 1: For each major | members registered, total visits, certifications
-        //CSV 2: For each member | Name, major, total visits, certifications
+        function getStatsByMajor2(){ //Append numOfRegistrants to statsByMajor
+            console.log("statsByMajor",statsByMajor)
+            for(let k=0; k<members.length; k++){
+                let major = members[k].Major.replace(",","")
+                console.log(major, statsByMajor[major].numOfMembers)
+                statsByMajor[major].numOfMembers += 1 
+            }
+        }
         
         getMembers()
         getActivities()
         setTimeout(function () {
             computeNewStats()
+            console.log("statsByMajor",statsByMajor)
+            getStatsByMajor2()
         }, 2000);
         console.log("finish download")
     }
