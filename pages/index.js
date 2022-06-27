@@ -1195,11 +1195,14 @@ export default function Home({ isConnected, members, activity }) {
       </section>
       <h3>Bugs:</h3>
       <ul>
-        <li>Change date of activity.... Fix duplicates in members collection</li>
+        <li>Activities stored in members collection: Should this be trashed? Or should we carefully update the members collection?</li>
         <li>validation: no negative session minutes</li>
-        <li>New Member creation time is 5 hours off.</li>
+        <li>New Member creation time is 5 hours off.
+          <li>Centralized Time System: Store times in UTC. Translate to local time </li>
+          <li>PopUp Time Entry: Leading zeros...</li>
+        </li>
         <li>Am I updating lastBadge time correctly? It should trigger after manual edits, only if lastBadge = currentDate...?</li>
-        <li>Potential Glitch: Disallow non-alphanumeric characters for Member Name upon sign up</li>
+        <li style={{textDecoration: "line-through"}}>Potential Glitch: Disallow non-alphanumeric characters for Member Name upon sign up</li>
       </ul>
       <h3>Next up:</h3>
       <ul>
@@ -1208,9 +1211,11 @@ export default function Home({ isConnected, members, activity }) {
         <li>Change "badge someone in..." to "search members". Have the badgeIn button in addition to info which gives What certs, rfid uid, etc.</li>
         <li>check if user badgeIn time is from a different day. Alert the user.</li>
         <li>Prevent members from accessing this page (the backend)</li>
-        <li>Change "Faculty" to "Fac/Staff" on newMember page</li>
-        <li>Add Comb Binder to Other Tools list</li>
         <li>Auto update index page (using state changes)</li>
+        <li>Index Page: Combine EditPopUp and PopUp into one component (minify)</li>
+        <li>NEW FEATURE: Batch deletes. Click and hold "Add info" ~~ adds checkboxes and a delete selected button</li>
+        <li style={{textDecoration: "line-through"}}>Change "Faculty" to "Fac/Staff" on newMember page</li>
+        <li style={{textDecoration: "line-through"}}>Add Comb Binder to Other Tools list</li>
         <li style={{textDecoration: "line-through"}}>Add button to backEnd allowing us to create activity entries w/o a RFID_UID for members who didn't use the badgeSystem</li>
         <li style={{textDecoration: "line-through"}}>New Member Validation: red borders on missing info + message</li>
         <li style={{textDecoration: "line-through"}}>Add button machine, VR to tools list under Other Tools</li>
