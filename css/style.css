@@ -233,9 +233,19 @@ div section form div.field input, div#visitType select{
     left: 12ch;
 }
 
+input.date{
+    position: absolute;
+    left: 12ch;
+}
+
+input.time{
+    position: absolute;
+    left: 28ch;
+}
+
 h1#badgingOutTitle{ text-align: center; }
 
-div#visitType{ margin-bottom: 5px; }
+div#visitType, div#badgeInTime{ margin-bottom: 5px; }
 
 div.checkboxes p{ margin-bottom: 5px; }
 

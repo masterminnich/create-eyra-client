@@ -12,6 +12,7 @@ let GlobalRecentActivityDate = new Date() //This variable keeps track of which d
 const certFullNameList = ['UltimakerCertified', 'GlowforgeCertified', 'FourAxisMillCertified', 'BantamMillCertified', 'P9000Certified', 'SewingCertified', 'SilhouetteCertified', 'FusionCertified', 'VectorCADCertified', 'CircuitDesignCertified',"IndustrialSewingCertified"];
 let certNameList = ["FourAxisMill","BantamMill","Glowforge","P9000","Sewing","Silhouette","Ultimaker","Fusion","VectorCAD","CircuitDesign","IndustrialSewing"]
 let otherToolsNameList = ["ButtonPress","3D Scanners","WacomTablets","VR","Comb Binder"]
+const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
 
 function getMachinesUtilized(){ //Get list of machinesUtilized from an on-screen PopUp
   let machinesUtilized = []
@@ -46,10 +47,11 @@ function ensureCertifications(form, member){
 }
 
 function toEDTString(dateObj){
-  // Converts a DateObj into a DateStr in local EDT time (YYYY-MM-DDTHH:MM:SS). Based on a modified ISO format.
+  // Converts a DateObj into a DateStr in local EDT time
   if (typeof(dateObj) == "string"){ dateObj = new Date(dateObj) } //If function is passed a dateStr instead of a dateObj cast the date to an object before proceeding. 
-  let dateUTCOffsetAdded = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000))
-  var dateEDTStr = dateUTCOffsetAdded.toISOString()//.substring(0,19); 
+  //let dateUTCOffsetAdded = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000))
+  //var dateEDTStr = dateUTCOffsetAdded.toISOString()//.substring(0,19); 
+  dateObj.toLocaleString("en-CA", localDateTimeOptions)
   return dateEDTStr
 }
 
@@ -379,9 +381,9 @@ export default function Home({ isConnected, members, activity }) {
   const [form, setForm] = useState({ 
     badgeInTime: '', Name: '', MemberID: '', badgeInTime: '', badgeOutTime: '', sessionLengthMinutes: '', event: '', machineUtilized: '', otherToolsUtilized: ''
   });
-  const [Editform, setEditForm] = useState({ 
+  /*const [Editform, setEditForm] = useState({ 
     badgeInTime: '', Name: '', MemberID: '', badgeInTime: '', badgeOutTime: '', sessionLengthMinutes: '', event: '', machineUtilized: '', otherToolsUtilized: '', prevBadgeOutTime: ''
-  });
+  });*/
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
   const [errors, setErrors] = useState({});
@@ -390,25 +392,51 @@ export default function Home({ isConnected, members, activity }) {
 
   useEffect(() => {
     if (isSubmitting) {
-        if (Object.keys(errors).length === 0) {
-          updateActivityLog(activity,form,false);
-          console.log("Attempting to add activity to DB:",form)
-          //console.log("activity",activity,"form",form,"members",members)
+      if (Object.keys(errors).length === 0) {
+        updateActivityLog(activity,form,false);
+        console.log("Attempting to add activity to DB:",form)
+        //console.log("activity",activity,"form",form,"members",members)
 
-          //Append a new session to the member
-          let foundMember = members.filter(member => member._id == form.MemberID)[0]
+        //Append a new session to the member
+        let foundMember = members.filter(member => member._id == form.MemberID)[0]
+        let newSession = {'badgeIn': form.badgeInTime, 'badgeOut':form.badgeOutTime, 'sessionLengthMinutes': form.sessionLengthMinutes};
+        let memberSessionsBefore = foundMember.sessions;
+        foundMember.sessions = memberSessionsBefore.concat(newSession);
+        foundMember.badgedIn = false;
+        foundMember.lastBadgeIn = form.badgeOutTime;
+        let memberEnsured = ensureCertifications(form, foundMember)
+        updateMemberBadgeInStatus(memberEnsured);
+      }
+      else {
+        setIsSubmitting(false);
+        console.log("Error submitting form.",errors)
+      }
+    }
+  }, [errors])
+
+  useEffect(() => {
+    if (isSubmittingEdit) {
+      if (Object.keys(errors).length === 0) {
+        updateActivityLog(activity,form,editEvent._id);
+        console.log("Updating activity from DB:",form) //Changed!  Editform -> form
+        //console.log("activity",activity,"Editform",Editform,"members",members)
+
+        //Find and replace member session.
+        let foundMemberList = members.filter(member => member._id == form.MemberID)
+        if(foundMemberList.length == 1){ //Make sure only one member fits the search. This will fail if the member is unknown (they aren't in the members collection)
+          let foundMember = foundMemberList[0] 
           let newSession = {'badgeIn': form.badgeInTime, 'badgeOut':form.badgeOutTime, 'sessionLengthMinutes': form.sessionLengthMinutes};
-          let memberSessionsBefore = foundMember.sessions;
-          foundMember.sessions = memberSessionsBefore.concat(newSession);
-          foundMember.badgedIn = false;
+          let foundSessions = foundMember.sessions.filter(fmem => fmem.badgeOut !== form.prevBadgeOutTime)
+          foundMember.sessions = foundSessions.concat(newSession);
           foundMember.lastBadgeIn = form.badgeOutTime;
           let memberEnsured = ensureCertifications(form, foundMember)
           updateMemberBadgeInStatus(memberEnsured);
         }
-        else {
-            setIsSubmitting(false);
-            console.log("Error submitting form.",errors)
-        }
+      }
+      else {
+        setIsSubmittingEdit(false);
+        console.log("Error submitting form.",errors)
+      }
     }
   }, [errors])
 
@@ -462,6 +490,11 @@ export default function Home({ isConnected, members, activity }) {
   }
 
   const handleSubmit = (e) => {
+    let props = JSON.parse(e.target[23].innerText) //Get props from <Popup/> Component
+    console.log("props",props)
+    console.log("e",e)
+    console.log("eeeee",e.target.badgeInTime.value,e.target.badgeInDate.value)
+
     //Get Machines Utilized
     let machinesUtilized =  getMachinesUtilized();
     let otherToolsUtilized = getotherToolsUtilized();
@@ -475,112 +508,111 @@ export default function Home({ isConnected, members, activity }) {
       }
     }
 
+    /*
     //Check if input field changed from default value
-    let badgedInTime = ''; let badgedOutTime = '';
+    let badgedInDateTime = ''; let badgedOutDateTime = '';
     if (e.target.badgeInTime.value == ""){
-      badgedInTime = e.target.badgeInTime.placeholder
+      badgedInDateTime = e.target.badgeInTime.placeholder //CHANGE TO DEFAULTVALUE!!!!
     } else { 
-      badgedInTime = e.target.badgeInTime.value
-    }
+      badgedInDateTime = e.target.badgeInTime.value 
+    } 
     if (e.target.badgeOutTime.value == ""){
-      badgedOutTime = e.target.badgeOutTime.placeholder
-    } else { badgedOutTime = e.target.badgeOutTime.value }
+      badgedOutDateTime = e.target.badgeOutTime.placeholder
+    } else { 
+      badgedOutDateTime = e.target.badgeOutTime.value 
+    }
+    
+    let badgedInDateTime = new Date(props.badgeInDate+" "+props.badgeInTime+" EDT")
+    let badgedOutDateTime = new Date(props.badgeOutDate+" "+props.badgeOutTime+" EDT")
+    */
+
+    //Get badge in/out datetimes. Convert local time to UTC!
+    let badgedInDateTime = new Date(e.target.badgeInDate.value+" "+e.target.badgeInTime.value+" EDT")
+    let badgedOutDateTime = new Date(e.target.badgeOutDate.value+" "+e.target.badgeOutTime.value+" EDT")
 
     //Calculate sessionLengthMinutes
-    let outDate = new Date(badgedOutTime);
-    let inDate = new Date(badgedInTime);
-    let sessionLengthMinutes = Math.round(outDate - inDate)/60000
+    let sessionLengthMinutes = Math.round(badgedOutDateTime - badgedInDateTime)/60000
+
+    let memberName = ""; let memberID = "";
+    if(typeof(vMember)=="undefined"){ //If vMember.Name doesn't exist. (This happens when editing events of Unknown Members)
+      memberName = ActivityName;
+      memberID = ActivityId;
+    }else{ 
+      memberName = vMember.Name;
+      memberID = vMember['_id'];
+    }
 
     setForm({
       ...form,
       ["event"]: e.target.event.value,
       ["Name"]: vMember.Name,
       ['MemberID']: vMember['_id'],
-      ["badgeOutTime"]: badgedOutTime,
-      ["badgeInTime"]: badgedInTime,
+      ["badgeInTime"]: badgedInDateTime.toISOString(),
+      ["badgeOutTime"]: badgedOutDateTime.toISOString(),
       ["sessionLengthMinutes"]: sessionLengthMinutes,
       ['machineUtilized']: machinesUtilized,
       ['otherToolsUtilized']: otherToolsUtilized,
     })
 
+    //Check whether to create a new event or edit an existing event.
+    if(props.existsInDB == false){ 
+      setIsSubmitting(true);
+    } else { 
+      setIsSubmittingEdit(true);
+    }
+
     e.preventDefault();
     let errs = validate(e);
     setErrors(errs);
-    setIsSubmitting(true);
-    setisOpen(false) //This stops rendering the Popup component
-  }
-
-  const closeEditPopup = async() => {
+    setisOpen(false); //This stops rendering the Popup component
     seteditIsOpen(false);
   }
 
   const closePopup = async() => {
     setisOpen(false);
+    seteditIsOpen(false);
   }
 
   function Popup(props) {
     //console.log("Popup activity",activity)
+    console.log("Popup props:",props)
     return (
     <>
-      <h1 id="badgingOutTitle">Badging out {vMember.Name}...</h1>
+      <h1 id="badgingOutTitle">{props.message}</h1>
       <Form onSubmit={handleSubmit}>
-        <VisitType/>
-        <Form.Input
-          label='Badged In: '
-          placeholder={toEDTString(new Date(vSession.badgeIn)).substring(0,19)}
-          defaultValue={toEDTString(new Date(vSession.badgeIn)).substring(0,19)}
-          name='badgeInTime'
-        />
-        <Form.Input
-          label='Badged Out: '
-          placeholder={toEDTString(new Date(vSession.badgeOut)).substring(0,19)}
-          defaultValue={toEDTString(new Date(vSession.badgeOut)).substring(0,19)}
-          name='badgeOutTime'
-        />
-        
+        <VisitType selectValue={vSession.visitType}/> {/*PASS AS PROP!!!!*/}
+        <div id="badgeInTime">
+          <label htmlFor="badgeInTime">Badged In: </label>
+          <input id="badgeInDate" type="date" className="date" defaultValue={props.badgeInDate}></input>
+          <input id="badgeInTime" type="time" className="time" defaultValue={props.badgeInTime}></input>
+        </div>
+        <div id="badgeOutTime">
+          <label htmlFor="badgeOutTime">Badged Out: </label>
+          <input id="badgeOutDate" type="date" className="date" defaultValue={props.badgeOutDate}></input>
+          <input id="badgeOutTime" type="time" className="time" defaultValue={props.badgeOutTime}></input>
+        </div>
+
         <div className="equipment">
           <MachinesUtilized/>
           <OtherToolsUtilized/>
         </div>
 
-        <Button type='button' id="deleteActivityButton" onClick={(e) => deleteActivity([e,activity, members, vSession, vMember,false])}></Button>
-        <Button type='submit' id="submitBadgeOutPopup">Badge Out</Button>
+        <textarea style={{display:"none"}} id="hiddenProps" defaultValue={JSON.stringify(props)}></textarea>
+
+        <Button type='button' name={ActivityId} id="deleteActivityButton" onClick={(e) => deleteActivity([e, activity, members, vSession, vMember, props.existsInDB])}></Button>
+        <Button type='submit' id="submitBadgeOutPopup">{props.submitButtonText}</Button>
         <Button type='button' id="cancelPopupButton" onClick={() => closePopup()}>Cancel</Button>
       </Form>
     </>
     )
   }
 
-  useEffect(() => {
-    if (isSubmittingEdit) {
-      if (Object.keys(errors).length === 0) {
-        //Find and replace activity.
-        let activityID = editEvent._id
+  const closeEditPopup = async() => {
+    setisOpen(false);
+    seteditIsOpen(false);
+  }
 
-        console.log("Updating activity from DB:",Editform)
-        updateActivityLog(activity,Editform,activityID);
-        //console.log("activity",activity,"Editform",Editform,"members",members)
-
-        //Find and replace member session.
-        let foundMemberList = members.filter(member => member._id == Editform.MemberID)
-        if(foundMemberList.length == 1){ //Make sure only one member fits the search. This will fail if the member is unknown (they aren't in the members collection)
-          let foundMember = foundMemberList[0] 
-          let newSession = {'badgeIn': Editform.badgeInTime, 'badgeOut':Editform.badgeOutTime, 'sessionLengthMinutes': Editform.sessionLengthMinutes};
-          let foundSessions = foundMember.sessions.filter(fmem => fmem.badgeOut !== Editform.prevBadgeOutTime)
-          foundMember.sessions = foundSessions.concat(newSession);
-          foundMember.lastBadgeIn = Editform.badgeOutTime;
-          let memberEnsured = ensureCertifications(Editform, foundMember)
-          updateMemberBadgeInStatus(memberEnsured);
-        }
-      }
-      else {
-        setIsSubmittingEdit(false);
-        console.log("Error submitting form.",errors)
-      }
-    }
-  }, [errors])
-
-  const handleEditSubmit = (e) => {
+  /*const handleEditSubmit = (e) => {
     //Get Machines Utilized
     let machinesUtilized =  getMachinesUtilized();
     let otherToolsUtilized = getotherToolsUtilized();
@@ -637,9 +669,9 @@ export default function Home({ isConnected, members, activity }) {
     setErrors(errs);
     setIsSubmittingEdit(true);
     seteditIsOpen(false) //This closes the component
-  }
+  }*/
 
-  function EditPopup(props) {
+  /*function EditPopup(props) {
     //console.log("vSession",vSession)
     return (
     <>
@@ -671,14 +703,15 @@ export default function Home({ isConnected, members, activity }) {
       </Form>
     </>
     )
-  }
+  }*/
 
   function updateMemberBadgeInStatusManually(member, activity) {
-    //Convert UTC to local time
-    let currDate = new Date();
-    let dateEDTStr = toEDTString(currDate).substring(0,19) //Convert DateObj into a dateStr in local EDT time (YYYY-MM-DDTHH:MM:SS)
+    //Get local time
+    console.log("last badge ",member.lastBadgeIn)
+    let dateEDTStr = new Date().toLocaleString("en-CA", localDateTimeOptions)
+    let badgeInEDT = new Date(member.lastBadgeIn).toLocaleString("en-CA", localDateTimeOptions)
 
-    vSession = {'badgeIn':toEDTString(member.lastBadgeIn).substring(0,19), 'badgeOut':dateEDTStr}//member.sessions[member.sessions.length-1].badgeIn}
+    vSession = {'badgeIn':badgeInEDT, 'badgeOut':dateEDTStr}//member.sessions[member.sessions.length-1].badgeIn}
     
     vMember = member //save member to a global variable
 
@@ -1013,7 +1046,7 @@ export default function Home({ isConnected, members, activity }) {
         return activities
       }
 
-      let dateStr = GlobalRecentActivityDate.toISOString().substring(0,10)
+      let dateStr = GlobalRecentActivityDate.toLocaleString("en-CA", localDateTimeOptions).substring(0,10)
       let currDate = GlobalRecentActivityDate
       let todayActivity = getTodaysActivities();
 
@@ -1065,7 +1098,7 @@ export default function Home({ isConnected, members, activity }) {
         } else if (arg == "backward-one-day"){
           currDate.setMinutes(currDate.getMinutes() - 24*60); //Change dateObj to the previous day
         }
-        let dateEDTStr = toEDTString(currDate)
+        let dateEDTStr = currDate.toLocaleString("en-CA", localDateTimeOptions)
         dateStr = dateEDTStr.substring(0,10) //YYYY-MM-DD
         document.getElementById("date").innerText=dateStr;
         let activities = getTodaysActivities();
@@ -1136,17 +1169,35 @@ export default function Home({ isConnected, members, activity }) {
       {isOpen ? (
         <React.Fragment>
           <section className="backEndPopUp">
-            <Popup/>
+            <Popup 
+              badgeInDate={new Date(vSession.badgeIn).toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
+              badgeInTime={new Date(vSession.badgeIn).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
+              badgeOutDate={new Date(vSession.badgeOut).toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
+              badgeOutTime={new Date(vSession.badgeOut).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
+              message={"Badging in "+vMember.Name+"..."}
+              submitButtonText="Badge Out"
+              existsInDB={false}
+            />
           </section>
         </React.Fragment>
       ) : (
         <div></div>
       )}
 
-      {editIsOpen ? (
+      {editIsOpen ? ( //Removed: editIsOpen
         <React.Fragment>
           <section className="backEndPopUp">
-            <EditPopup new={true}/>
+            <Popup 
+              badgeInDate={new Date(vSession.badgeIn).toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
+              badgeInTime={new Date(vSession.badgeIn).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
+              badgeOutDate={new Date(vSession.badgeOut).toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
+              badgeOutTime={new Date(vSession.badgeOut).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
+              message="Editing Activity"
+              submitButtonText="Update"
+              existsInDB={true}
+              new={true} //Unused....? !!!!!
+              //visitType!!!!!!!
+            />
           </section>
         </React.Fragment>
       ) : (
@@ -1198,8 +1249,10 @@ export default function Home({ isConnected, members, activity }) {
         <li>Activities stored in members collection: Should this be trashed? Or should we carefully update the members collection?</li>
         <li>validation: no negative session minutes</li>
         <li>New Member creation time is 5 hours off.
-          <li>Centralized Time System: Store times in UTC. Translate to local time </li>
-          <li>PopUp Time Entry: Leading zeros...</li>
+          <ul>
+            <li>Centralized Time System: Store times in UTC. Translate to local time </li>
+            <li>PopUp Time Entry: Leading zeros...</li>
+          </ul>
         </li>
         <li>Am I updating lastBadge time correctly? It should trigger after manual edits, only if lastBadge = currentDate...?</li>
         <li style={{textDecoration: "line-through"}}>Potential Glitch: Disallow non-alphanumeric characters for Member Name upon sign up</li>
