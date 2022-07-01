@@ -65,56 +65,8 @@ export default async function handler(req, res) {
                 console.log("ERROR:",error)
                 res.status(400).json({ success: false })
             }
-
-            /*
-            let dateObj = new Date();
-            let edt_offset = -5*60; 
-            dateObj.setMinutes(dateObj.getMinutes() + edt_offset);
-            let dateStr = dateObj.toISOString().substring(0,10); //YYYY-MM-DD
-
-            const activity1 = await Activity.find({Date: dateStr})
-
-            try {
-                const activity2 = await Activity.findByIdAndUpdate(activity1[0]._id, req.body, {
-                    new: true,
-                    runValidators: true
-                });
-                console.log("New activity added to database:",activity2.Date);
-
-                res.status(201).json({ success: true, data: activity2, dateStr1:dateStr })
-            } catch (error) {
-                console.log("Error at api/activity/index.js")
-                res.status(400).json({ success: false });
-                console.log(error);
-            }*/
-
-            /* BACKUP
-            
-            let dateObj = new Date();
-            let edt_offset = -5*60; 
-            dateObj.setMinutes(dateObj.getMinutes() + edt_offset);
-            let dateStr = dateObj.toISOString().substring(0,10); //YYYY-MM-DD
-
-            const activity1 = await Activity.find({Date: dateStr})
-
-            try {
-                const activity2 = await Activity.findByIdAndUpdate(activity1[0]._id, req.body, {
-                    new: true,
-                    runValidators: true
-                });
-                console.log("New activity added to database:",activity2.Date);
-
-                res.status(201).json({ success: true, data: activity2, dateStr1:dateStr })
-            } catch (error) {
-                console.log("Error at api/activity/index.js")
-                res.status(400).json({ success: false });
-                console.log(error);
-            }
-
-            */
-
-            break;/*
-        case 'DELETE':
+            break;
+        /*case 'DELETE':
             try {
                 const activity = await Activity.find({});
                 res.status(200).json({ success: true, data: activity })

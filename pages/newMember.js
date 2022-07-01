@@ -5,6 +5,7 @@ import { Button, Form, Loader, Radio, Dropdown } from 'semantic-ui-react';
 //import { render } from 'react-dom';
 //import Link from 'next/link';
 
+const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
 
 const getActivitiesCollection = async (newMemberData) => {
     try {

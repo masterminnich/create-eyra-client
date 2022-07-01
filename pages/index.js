@@ -46,16 +46,6 @@ function ensureCertifications(form, member){
   return member
 }
 
-function toEDTString(dateObj){
-  // Converts a DateObj into a DateStr in local EDT time
-  if (typeof(dateObj) == "string"){ dateObj = new Date(dateObj) } //If function is passed a dateStr instead of a dateObj cast the date to an object before proceeding. 
-  //let dateUTCOffsetAdded = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000))
-  //var dateEDTStr = dateUTCOffsetAdded.toISOString()//.substring(0,19); 
-  dateObj.toLocaleString("en-CA", localDateTimeOptions)
-  return dateEDTStr
-}
-
-
 /* Start Tooltips Code */
 function hover(params){ //Checks to see if an element has been hovered over for 2 seconds or more. params = [memberDataOrId, parentElement]. parentElement is the element is which the hover originated. 
   let memberDataOrId = params[0] 
@@ -508,24 +498,6 @@ export default function Home({ isConnected, members, activity }) {
       }
     }
 
-    /*
-    //Check if input field changed from default value
-    let badgedInDateTime = ''; let badgedOutDateTime = '';
-    if (e.target.badgeInTime.value == ""){
-      badgedInDateTime = e.target.badgeInTime.placeholder //CHANGE TO DEFAULTVALUE!!!!
-    } else { 
-      badgedInDateTime = e.target.badgeInTime.value 
-    } 
-    if (e.target.badgeOutTime.value == ""){
-      badgedOutDateTime = e.target.badgeOutTime.placeholder
-    } else { 
-      badgedOutDateTime = e.target.badgeOutTime.value 
-    }
-    
-    let badgedInDateTime = new Date(props.badgeInDate+" "+props.badgeInTime+" EDT")
-    let badgedOutDateTime = new Date(props.badgeOutDate+" "+props.badgeOutTime+" EDT")
-    */
-
     //Get badge in/out datetimes. Convert local time to UTC!
     let badgedInDateTime = new Date(e.target.badgeInDate.value+" "+e.target.badgeInTime.value+" EDT")
     let badgedOutDateTime = new Date(e.target.badgeOutDate.value+" "+e.target.badgeOutTime.value+" EDT")
@@ -820,49 +792,51 @@ export default function Home({ isConnected, members, activity }) {
 
     onSubmit(){
       let badgeInAndCreateEvent = document.getElementById("createEventCheckbox").checked
-      let badgeInInput = document.getElementById("badgeInInput")
-      let badgeOutInput = document.getElementById("badgeOutInput")
+      let badgeInDate = document.getElementById("badgeInDate").value
+      let badgeInTime = document.getElementById("badgeInTime").value
+      let badgeOutDate = document.getElementById("badgeOutDate").value
+      let badgeOutTime = document.getElementById("badgeOutTime").value
+      let todaysActivities;
+      let createNewEvent;
       if(badgeInAndCreateEvent){ //If the checkbox is selected create entries in the activities collection
         let numMembers = document.getElementById("numMembersToBadgeIn").value
-        for(let i=0; i<numMembers; i++){
-          let todaysActivities = activity.filter(a => a.Date==badgeInInput.value.slice(0,10))[0]
-          let searchedTodaysActivities = todaysActivities
-          if (typeof(todaysActivities) == "undefined"){ //No events found
-            console.log("No events found for this day.")
-            let todaysEvents = [] //Create an empty array to append events to
-            todaysActivities = {
-              "Date": badgeInInput.value,
-              "Events": todaysEvents
-            }
-          } else { 
-            let todaysEvents = todaysActivities.Events
+        todaysActivities = activity.filter(a => a.Date==badgeInDate)[0]
+        if (typeof(todaysActivities) == "undefined"){ //No events found
+          console.log("No events found for this day.")
+          createNewEvent = true;
+          todaysActivities = {
+            "Date": badgeInDate,
+            "Events": [] //Create an empty array to append events to
           }
-          //Create New Event
-          //for(let i=0; i< document.getElementById("numMembersToBadgeIn").value; i++){
-            let memberToAppend = document.getElementById("member"+i).value
-            let sessionLengthMinutes = Math.round(new Date(badgeOutInput.value) - new Date(badgeInInput.value))/60000
-
-            //Get Machines Utilized
-            let machinesUtilized =  getMachinesUtilized();
-            let otherToolsUtilized = getotherToolsUtilized();
-
-            let eventToAppend = { 
-              "Name": memberToAppend,
-              "badgeInTime" : badgeInInput.value,
-              "badgeOutTime" : badgeOutInput.value,
-              "event": document.getElementsByName("event")[0].value,
-              "machineUtilized": machinesUtilized,
-              "sessionLengthMinutes": sessionLengthMinutes,
-              "otherToolsUtilized": otherToolsUtilized,
-            }
-            todaysActivities.Events.push(eventToAppend)
+        } else { 
+          console.log("found events",todaysActivities.Events)
+          createNewEvent = false;
         }
-        if (typeof(searchedTodaysActivities) == "undefined"){ //No events found
+        for(let i=0; i<numMembers; i++){
+          let memberToAppend = document.getElementById("member"+i).value
+          let sessionLengthMinutes = Math.round(new Date(badgeOutDate+" "+badgeOutTime+" EDT") - new Date(badgeInDate+" "+badgeInTime+" EDT"))/60000
+
+          //Get Machines Utilized
+          let machinesUtilized =  getMachinesUtilized();
+          let otherToolsUtilized = getotherToolsUtilized();
+
+          let eventToAppend = { 
+            "Name": memberToAppend,
+            "badgeInTime" : new Date(badgeInDate+" "+badgeInTime+" EDT").toISOString(),
+            "badgeOutTime" : new Date(badgeOutDate+" "+badgeOutTime+" EDT").toISOString(),
+            "event": document.getElementsByName("event")[0].value,
+            "machineUtilized": machinesUtilized,
+            "sessionLengthMinutes": sessionLengthMinutes,
+            "otherToolsUtilized": otherToolsUtilized,
+          }
+          todaysActivities.Events.push(eventToAppend)
+        }
+        if (createNewEvent){ //No events found
           console.log("Creating new Activity...");
-          createNewActivity(badgeInInput.value.slice(0,10), todaysEvents);
+          createNewActivity(badgeInDate, todaysActivities.Events);
         } else {
-          console.log("Appending events to existing Activity... date:",badgeInInput.value.slice(0,10));
-          updateActivityByDate(badgeInInput.value.slice(0,10), todaysActivities.Events);
+          console.log("Appending events to existing Activity... date:",badgeInDate);
+          updateActivityByDate(badgeInDate, todaysActivities.Events);
         }        
         //document.getElementById("enterInfoNoID").remove()  //Close this component
       } else { //If the checkbox is not selected badge the members in, an entry to the activities collection will be made upon badge out.
@@ -871,7 +845,7 @@ export default function Home({ isConnected, members, activity }) {
     }
 
     render(){
-      let todaysDate = new Date().toISOString().slice(0,19);
+      let todaysDate = new Date().toLocaleString("en-CA", localDateTimeOptions);
       return(
         <>
           <section id="enterInfoNoID" className="backEndPopUp">
@@ -879,17 +853,24 @@ export default function Home({ isConnected, members, activity }) {
               <p style={{"display": "inline"}}>Members: </p>
               <input type="number" min="1" max="35" defaultValue="1" id="numMembersToBadgeIn" onChange={this.numOfMembersChanged.bind(this)} style={{"display": "inline"}}></input>
             </div>
+
             <VisitType/>
-            <label className="enterInfoLabelFixed" htmlFor="badgeInTime">Badged In:
-              <input defaultValue={todaysDate} name="badgeInTime" id="badgeInInput"></input>
-            </label>
-            <label className="enterInfoLabelFixed" htmlFor="badgeOutTime">Badged Out: 
-              <input defaultValue={todaysDate} name="badgeOutTime" id="badgeOutInput"></input>
-            </label>
+            <div>
+              <label htmlFor="badgeInTime" style={{float:"left"}}>Badged In: </label>
+              <input id="badgeInDate" type="date" className="date" defaultValue={todaysDate.substring(0,10)}></input>
+              <input id="badgeInTime" type="time" className="time" defaultValue={todaysDate.substring(12,17)}></input>
+            </div>
+            <div>
+              <label htmlFor="badgeOutTime" style={{float:"left"}}>Badged Out: </label>
+              <input id="badgeOutDate" type="date" className="date" defaultValue={todaysDate.substring(0,10)}></input>
+              <input id="badgeOutTime" type="time" className="time" defaultValue={todaysDate.substring(12,17)}></input>
+            </div>
+
             <div className="equipment">
               <MachinesUtilized/>
               <OtherToolsUtilized/>
             </div>
+
             <button type="button" onClick={this.togglePopup} style={{"width": "10ch","left":"0","bottom":"0","position":"absolute"}}>Close</button>
             <button type="button" onClick={ this.onSubmit } style={{"width": "10ch","right":"0","bottom":"0","position":"absolute"}}>Submit</button>
             {this.state.members.map((char) =>
@@ -897,7 +878,7 @@ export default function Home({ isConnected, members, activity }) {
                 <input type="text" id={"member"+char} defaultValue={"Unknown Member"} style={{"display":"inline-block", "position":"absolute", "left":"7ch", "width": "30ch"}}></input>
               </label>
             )}
-            <label className="enterInfoLabel" htmlFor="createEventCheckbox">Badge Out and Create Event?
+            <label className="enterInfoLabel" htmlFor="createEventCheckbox" checked>Badge Out and Create Event?
               <input type="checkbox" id="createEventCheckbox" name="createEventCheckbox"></input>
             </label>
           </section>
@@ -1043,6 +1024,7 @@ export default function Home({ isConnected, members, activity }) {
       function getTodaysActivities(){
         let activities = activity.filter(act => act.Date == dateStr);
         console.log("getTodaysActivities():",activities)
+        if(activities.length>1){ console.log("ERROR: Multiple documents with same date. Please fix in Mongo.") }
         return activities
       }
 
@@ -1251,7 +1233,6 @@ export default function Home({ isConnected, members, activity }) {
         <li>New Member creation time is 5 hours off.
           <ul>
             <li>Centralized Time System: Store times in UTC. Translate to local time </li>
-            <li>PopUp Time Entry: Leading zeros...</li>
           </ul>
         </li>
         <li>Am I updating lastBadge time correctly? It should trigger after manual edits, only if lastBadge = currentDate...?</li>
@@ -1265,8 +1246,9 @@ export default function Home({ isConnected, members, activity }) {
         <li>check if user badgeIn time is from a different day. Alert the user.</li>
         <li>Prevent members from accessing this page (the backend)</li>
         <li>Auto update index page (using state changes)</li>
-        <li>Index Page: Combine EditPopUp and PopUp into one component (minify)</li>
         <li>NEW FEATURE: Batch deletes. Click and hold "Add info" ~~ adds checkboxes and a delete selected button</li>
+        <li>Perfect VisitType nomenclature. Also add a question mark button that gives definitions of each visitType. Add Meeting w/ Joe</li>
+        <li style={{textDecoration: "line-through"}}>Index Page: Combine EditPopUp and PopUp into one component (minify)</li>
         <li style={{textDecoration: "line-through"}}>Change "Faculty" to "Fac/Staff" on newMember page</li>
         <li style={{textDecoration: "line-through"}}>Add Comb Binder to Other Tools list</li>
         <li style={{textDecoration: "line-through"}}>Add button to backEnd allowing us to create activity entries w/o a RFID_UID for members who didn't use the badgeSystem</li>
