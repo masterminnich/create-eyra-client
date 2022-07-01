@@ -68,25 +68,23 @@ function hoverOut(){ //Resets timer when done hovering over an element.
   for (let i=0;i<tooltipsInTheDOM.length;i++){ tooltipsInTheDOM[0].remove() }
 }
 
-function createTooltip(memberData,parentElement){
-  console.log("Making tooltip for ",parentElement,"w/ data:",memberData)
-  let dataToKeep = {"Patron Type":memberData["PatronType"],"Major":memberData["Major"],"GraduationYear":memberData["GraduationYear"],"RFID UID":memberData["rfid"],"joinedDate":new Date(memberData["joinedDate"]).toLocaleString("en-CA", localDateTimeOptions)}//,memberData["lastBadgeIn"]
+function createTooltip(dataToDisplay,parentElement){
   let span = document.createElement("span")
   span.className = "tooltip"
   let arrow = document.createElement("div")
   arrow.className="tooltipArrow"
   span.appendChild(arrow);
-  let dataToKeepKeys = Object.keys(dataToKeep) //The keys are the name of the attribute to be printed
-  for (let i=0;i<dataToKeepKeys.length;i++){ //Create a seperate p element for each attribute.
-    let value = dataToKeep[dataToKeepKeys[i]]
+  let dataToDisplayKeys = Object.keys(dataToDisplay) //The keys are the name of the attribute to be printed
+  for (let i=0;i<dataToDisplayKeys.length;i++){ //Create a seperate p element for each attribute.
+    let value = dataToDisplay[dataToDisplayKeys[i]]
     let p1 = document.createElement("p")
     let p2 = document.createElement("p")
     let div = document.createElement("div")
-    p1.innerText = dataToKeepKeys[i]+": "
-    p1.id = "tooltip_info_p1"+dataToKeepKeys[i]
+    p1.innerText = dataToDisplayKeys[i]+": "
+    p1.id = "tooltip_info_p1"+dataToDisplayKeys[i]
     p1.className = "tooltip_attribute"
     p2.innerText = String(value)
-    p2.id = "tooltip_info_p2"+dataToKeepKeys[i]
+    p2.id = "tooltip_info_p2"+dataToDisplayKeys[i]
     p2.className = "tooltip_attribute"
     div.appendChild(p1)
     div.appendChild(p2)
@@ -107,15 +105,23 @@ const getMemberDataFromID = async (memberID,parentElement) => { //Fetch member d
       let response = res.json();
       response.then((resp) => {
         let memberData = resp.data
-        //console.log("Got",memberID," member data",memberData)
-        createTooltip(memberData,parentElement)
+        let dataToDisplay;
+        if (memberData !== undefined){  
+          dataToDisplay = {"Patron Type":memberData["PatronType"],"Major":memberData["Major"],"GraduationYear":memberData["GraduationYear"],"RFID UID":memberData["rfid"],"joinedDate":new Date(memberData["joinedDate"]).toLocaleString("en-CA", localDateTimeOptions)}
+          console.log("memberData",memberData)
+        } else { //Create Tooltip for users not in the members collection
+          dataToDisplay = {"RFID UID":"N/A"}
+        }
+        createTooltip(dataToDisplay,parentElement)
       })
   } catch (error) { console.log(error); }
 }
 
 function createMemberTooltip(memberDataOrId,parentElement){
   if (typeof(memberDataOrId) == "object"){ //memberDataOrId is a member object
-    createTooltip(memberDataOrId["member"],parentElement)
+    let dataToDisplay = {"Patron Type":memberDataOrId["member"].PatronType,"Major":memberDataOrId["member"].Major,"GraduationYear":memberDataOrId["member"].GraduationYear,"RFID UID":memberDataOrId["member"].rfid,"joinedDate":new Date(memberDataOrId["member"].joinedDate).toLocaleString("en-CA", localDateTimeOptions)}
+    console.log("create2")
+    createTooltip(dataToDisplay,parentElement)
   } else { //memberDataOrId is member._id as a string
     getMemberDataFromID(memberDataOrId,parentElement);
   }
@@ -1228,15 +1234,10 @@ export default function Home({ isConnected, members, activity }) {
       </section>
       <h3>Bugs:</h3>
       <ul>
-        <li>Tooltips don't throw errors for Unkown Members</li>
         <li>Activities stored in members collection: Should this be trashed? Or should we carefully update the members collection?</li>
         <li>validation: no negative session minutes</li>
-        <li>New Member creation time is 5 hours off.
-          <ul>
-            <li>Centralized Time System: Store times in UTC. Translate to local time </li>
-          </ul>
-        </li>
         <li>Am I updating lastBadge time correctly? It should trigger after manual edits, only if lastBadge = currentDate...?</li>
+        <li style={{textDecoration: "line-through"}}>Tooltips CSS: Automatically resize based on amount of text to display</li>
         <li style={{textDecoration: "line-through"}}>Potential Glitch: Disallow non-alphanumeric characters for Member Name upon sign up</li>
       </ul>
       <h3>Next up:</h3>
