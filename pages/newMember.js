@@ -26,12 +26,8 @@ const getActivitiesCollection = async (newMemberData) => {
 
 //Copied from index.js and badgeIn.js -- Make sure to update any changes to both documents.
 const updateActivityLog = async (activities, newMemberData) => {
-    //Get today's date
+    let dateStr = new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10);
     let dateObj = new Date();
-    let edt_offset = -5*60; 
-    dateObj.setMinutes(dateObj.getMinutes() + edt_offset); //Convert UTC to local time
-    let dateStr = dateObj.getFullYear()+"-"+dateObj.toISOString().substring(5,7)+"-"+dateObj.toISOString().substring(8,10); //YYYY-MM-DD
-
     let ActivityDay = activities.find(a => a.Date == dateStr) //Get the activity document for the correct day
     let newActivity = {MemberID: newMemberData._id, Name: newMemberData.Name, badgeInTime: dateObj, badgeOutTime: dateObj, event: "New Member Registered",machineUtilized: [], sessionLengthMinutes: 0}
 
@@ -79,10 +75,7 @@ class Box0 extends React.Component {
         super(props);
         this.router = props.router;
 
-        //Convert UTC to local time
-        let currDate = new Date();
-        let edt_offset = -5*60; //alternativelly,  currDate.getTimezoneOffset();
-        currDate.setMinutes(currDate.getMinutes() + edt_offset);
+        let currDate = new Date().toLocaleString("en-CA", localDateTimeOptions);
 
         this.state = {
             form: 

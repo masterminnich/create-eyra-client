@@ -35,7 +35,7 @@ const updateMemberBadgeInStatus = async (member) => {
           let inDate = new Date(member.lastBadgeIn)
           let sessionLengthMinutes = Math.round(outDate - inDate)/60000
 
-          let newSession = {'badgeIn': toEDTString(member.lastBadgeIn), 'badgeOut':dateUTCStr, 'sessionLengthMinutes':sessionLengthMinutes};
+          let newSession = {'badgeIn': member.lastBadgeIn, 'badgeOut':dateUTCStr, 'sessionLengthMinutes':sessionLengthMinutes};
           console.log(newSession);
           member.sessions = memberSessionsBefore.concat(newSession);
         }

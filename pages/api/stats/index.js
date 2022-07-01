@@ -23,7 +23,7 @@ function fetchAllStats(activtiesCollection){
     }
 
     //Find Today's Stats
-    let todayDateObj = new Date();
+    let todayDateObj = new Date().toLocaleString("en-CA", localDateTimeOptions)
     let edt_offset = -5*60; 
     todayDateObj.setMinutes(todayDateObj.getMinutes() + edt_offset); //Convert UTC to local time
     let ActivityDate = getActivityDay(todayDateObj)

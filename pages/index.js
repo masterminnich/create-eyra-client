@@ -70,7 +70,7 @@ function hoverOut(){ //Resets timer when done hovering over an element.
 
 function createTooltip(memberData,parentElement){
   console.log("Making tooltip for ",parentElement,"w/ data:",memberData)
-  let dataToKeep = {"Patron Type":memberData["PatronType"],"Major":memberData["Major"],"GraduationYear":memberData["GraduationYear"],"RFID UID":memberData["rfid"],"joinedDate":memberData["joinedDate"]}//,memberData["lastBadgeIn"]
+  let dataToKeep = {"Patron Type":memberData["PatronType"],"Major":memberData["Major"],"GraduationYear":memberData["GraduationYear"],"RFID UID":memberData["rfid"],"joinedDate":new Date(memberData["joinedDate"]).toLocaleString("en-CA", localDateTimeOptions)}//,memberData["lastBadgeIn"]
   let span = document.createElement("span")
   span.className = "tooltip"
   let arrow = document.createElement("div")
@@ -1228,6 +1228,7 @@ export default function Home({ isConnected, members, activity }) {
       </section>
       <h3>Bugs:</h3>
       <ul>
+        <li>Tooltips don't throw errors for Unkown Members</li>
         <li>Activities stored in members collection: Should this be trashed? Or should we carefully update the members collection?</li>
         <li>validation: no negative session minutes</li>
         <li>New Member creation time is 5 hours off.
@@ -1248,6 +1249,7 @@ export default function Home({ isConnected, members, activity }) {
         <li>Auto update index page (using state changes)</li>
         <li>NEW FEATURE: Batch deletes. Click and hold "Add info" ~~ adds checkboxes and a delete selected button</li>
         <li>Perfect VisitType nomenclature. Also add a question mark button that gives definitions of each visitType. Add Meeting w/ Joe</li>
+        <li>Proper Coding Convention: Replace getMachinesUtilized(), getotherToolsUtilized() with props</li>
         <li style={{textDecoration: "line-through"}}>Index Page: Combine EditPopUp and PopUp into one component (minify)</li>
         <li style={{textDecoration: "line-through"}}>Change "Faculty" to "Fac/Staff" on newMember page</li>
         <li style={{textDecoration: "line-through"}}>Add Comb Binder to Other Tools list</li>
