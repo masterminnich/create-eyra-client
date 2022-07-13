@@ -282,6 +282,7 @@ class Box0 extends React.Component {
                                 <label htmlFor="GraduationYear">Graduation Year: </label>
                                 <select name="GraduationYear" onChange={this.handleSelect} style={ this.state.errors.GraduationYear ? { border:"red solid" } : {  }}>
                                     <option value="N/A">N/A</option>
+                                    <option value="Grad Student">Grad Student</option>
                                     <option value="2022">2022</option>
                                     <option value="2023">2023</option>
                                     <option value="2024">2024</option>

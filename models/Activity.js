@@ -29,6 +29,9 @@ const ActivitySchema = new Schema({
     otherToolsUtilized: {
         type: Array,
     },
+    flags: {
+        type: Array,
+    }
 })
 
 const DailyActivitySchema = new Schema({

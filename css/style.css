@@ -40,7 +40,10 @@ input#badgeInInput, input#badgeOutInput{
     left: 12ch;
 }
 
-.enterInfoLabel{ width: fit-content; }
+.enterInfoLabel{ 
+    width: fit-content;
+    position: relative;
+}
 
 .enterInfoLabelFixed{ 
     width: 24ch;
@@ -62,6 +65,14 @@ section.fit{
     width: fit-content;
     min-width: 500px;
 }
+
+/* Start Question Mark Tooltip */
+#VisitTypeQuestion{
+    width: 1rem;
+    height: 1rem;
+    background-color: red;
+}
+/* End Question Mark Tooltip */
 
 /* Start Tooltip CSS */
 .tooltip{
@@ -129,6 +140,7 @@ div.searchResultsDropdown{
 table#recentActivity { 
     width: -webkit-fill-available; 
     text-align: left; 
+    border-spacing: 0;
 }
 
 table#recentActivity th{ width: 50% }
@@ -136,6 +148,18 @@ table#recentActivity th{ width: 50% }
 section#recentActivity{ 
     width: 65ch;
     margin-top: 25px;
+}
+
+tbody#recentActivityTbody tr:nth-child(odd) {
+    background-color: aliceblue;
+}
+
+tbody#recentActivityTbody tr:nth-child(even) {
+    background-color: mintcream;
+}
+
+tbody#recentActivityTbody tr td {
+    padding: .15em;
 }
 
 table#recentActivity td#noEvents, td.noMembersIn{

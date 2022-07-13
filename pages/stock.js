@@ -1,30 +1,6 @@
 import React, { Component, useState } from 'react';
 import { readRemoteFile } from 'react-papaparse'
 
-function writeRow (filamentRow) {
-    let trNew = document.createElement("tr");
-
-    /*filamentRow.map((elem) => (
-        
-    ));*/
-}
-
-const getFilamentCSV = async(args) => {
-    readRemoteFile('csv/filament.csv', {
-        complete: (results) => {
-            console.log('Results:', results.data);
-            filamentData = results.data;
-            resultHello = "kitty";
-            
-
-            console.log(filamentData);
-            {filamentData.map((filamentRow) => (
-                writeRow(filamentRow)
-            ))}
-        }
-    })
-}
-
 const getInventoryCSV = async(args) => {
     readRemoteFile('csv/inventory.csv', {
         complete: (results) => {
@@ -32,10 +8,6 @@ const getInventoryCSV = async(args) => {
         }
     })
 }
-
-const filamentData = ""
-const resultHello = ""
-const loaded = false;
 
 class App extends Component {
     state = {
