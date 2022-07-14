@@ -866,7 +866,7 @@ export default function Home({ isConnected, members, activity }) {
         firstCheckboxSelected: undefined,
         selected: [] //A list of selected elements
       };
-      console.log("RecentActivity.state =",this.state)
+      //console.log("RecentActivity.state =",this.state)
     }
 
     //componentDidUpdate(){ console.log("update! RecentActivity.state.displayingDay =",this.state.displayingDay) }

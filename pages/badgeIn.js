@@ -8,7 +8,7 @@ var createReactClass = require('create-react-class');
 var RFID_UID_input = "";
 var last_RFID_UID_input = "";
 
-const getActivitiesCollection = async (memberData) => {
+/*const getActivitiesCollection = async (memberData) => {
     try {
         const res = await fetch('/api/activity', {
             method: 'GET',
@@ -26,50 +26,49 @@ const getActivitiesCollection = async (memberData) => {
 
 //Copied from index.js -- Make sure to update any changes to both documents.
 const updateActivityLog = async (activity, memberData) => {
-    let session = memberData.sessions[memberData.sessions.length-1]
-    let dateStr = session.badgeOut.substring(0,10); //Get Date
+    console.log("memerData!",memberData)
+    //let session = memberData.sessions[memberData.sessions.length-1]
+    let dateStr = new Date().toISOString.substring(0,10); //Get Date
     let ActivityDay = activity.find(a => a.Date == dateStr) //Get the activity document for the correct day
     let newActivity = {MemberID: memberData._id, Name: memberData.Name, badgeInTime: session.badgeIn, badgeOutTime: session.badgeOut, event: "Undefined",machineUtilized: [], sessionLengthMinutes: session.sessionLengthMinutes}
     //console.log('activity',activity,"newActivity.... ",newActivity)
 
     if (ActivityDay){
-        console.log("found Activities w/ date",dateStr);
-        try {
-          let acitivitiesBefore = ActivityDay.Events
-          let activitiesAfter = acitivitiesBefore.concat(newActivity);
-    
-          const res = await fetch(`/api/activity`, {
-              method: 'PUT',
-              headers: {
-                  "Accept": "application/json",
-                  "Content-Type": "application/json"
-              },
-              body: JSON.stringify({Date: dateStr, Events: activitiesAfter})
-          })
-          
-        } catch (error) {
-          console.log("Error adding to Activity collection.",error);
-        }
-    
-
-      } else { 
-        //No acitivities yet today... adding a new date to the Activity collection.
-        console.log("No activity with date",dateStr);
-        try {
-          const res = await fetch(`/api/activity`, {
-              method: 'POST',
-              headers: {
-                  "Accept": "application/json",
-                  "Content-Type": "application/json"
-              },
-              body: JSON.stringify({Date: dateStr, Events: newActivity})
-          })
-    
-        } catch (error) {
-          console.log("Error adding to Activity collection.",error);
-        }
+      console.log("found Activities w/ date",dateStr);
+      try {
+        let acitivitiesBefore = ActivityDay.Events
+        let activitiesAfter = acitivitiesBefore.concat(newActivity);
+  
+        const res = await fetch(`/api/activity`, {
+          method: 'PUT',
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({Date: dateStr, Events: activitiesAfter})})
+        
+      } catch (error) {
+        console.log("Error adding to Activity collection.",error);
       }
-}
+  
+    } else { 
+      //No acitivities yet today... adding a new date to the Activity collection.
+      console.log("No activity with date",dateStr);
+      try {
+        const res = await fetch(`/api/activity`, {
+          method: 'POST',
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({Date: dateStr, Events: newActivity})
+        })
+  
+      } catch (error) {
+        console.log("Error adding to Activity collection.",error);
+      }
+    }
+}*/
 
 function timeout(delay) {
   return new Promise( res => setTimeout(res, delay) );
@@ -174,9 +173,6 @@ const searchForRFID = async (RFID_UID_input) => {
                 if(memberData.badgedIn){msg = "badged in"}else{msg = "badged out"}
                 let fullMsg = memberData.Name+" "+msg+"!"
                 console.log(fullMsg)
-                if (memberData.badgedIn == false){
-                    getActivitiesCollection(memberData); //If member badging out, append a new Event to activity collection
-                };
                 createPopUp(fullMsg,"twohundred")
             } else { return "something really wrong happened"};
         });

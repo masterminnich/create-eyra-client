@@ -2,6 +2,7 @@ import Cors from 'cors'
 import initMiddleware from '../../../lib/init-middleware'
 import connectToDatabase from '../../../utils/connectToDatabase';
 import Member from '../../../models/Member';
+import Activity from '../../../models/Activity';
 
 const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
 
@@ -13,6 +14,43 @@ const cors = initMiddleware(
   })
 )
 
+const addEventToActivityCollection = async (member, prevBadgeIn) => {
+    let badgeOutTime = member.lastBadgeIn;
+    let date = badgeOutTime.toISOString().substring(0,10)
+    let sessionLengthMinutes = Math.round(new Date(badgeOutTime) - new Date(prevBadgeIn))/60000   
+    const activity = await Activity.find({});
+    let newActivityDay = activity.filter(a => a.Date == date)[0]
+    let newEvent = {
+        MemberID: member._id, 
+        Name: member.Name, 
+        badgeInTime: prevBadgeIn, 
+        badgeOutTime: badgeOutTime, 
+        event: "Undefined",
+        machineUtilized: [], 
+        sessionLengthMinutes: sessionLengthMinutes
+    }
+
+    if(newActivityDay){ //Update existing activity document
+        let oldEvents = newActivityDay.Events
+        let updatedEvents = oldEvents.concat(newEvent)
+        try {
+            let activitiesAfter = await Activity.findByIdAndUpdate(newActivityDay._id, {id: newActivityDay._id, Date: date, Events: updatedEvents}, {
+                new: true,
+                runValidators: true
+            });
+        } catch (error) {
+            console.log("api/badgeIn (1) ERROR:",error)
+        }
+    } else { //Create new activity document in activity collection
+        try {
+            const activity = await Activity.create({Date: date, Events: newEvent});
+            console.log("New activity added to database (new date inserted):",activity);
+        } catch (error) {
+            console.log("api/badgeIn (2) ERROR:",error);
+        }
+    }
+}
+
 const updateMemberBadgeInStatus = async (member) => {
     try {
         const bagdgeInStatusBefore = member.badgedIn;
@@ -22,26 +60,9 @@ const updateMemberBadgeInStatus = async (member) => {
         if(bagdgeInStatusAfter == bagdgeInStatusBefore){
             console.log("ERROR! Failed to change badge in status.")
         } else { console.log("Successfully changed members badge in status to",member.badgedIn) }
-  
-        let currDate = new Date();
-        let dateUTCStr = currDate.toISOString()
-  
-        if (!member.badgedIn){
-          //If member is badging out, create a newSession and append to the member's document.
-          let memberSessionsBefore = member.sessions;
-
-          //Calculate sessionLengthMinutes
-          let outDate = currDate
-          let inDate = new Date(member.lastBadgeIn)
-          let sessionLengthMinutes = Math.round(outDate - inDate)/60000
-
-          let newSession = {'badgeIn': member.lastBadgeIn, 'badgeOut':dateUTCStr, 'sessionLengthMinutes':sessionLengthMinutes};
-          console.log(newSession);
-          member.sessions = memberSessionsBefore.concat(newSession);
-        }
-        if (member.badgedIn){
-          member.lastBadgeIn = dateUTCStr;
-        }
+        
+        let prevBadgeIn = member.lastBadgeIn
+        member.lastBadgeIn = new Date().toISOString(); //update member.lastBadgeIn
         
         let res = {};
         try {
@@ -57,6 +78,8 @@ const updateMemberBadgeInStatus = async (member) => {
             if (member.badgedIn){ 
                 console.log(member2.Name,"badged in!"); 
             } else { 
+                console.log("mem1 vs mem2",prevBadgeIn," ",member2.lastBadgeIn)
+                addEventToActivityCollection(member2, prevBadgeIn)
                 console.log(member2.Name,"badged out!") 
             }
         } catch (error) {

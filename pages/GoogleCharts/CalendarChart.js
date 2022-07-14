@@ -262,7 +262,7 @@ function CalendarChart ({google, calStats}) {
                 </button>
 
                 <button type="button" id="downloadCSV2" download="" onClick={() => downloadCSV2()}>
-                    Download stats/member
+                    Download stats by major
                 </button>
             </div>
         </>
