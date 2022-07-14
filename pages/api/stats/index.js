@@ -3,6 +3,8 @@ import initMiddleware from '../../../lib/init-middleware'
 import connectToDatabase from '../../../utils/connectToDatabase';
 import Activity from '../../../models/Activity';
 
+const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
+
 // This code processing data for the Calendar on the stats page.
 
 // Initialize the cors middleware. You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
@@ -16,18 +18,10 @@ let results; //Save compiled stats to a global variable.
 
 function fetchAllStats(activtiesCollection){
     //console.log("activities",activtiesCollection)
-
-    function getActivityDay(dateObj){
-        let DateStr = dateObj.getFullYear()+"-"+dateObj.toISOString().substring(5,7)+"-"+dateObj.toISOString().substring(8,10); //YYYY-MM-DD
-        return DateStr
-    }
-
     //Find Today's Stats
-    let todayDateObj = new Date().toLocaleString("en-CA", localDateTimeOptions)
-    let edt_offset = -5*60; 
-    todayDateObj.setMinutes(todayDateObj.getMinutes() + edt_offset); //Convert UTC to local time
-    let ActivityDate = getActivityDay(todayDateObj)
-    let returnedVal = fetchDataOneDay(ActivityDate,activtiesCollection)
+    let todayDateObj = new Date()
+    let todayDateStr = new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10)
+    let returnedVal = fetchDataOneDay(todayDateStr,activtiesCollection)
 
     //Find This Week's Stats
     let sundayDate = new Date();
@@ -38,11 +32,10 @@ function fetchAllStats(activtiesCollection){
     //Get stats for each day of the week
     let thisWeekStats = {}
     for (let i = 0; i < dayOfWeek+1; i++) {
-        let d3 = new Date();
-        d3.setTime(sundayDate.getTime() + dateOffset * i)
-        let ActivityDate = getActivityDay(d3)
-        let returnedVal = fetchDataOneDay(ActivityDate,activtiesCollection)
-        let dateNickName = d3.toString().substring(0,15)
+        let todaysDate = new Date();
+        let todayDateStr = todaysDate.toLocaleString("en-CA", localDateTimeOptions).substring(0,10)
+        let returnedVal = fetchDataOneDay(todayDateStr,activtiesCollection)
+        let dateNickName = todaysDate.toString().substring(0,15)
         thisWeekStats[dateNickName] = returnedVal
     }
 
@@ -89,7 +82,7 @@ function fetchAllStats(activtiesCollection){
     return [returnedVal,thisWeekStats,allStats,cumStats]
 }
 
-const fetchDataOneDay = (ActivityDate,activitiesCollection) =>{
+const fetchDataOneDay = (todayDateStr,activitiesCollection) =>{
     let collectedStats = {
         "Total visits":0,
         "cumSessionMinutes":0,
@@ -97,7 +90,7 @@ const fetchDataOneDay = (ActivityDate,activitiesCollection) =>{
         "eventTypeCount":{}
     };
 
-    let ActivityDay = activitiesCollection.find(a => a.Date == ActivityDate)
+    let ActivityDay = activitiesCollection.find(a => a.Date == todayDateStr)
 
     if(ActivityDay !== undefined){
         let numberEvents = ActivityDay.Events.length
@@ -116,7 +109,7 @@ const fetchDataOneDay = (ActivityDate,activitiesCollection) =>{
         ActivityDay.Events.forEach(event => eventTypeCount[event.event] += 1)
         collectedStats["eventTypeCount"] = eventTypeCount;
 
-    } else { console.log("No activities found with date",ActivityDate) }
+    } else { console.log("No activities found with date",todayDateStr) }
     return collectedStats
 }
 
@@ -195,7 +188,9 @@ export default async function handler(req, res) {
                 console.log("/api/stats is doing something...")
                 const activity = await Activity.find({}); 
                 let allStats = fetchAllStats(activity)
+                console.log("allStats",allStats)
                 let calendarDataObj = convert(allStats)
+                console.log("calendarDataObj",calendarDataObj)
                 console.log("/api/stats finished successfully...")
                 res.status(200).json({ success: true, data: calendarDataObj })
             } catch (error) {

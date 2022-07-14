@@ -20,7 +20,10 @@ class App extends Component {
         try {
             const res = await fetch('/api/stats', { method: 'GET'})
             let response = res.json()
-            response.then((resp) => { this.setState({calendarData:resp.data}) })
+            response.then((resp) => { 
+                this.setState({calendarData:resp.data})
+                console.log("calendarData",resp)
+             })
         } catch (error) { console.log("error fetching calendarData from /api/stats: ",error); }
     
         //Get Member Stats

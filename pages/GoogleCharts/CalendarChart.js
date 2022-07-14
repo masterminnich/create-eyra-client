@@ -22,7 +22,7 @@ function CalendarChart ({google, calStats}) {
     }
 
     function loadChart(){
-        console.log("drawing CalendarChart.js")
+        console.log("drawing CalendarChart.js calStats",calStats)
         const dataTable = new google.visualization.DataTable();
         dataTable.addColumn({ type: 'date', id: 'Date' });
         dataTable.addColumn({ type: 'number', id: 'Won/Loss' });
@@ -46,11 +46,8 @@ function CalendarChart ({google, calStats}) {
         );
 
         // Set minValue to 360 for cumSessionMinutes only.
-        if (varOfInterest == "cumSessionMinutes"){
-            let minValue = 360
-        } else {
-            let minValue = 0
-        }
+        let minValue = 0
+        if (varOfInterest == "cumSessionMinutes"){ minValue = 360 }
 
         // Set chart options
         var options = {

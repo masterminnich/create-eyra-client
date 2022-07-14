@@ -306,9 +306,9 @@ export default function Home({ isConnected, members, activity }) {
               <option value="Individual">Personal Project</option>
               <option value="Certification">Certification</option>
               <option value="Homework / Class Project">Homework / Class Project</option>
+              <option value="Quick Visit">Quick Visit</option>
               <option value="Class">Class</option>
               <option value="Event">Event</option>
-              <option value="Quick Visit">Quick Visit</option>
               <option value="Staff on Duty">Staff on Duty</option>
             </select>
             <QuestionTooltip id="VisitTypeQuestion"/>
@@ -1044,6 +1044,7 @@ export default function Home({ isConnected, members, activity }) {
       <h3>Bugs:</h3>
       <ul>
         <li>Delete activites in members collection.</li>
+        <li>Point of User confusion: ?new popup still open. badgeOut popup should be a higher z-height</li>
         <li>validation: no negative session minutes</li>
         <li>Summer Stats (enter Joseph,meeting w/ Kathleen), Fix last semester times</li>
         <li>I definitely broke the accuracy/functionality of lastBadge.... It should trigger after edits, if lastBadge (lessthan) badgeOut then update. if lastBadge = origBadgeOut AND newOut(lessthan)lastBadge </li>
@@ -1051,6 +1052,7 @@ export default function Home({ isConnected, members, activity }) {
       <h3>Next up:</h3>
       <ul>
         <li>Remove activities from members collection.</li>
+        <li>New stat: semester comparison graph (new certs, new members)</li>
         <li>Convert javascript to React.Component: badgeIn.js PopUps</li>
         <li>New Feature: Add button to failed badgeIn popup. When clicked lets you search members, selected member get its RFID updated.</li>
         <li>Give all activities flags (edited, auto-generated, noID).</li>
@@ -1062,6 +1064,7 @@ export default function Home({ isConnected, members, activity }) {
         <li>Auto update index page (using state changes)</li>
         <li>Perfect VisitType nomenclature. Also add a question mark button that gives definitions of each visitType. Add Meeting w/ Joe</li>
         <li>Proper Coding Convention: Replace getMachinesUtilized(), getotherToolsUtilized() with props</li>
+        <li>editing events w/ flags.contain(noID): Ability to change name</li>
       </ul>
       <h3>Before v1 Release:</h3>
       <ul>
@@ -1070,6 +1073,7 @@ export default function Home({ isConnected, members, activity }) {
         <li>Bun!</li>
         <li>Migrate from Create-react-app...?</li>
         <li>Look into railways.app / npm  / Vercel deployment</li>
+        <li>Timezone variable</li>
       </ul>
       <h3>Completed:</h3>
       <ul>
