@@ -51,7 +51,7 @@ class App extends Component {
         } else { console.log("this.state.memberStats",this.state.memberStats,"this.state.workshopStats",this.state.workshopStats)
         return (
             <>
-            {/*<SemesterComparisonChart google={this.props.google} calStats={this.state.calendarData}/>*/}
+            <SemesterComparisonChart google={this.props.google} calStats={this.state.calendarData}/>
             <CalendarChart google={this.props.google} calStats={this.state.calendarData}/>
             <div className="PieCharts">
                 <WorkshopPopularityPieChart google={this.props.google} workshopStats={this.state.workshopStats}/>
