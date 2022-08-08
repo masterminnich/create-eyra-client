@@ -2,14 +2,13 @@ import Head from 'next/head'
 import clientPromise from '../lib/mongodb'
 import React, { Component, useState, useEffect } from 'react';
 import { Button, Form } from 'semantic-ui-react';
-import ReactDOM, { render } from 'react-dom';
 
 
 let hoverTimerId;
 let isHovering = false; //Whether the user is currently hovering over an element of interest
 const certFullNameList = ['UltimakerCertified', 'GlowforgeCertified', 'FourAxisMillCertified', 'BantamMillCertified', 'P9000Certified', 'SewingCertified', 'SilhouetteCertified', 'FusionCertified', 'VectorCADCertified', 'CircuitDesignCertified',"IndustrialSewingCertified"];
 let certNameList = ["FourAxisMill","BantamMill","Glowforge","P9000","Sewing","Silhouette","Ultimaker","Fusion","VectorCAD","CircuitDesign","IndustrialSewing"]
-let otherToolsNameList = ["ButtonPress","3D Scanners","WacomTablets","VR","Comb Binder"]
+let otherToolsNameList = ["ButtonPress","3D Scanners","WacomTablets","VR","Comb Binder","Hand Tools"]
 const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
 
 
@@ -119,7 +118,6 @@ const getMemberDataFromID = async (MemberID,parentElement) => { //Fetch member d
 function createMemberTooltip(memberDataOrId,parentElement){
   if (typeof(memberDataOrId) == "object"){ //memberDataOrId is a member object
     let dataToDisplay = {"Patron Type":memberDataOrId["member"].PatronType,"Major":memberDataOrId["member"].Major,"GraduationYear":memberDataOrId["member"].GraduationYear,"RFID UID":memberDataOrId["member"].rfid,"joinedDate":new Date(memberDataOrId["member"].joinedDate).toLocaleString("en-CA", localDateTimeOptions)}
-    console.log("create2")
     createTooltip(dataToDisplay,parentElement)
   } else { //memberDataOrId is member._id as a string
     getMemberDataFromID(memberDataOrId,parentElement);
@@ -136,7 +134,7 @@ const updateMemberBadgeInStatus = async (member) => {
           "Content-Type": "application/json"
       },
       body: JSON.stringify(member)
-    }).then(setTimeout(() => { window.location.reload() }, 200));
+    })//.then(setTimeout(() => { window.location.reload() }, 200));
   } catch (error) { console.log("ERROR:",error); }
 }
 
@@ -150,7 +148,7 @@ const updateActivityByDate = async (date, events, originFn) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({Date: date, Events: events})
-    }).then(setTimeout(() => { window.location.reload() }, 200));
+    })//.then(setTimeout(() => { window.location.reload() }, 200));
   } catch (error) { console.log("ERROR in",originFn,":",error); }
 }
 
@@ -163,7 +161,7 @@ const createNewActivity = async (date, events, originFn) => {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({Date: date, Events: events})
-    }).then(setTimeout(() => { window.location.reload() }, 200));
+    })//.then(setTimeout(() => { window.location.reload() }, 200));
   } catch (error) { console.log("ERROR in",originFn,":",error) }
 }
 
@@ -252,6 +250,7 @@ const updateActivityLog = async (activity, newActivity, e, existing) => {
 
 export default function Home({ isConnected, members, activity }) {
 
+  const [displayingDay, setDisplayingDay] = useState(new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10));
   const [isOpen, setisOpen] = useState(false);
   const [activityEvent, setActivityEvent] = useState("");
   const [errors, setErrors] = useState({});
@@ -319,13 +318,12 @@ export default function Home({ isConnected, members, activity }) {
   }
 
   const batchEdit = (e,selected) => {
-    //console.log("e",e)
     let date = document.getElementById("date").innerText
     let editDate = activity.filter(a => a.Date== date)[0]
     let eventIdsToEdit = []; //list of event ids to delete
     selected.forEach(item => eventIdsToEdit.push(item.parentNode.parentNode.id)) //Get a list of event ids to delete
     let eventsToKeep = editDate.Events.filter(e => eventIdsToEdit.includes(e._id))
-    console.log("eventsToKeep",eventsToKeep)
+    //console.log("e",e,"eventsToKeep",eventsToKeep)
     let dummyEvent = eventsToKeep[0];
     setBatchEvents(eventsToKeep)
     setActivityEvent(eventsToKeep)
@@ -343,7 +341,8 @@ export default function Home({ isConnected, members, activity }) {
     updateActivityByDate(date, eventsToKeep, "batchDelete")
   }
 
-  const handleSubmitBadgeOut = (e) => {
+  const handleSubmitPopUp = (existingInDB, e) => { //handleSubmitBadgeOut
+    //console.log("existingInDB",existingInDB,"e",e)
     let newActivity = activityEvent
     newActivity.badgeInTime = new Date(e.target.badgeInDate.value+" "+e.target.badgeInTime.value+" EDT").toISOString()
     newActivity.badgeOutTime = new Date(e.target.badgeOutDate.value+" "+e.target.badgeOutTime.value+" EDT").toISOString()
@@ -355,7 +354,11 @@ export default function Home({ isConnected, members, activity }) {
     newActivity._id = activityEvent._id
     updateActivityLog(activity, newActivity, e, false)
     let memberToUpdate = members.filter(m => m._id == activityEvent.MemberID)[0]
-    memberToUpdate.badgedIn = !memberToUpdate.badgedIn
+    if (existingInDB == false){ memberToUpdate.badgedIn = false }
+    if (newActivity.event == "Certification"){
+      newActivity.machineUtilized.forEach(c => memberToUpdate[c+"Certified"] = true) //memberToUpdate[c]
+    }
+    console.log("memberToUpdate",memberToUpdate)
     //finish: check whether to update lastBadgeIn
     updateMemberBadgeInStatus(memberToUpdate)
     
@@ -396,7 +399,7 @@ export default function Home({ isConnected, members, activity }) {
     // N - create new activity
   }
 
-  const handleSubmitExisting = (e) => {
+  /*const handleSubmitExisting = (e) => {
     //Get badge in/out datetimes. Convert local time to UTC!
     let badgedInDateTime = new Date(e.target.badgeInDate.value+" "+e.target.badgeInTime.value+" EDT")
     let badgedOutDateTime = new Date(e.target.badgeOutDate.value+" "+e.target.badgeOutTime.value+" EDT")
@@ -412,20 +415,20 @@ export default function Home({ isConnected, members, activity }) {
     newActivity.machineUtilized = getMachinesUtilized()
     newActivity.otherToolsUtilized = getotherToolsUtilized() 
 
-    /*e.preventDefault();
-    let errs = validate(e);
-    setErrors(errs);
-    setisOpen(false);*/
+    //e.preventDefault();
+    //let errs = validate(e);
+    //setErrors(errs);
+    //setisOpen(false);
 
     let props = JSON.parse(e.target[24].innerText)
     console.log("PROPS",props,"activityEvent",activityEvent)
 
     updateActivityLog(activity, activityEvent, e, true)
-  }
+  }*/
 
   const closePopup = async() => {
     setisOpen(false);
-    if(isOpen == false){ document.getElementsByClassName("backEndPopUp")[0].remove() }
+    if(isOpen == false){ document.getElementsByClassName("Popup")[0].remove() }
   }
 
   class Popup extends React.Component{
@@ -496,9 +499,7 @@ export default function Home({ isConnected, members, activity }) {
     }
     
     render(){
-    //function Popup(props) {
-      //console.log("Popup props:",this.props,"activityEvent",activityEvent)
-      console.log("popup props",this.props,"batchEvents type",batchEvents)
+      //console.log("popup props",this.props,"batchEvents type",batchEvents)
       let trashButtonCSS = {"display": "block"}
       if(this.props.noId && this.props.noId == true){ trashButtonCSS = {"display": "none"} }
       if(batchEvents.length > 0){ trashButtonCSS = {"display": "none"} }
@@ -545,17 +546,13 @@ export default function Home({ isConnected, members, activity }) {
       member: member,
     })
     setDisplayProps({submitButtonText:"Badge Out",message:"Badging out "+member.Name+"..."});
-    setSubmitType("handleSubmitBadgeOut");
+    setSubmitType("(e) => handleSubmitPopUp(false,e)");
     setisOpen(true);
   }
 
   const openPopUp = async (actEvent,displayProps,submitFn) => {
     setActivityEvent(actEvent);
-    console.log("act",actEvent,new Date(actEvent.badgeInTime).toLocaleString("en-CA", localDateTimeOptions).substring(0,10))
     setSubmitType(submitFn);
-    // displayProps.message = 
-    // if edit
-    // if noID
     setDisplayProps(displayProps);
     setisOpen(true); //Open popup
   }
@@ -573,8 +570,8 @@ export default function Home({ isConnected, members, activity }) {
     }
 
     MachineUtilizedChange(e){ 
-      console.log("EEE",e,"this",this.state.machines)
-      this.props.onChange(this.state.machines) }
+      this.props.onChange(this.state.machines) 
+    }
 
     updateState = (e) => {
       let machinesInUse = this.state.machines
@@ -594,12 +591,10 @@ export default function Home({ isConnected, members, activity }) {
             <p>Machines Utilized (Certification Required):</p>
             <fieldset onChange={(e) => this.MachineUtilizedChange(e)} id="machinesUtilized" style={{"display": "inline-block","position": "relative","textAlign": "initial","float":"left","border":"none"}}>
               {certNameList.map((CertName) => 
-                <>
                 <label htmlFor={CertName} key={"label_"+CertName}>
-                  <input type="checkbox" id={CertName} name={CertName} key={"input_"+CertName} defaultChecked={this.state.machines.includes(CertName)}></input>
+                  <input type="checkbox" id={CertName} name={CertName} defaultChecked={this.state.machines.includes(CertName)}></input>
                   {CertName}
                 </label>
-                </>
               )}
             </fieldset>
           </div>
@@ -637,12 +632,10 @@ export default function Home({ isConnected, members, activity }) {
             <p>Other Tools Utilized (No Certification Required):</p>
             <fieldset onChange={(e) => this.OtherToolsUtilizedChange(e)} id="otherToolsUtilized" style={{"display": "inline-block","position": "relative","textAlign": "initial","float":"left","border":"none"}}>
               {otherToolsNameList.map((ToolName) => 
-                <>
                 <label htmlFor={ToolName} key={"label_"+ToolName}>
-                  <input type="checkbox" id={ToolName} name={ToolName} key={"input_"+ToolName} defaultChecked={this.state.otherTools.includes(ToolName)}></input>
+                  <input type="checkbox" id={ToolName} name={ToolName} defaultChecked={this.state.otherTools.includes(ToolName)}></input>
                   {ToolName}
                 </label>
-                </>
               )}
             </fieldset>
           </div>
@@ -669,7 +662,7 @@ export default function Home({ isConnected, members, activity }) {
     render(){
       return(
         <>
-          <section className="backEndPopUp">
+          <section className="Popup">
             <Popup
               badgeInDate={new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
               badgeInTime={new Date().toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
@@ -688,7 +681,7 @@ export default function Home({ isConnected, members, activity }) {
 
             <div style={{"display":"flow-root", "overflowY":"scroll", "maxBlockSize":"7vw"}}>
               { this.state.members.map((member,i) => 
-                <label className="enterInfoLabel" htmlFor={"member"+i} style={{"marginBottom":"4px", display:"block"}}>Name:
+                <label className="enterInfoLabel" htmlFor={"member"+i} style={{"marginBottom":"4px", display:"block"}} key={"member"+i}>Name:
                   <input type="text" id={"member"+i} defaultValue={"Unknown Member"} style={{"display":"inline-block", "position":"absolute", "left":"7ch", "width": "30ch"}}></input>
                 </label>
               )}
@@ -733,8 +726,11 @@ export default function Home({ isConnected, members, activity }) {
         results: [],
         showResults: false,
         selectionMade: false,
-        selection: ""
+        selection: "",
+        showEditMemberPopup: false,
       }
+      this.showEditMemberPopup = this.showEditMemberPopup.bind(this);
+      this.hideEditMemberPopup = this.hideEditMemberPopup.bind(this);
     }
 
     onKeyUpCapture(e){
@@ -778,10 +774,24 @@ export default function Home({ isConnected, members, activity }) {
       console.log("Badging in Member",this.state.selection[0],"w/ RFID UID:",this.state.selection[1])
       badgeInByRFID(this.state.selection[1])
     }
+
+    showEditMemberPopup(){
+      console.log("this feature isn't finished yet :P")
+      this.setState({showEditMemberPopup: true})
+    }
+
+    hideEditMemberPopup(){
+      this.setState({showEditMemberPopup: false})
+    }
     
     render(){
       return(
         <>
+        {this.state.showEditMemberPopup ? 
+          <EditMemberPopup rfid={this.state.selection[1]} cancel={this.hideEditMemberPopup}/>
+          : <div></div>
+        }
+
         <div style={{"textAlign": "center"}}>
         <p style={{display: "inline"}}>Search members: </p>
         <input onFocus={this.onFocus.bind(this)} onBlur={this.onBlur.bind(this)} onKeyUpCapture={this.onKeyUpCapture.bind(this)} id='searchMemberBadgeIn'></input> 
@@ -790,7 +800,10 @@ export default function Home({ isConnected, members, activity }) {
           <SearchResults handleSelect={this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
           :  <div></div> }
         {this.state.selectionMade ? 
-          <SubmitSelection result={this.state.selection} handleSubmit={this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
+          <>
+            <SubmitSelection result={this.state.selection} handleSubmit={this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
+            <button type="button" onClick={this.showEditMemberPopup}>Edit Member</button>
+          </>
           : <div></div>}
         </div>
         </>
@@ -806,8 +819,8 @@ export default function Home({ isConnected, members, activity }) {
     render(){
       return(
         <div className="searchResultsDropdown">
-          {this.props.results?.map((result) => (
-            <div id={result[2]} onClick={this.props.handleSelect}>{result[0]}</div>  
+          {this.props.results?.map((result,i) => (
+            <div id={result[2]} onClick={this.props.handleSelect} key={"searchResult"+i}>{result[0]}</div>  
           ))}
         </div>
       )
@@ -823,6 +836,37 @@ export default function Home({ isConnected, members, activity }) {
     render(){
       return(
         <button onClick={this.props.handleSubmit}>Badge In {this.props.selectionMade}</button>
+      )
+    }
+  }
+
+  class EditMemberPopup extends React.Component{
+    constructor(props){
+      super(props);
+    }
+
+    render(){
+      let member = members.filter(mem => mem.rfid == this.props.rfid)[0]
+      //display joinedDate??
+
+      return(
+        <>
+          <section className="Popup">
+            <p>EDITING MEMBER</p>
+            <p>Name : </p>
+            <input type="text" defaultValue={member.Name}></input>
+            <p>RFID : </p>
+            <input type="text" defaultValue={this.props.rfid}></input>
+            <p>Major : </p>
+            <p>PatronType : </p>
+            <p>GraduationYear : </p>
+            <p>CERTS : </p>
+
+            <button type="button" onClick={this.props.cancel}>Cancel</button>
+            <button type="button">Update</button>
+            <button type="button">Delete</button>
+          </section>
+        </>
       )
     }
   }
@@ -856,20 +900,16 @@ export default function Home({ isConnected, members, activity }) {
   
   class RecentActivity extends React.Component {
     constructor(props) {
-      super(props);
-      let currDay = new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10);      
+      super(props);     
       this.state = {
         activity: activity,
-        displayingDay: currDay,
-        displayingActivities: activity.filter(act => act.Date == currDay)[0],
+        displayingActivities: activity.filter(act => act.Date == displayingDay)[0],
         toggle: false,
         firstCheckboxSelected: undefined,
         selected: [] //A list of selected elements
       };
       //console.log("RecentActivity.state =",this.state)
     }
-
-    //componentDidUpdate(){ console.log("update! RecentActivity.state.displayingDay =",this.state.displayingDay) }
 
     changeDay(arg,dayToChange){
       let currDate = new Date(dayToChange)//new Date(this.state.displayingDay)
@@ -879,8 +919,9 @@ export default function Home({ isConnected, members, activity }) {
           currDate.setMinutes(currDate.getMinutes() - 24*60); //Change dateObj to the previous day
         }
         let currDay = currDate.toISOString().substring(0,10);
-        let acti = activity.filter(act => act.Date == currDay)[0];
-        this.setState({displayingDay:currDay,displayingActivities:acti})
+        setDisplayingDay(currDay)
+        //let acti = activity.filter(act => act.Date == currDay)[0];
+        //this.setState({displayingDay:currDay,displayingActivities:acti})
     }
     
     checkboxClicked(e){
@@ -917,11 +958,11 @@ export default function Home({ isConnected, members, activity }) {
     render() {
       return (
         <>
-          <a id="activitiesForward" onClick={() => this.changeDay("forward-one-day",this.state.displayingDay)}></a>
-          <a id="activitiesBackward" onClick={() => this.changeDay("backward-one-day",this.state.displayingDay)}></a>
+          <a id="activitiesForward" onClick={() => this.changeDay("forward-one-day",displayingDay)}></a>
+          <a id="activitiesBackward" onClick={() => this.changeDay("backward-one-day",displayingDay)}></a>
           <table id="recentActivity">
             <caption>Recent Activity</caption>
-            <caption id="date">{this.state.displayingDay}</caption>
+            <caption id="date">{displayingDay}</caption>
             <thead>
               <tr key={"head_tr"}>
                 <th>Member Name</th>
@@ -930,7 +971,7 @@ export default function Home({ isConnected, members, activity }) {
               </tr>
             </thead>
             <tbody id="recentActivityTbody">
-            { this.state.displayingActivities == undefined || this.state.displayingActivities.length == 0 ? (
+            { this.state.displayingActivities == undefined || this.state.displayingActivities.Events.length == 0 ? (
               <tr key={"noEvents_tr"}>
                 <td colSpan="3" id="noEvents">No events today.</td>
               </tr>
@@ -939,7 +980,7 @@ export default function Home({ isConnected, members, activity }) {
                 <tr id={actEvent._id} key={actEvent._id+"_tr"}>
                   <td onMouseEnter={(e) => hover([{actEvent}.actEvent.MemberID,e])} onMouseLeave={hoverOut}>{actEvent.Name}</td>
                   <td>{actEvent.event}</td>
-                  <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: this.state.displayingDay, submitButtonText: "Add Info", "message":"Editing "+actEvent.Name+"'s event..."}, "handleSubmitExisting")} showCheckbox={this.state.toggle} index={i}/></td>
+                  <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: displayingDay, submitButtonText: "Add Info", "message":"Editing "+actEvent.Name+"'s event..."}, "(e) => handleSubmitPopUp(true,e)")} showCheckbox={this.state.toggle} index={i}/></td>
                 </tr>))
             )}
             </tbody>
@@ -969,10 +1010,10 @@ export default function Home({ isConnected, members, activity }) {
 
       <main> 
         {isConnected ? (
-          <h2 className="subtitle">You are connected to MongoDB</h2>
+          <div></div>
         ) : (
           <h2 className="subtitle">
-            You are NOT connected to MongoDB. Check the <code>README.md</code>{' '}
+            Error connecting to MongoDB. Check the <code>README.md</code>{' '}
             for instructions.
           </h2>
         )}
@@ -983,13 +1024,13 @@ export default function Home({ isConnected, members, activity }) {
       
       {isOpen ? (
         <React.Fragment>
-          <section className="backEndPopUp">
+          <section className="Popup">
             <Popup 
               badgeInDate={new Date(activityEvent.badgeInTime).toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
               badgeInTime={new Date(activityEvent.badgeInTime).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
               badgeOutDate={new Date(activityEvent.badgeOutTime).toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
               badgeOutTime={new Date(activityEvent.badgeOutTime).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
-              message={displayProps.message}//{"Badging out "+activityEvent.Name+"..."}
+              message={displayProps.message}
               submitButtonText={displayProps.submitButtonText}
               existsInDB={false}
               noId={false}
@@ -1043,21 +1084,22 @@ export default function Home({ isConnected, members, activity }) {
       </section>
       <h3>Bugs:</h3>
       <ul>
-        <li>Delete activites in members collection.</li>
+        <li>Fix: getMemberStats() (relies on member.sessions)</li>
+        <li>Some times are it the wrong timezone. +5 1/1-3/14. +4 3/14-</li>
         <li>Point of User confusion: ?new popup still open. badgeOut popup should be a higher z-height</li>
         <li>validation: no negative session minutes</li>
-        <li>Summer Stats (enter Joseph,meeting w/ Kathleen), Fix last semester times</li>
-        <li>I definitely broke the accuracy/functionality of lastBadge.... It should trigger after edits, if lastBadge (lessthan) badgeOut then update. if lastBadge = origBadgeOut AND newOut(lessthan)lastBadge </li>
+        <li>Fix: lastBadgeIn. It should trigger after edits, if lastBadge (lessthan) badgeInTime then update.</li>
       </ul>
       <h3>Next up:</h3>
       <ul>
-        <li>Remove activities from members collection.</li>
+        <li>Finish: Edit Member Pop Up</li>
+        <li>Finish: SemesterComparisonChart</li>
+        <li>Either delete names from Activity collection or update previous activities?</li>
         <li>New stat: semester comparison graph (new certs, new members)</li>
         <li>Convert javascript to React.Component: badgeIn.js PopUps</li>
         <li>New Feature: Add button to failed badgeIn popup. When clicked lets you search members, selected member get its RFID updated.</li>
         <li>Give all activities flags (edited, auto-generated, noID).</li>
         <li>New Feature: Auto-badge in</li>
-        <li>Search Members Field ~ Add Edit Member Button</li>
         <li>Add button to badgeIn allowing members to make accounts w/o an ID. We should flag all no id members w/ the same RFID_UID. They can select from the list of all accounts to badgeIn if they made an account already.</li>
         <li>check if user badgeIn time is from a different day. Alert the user.</li>
         <li>Prevent members from accessing this page (the backend)</li>
@@ -1071,12 +1113,14 @@ export default function Home({ isConnected, members, activity }) {
         <li>ReadMe / Documentation</li>
         <li>Easy setup (config file)... List of certifications, List of other tools, List of majors, List of GraduationYears</li>
         <li>Bun!</li>
-        <li>Migrate from Create-react-app...?</li>
         <li>Look into railways.app / npm  / Vercel deployment</li>
         <li>Timezone variable</li>
       </ul>
       <h3>Completed:</h3>
       <ul>
+        <li>Add handtools to otherTools</li>
+        <li>Delete activites in members collection.</li>
+        <li>Remove activities from members collection.</li>
         <li>Batch Edit/Delete. BadgeInForgotIDPopUp.</li>
         <li>Combine: ForgotID + PopUp.   Clean up functions (notInDB,noID)</li>
         <li style={{textDecoration: "line-through"}}>Add Grad Students to Graduation year List</li>

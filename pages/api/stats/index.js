@@ -185,12 +185,12 @@ export default async function handler(req, res) {
     switch (method) {
         case 'GET': //Returns all documents in activities collection
             try{
-                console.log("/api/stats is doing something...")
+                console.log("/api/stats getting stats...")
                 const activity = await Activity.find({}); 
                 let allStats = fetchAllStats(activity)
-                console.log("allStats",allStats)
                 let calendarDataObj = convert(allStats)
-                console.log("calendarDataObj",calendarDataObj)
+                //console.log("allStats",allStats)
+                //console.log("calendarDataObj",calendarDataObj)
                 console.log("/api/stats finished successfully...")
                 res.status(200).json({ success: true, data: calendarDataObj })
             } catch (error) {

@@ -58,36 +58,42 @@ function getMemberStats(members){
         switch (member.PatronType){
             case "Faculty":
                 numOfFaculty.registered += 1;
-                numOfFaculty.cumEvents += member.sessions.length;
+                //numOfFaculty.cumEvents += member.sessions.length;
                 break;
             case "Makerspace Staff":
                 numOfMakerspaceStaff.registered += 1;
-                numOfMakerspaceStaff.cumEvents += member.sessions.length;
+                //numOfMakerspaceStaff.cumEvents += member.sessions.length;
                 break;
         }
         switch (member.GraduationYear){
             case "2022":
                 numOf2022Grads.registered += 1;
-                numOf2022Grads.cumEvents += member.sessions.length;
+                //numOf2022Grads.cumEvents += member.sessions.length;
                 break;
             case "2023":
                 numOf2023Grads.registered += 1;
-                numOf2023Grads.cumEvents += member.sessions.length;
+                //numOf2023Grads.cumEvents += member.sessions.length;
                 break;
             case "2024":
                 numOf2024Grads.registered += 1;
-                numOf2024Grads.cumEvents += member.sessions.length;
+                //numOf2024Grads.cumEvents += member.sessions.length;
                 break;
             case "2025":
                 numOf2025Grads.registered += 1;
-                numOf2025Grads.cumEvents += member.sessions.length;
+                //numOf2025Grads.cumEvents += member.sessions.length;
                 break;
             case "2026":
                 numOf2026Grads.registered += 1;
-                numOf2026Grads.cumEvents += member.sessions.length;
+                //numOf2026Grads.cumEvents += member.sessions.length;
                 break;
         }
     }
+
+    // Get cumEvents for each member.
+    // Turn activities -> one giant array of all events (from everyday)
+    // let allMemberEvents = activities.filter(a => a.memberID == )
+    // .length
+
     //console.log("numOfMakerspaceStaff",numOfMakerspaceStaff,"numOfFaculty",numOfFaculty,"numOf2022Grads",numOf2022Grads,"numOf2023Grads",numOf2023Grads,"numOf2024Grads",numOf2024Grads,"numOf2025Grads",numOf2025Grads,"numOf2026Grads",numOf2026Grads)
     let memberStats = {"numOfMakerspaceStaff":numOfMakerspaceStaff,"numOfFaculty":numOfFaculty,"numOf2022Grads":numOf2022Grads,"numOf2023Grads":numOf2023Grads,"numOf2024Grads":numOf2024Grads,"numOf2025Grads":numOf2025Grads,"numOf2026Grads":numOf2026Grads}
     return memberStats

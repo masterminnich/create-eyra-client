@@ -1,6 +1,6 @@
 import React from 'react';
 import useGoogleCharts from "./GoogleCharts/useGoogleCharts";
-import GetCalendarChart from './getStatsAndLoadChart'
+import GetCalendarChart from './displayStatsCharts'
 
 function App() {
   const google = useGoogleCharts();

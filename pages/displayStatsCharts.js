@@ -2,6 +2,7 @@ import React, { Component, useState } from 'react';
 import CalendarChart from './GoogleCharts/CalendarChart';
 import WorkshopPopularityPieChart from './GoogleCharts/WorkshopPopularityPieChart';
 import MemberPieChart from './GoogleCharts/MemberPieChart';
+import SemesterComparisonChart from './GoogleCharts/SemesterComparisonChart';
 
 //Fetches data in calendar-ready format from api/stats/index.js (GET)
 
@@ -42,14 +43,15 @@ class App extends Component {
     }
     
     render() {
-        //console.log("rendered Chart3 this.state.data",this.state.data)
+        //console.log("this.state.data",this.state.data)
         if (this.state.calendarData == "placeholder" || this.state.memberStats == "placeholder" || this.state.workshopStats == "placeholder"){
             //console.log("calStats has not loaded yet.")
-            //console.log("chart3 google prop ==",this.props.google)
+            //console.log("props.google =",this.props.google)
             return(<h1>loading Google Charts...</h1>)
         } else { console.log("this.state.memberStats",this.state.memberStats,"this.state.workshopStats",this.state.workshopStats)
         return (
             <>
+            {/*<SemesterComparisonChart google={this.props.google} calStats={this.state.calendarData}/>*/}
             <CalendarChart google={this.props.google} calStats={this.state.calendarData}/>
             <div className="PieCharts">
                 <WorkshopPopularityPieChart google={this.props.google} workshopStats={this.state.workshopStats}/>

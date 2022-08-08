@@ -22,7 +22,7 @@ th > div > span {
     padding: 5px 10px;
 }
 
-section.backEndPopUp{
+section.Popup{
     background-color: lightskyblue;
     display: flex;
     flex-direction: column;

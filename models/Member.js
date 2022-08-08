@@ -38,9 +38,6 @@ const MemberSchema = new Schema({
     rfid: {
         type: String,
     },
-    sessions: {
-        type: Array,
-    },
     FourAxisMillCertified: {
         type: Boolean,
     },

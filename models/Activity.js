@@ -19,12 +19,9 @@ const ActivitySchema = new Schema({
     },
     event: {
         type: String,
-        // Class, Tour, Special Event, Workshop, N/A
     },
     machineUtilized: {
         type: Array,
-        // Pick multiple
-        //handtools, soldering, CNC machines
     },
     otherToolsUtilized: {
         type: Array,
@@ -37,8 +34,6 @@ const ActivitySchema = new Schema({
 const DailyActivitySchema = new Schema({
     Date: {
         type: String,
-        default: "test"
-        //default: dateObj.getMonth()+"/"+dateObj.getDate()+"/"+dateObj.getFullYear()
     },
     Events: [ActivitySchema]
 })
