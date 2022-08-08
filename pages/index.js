@@ -208,7 +208,7 @@ const updateActivityLog = async (activity, newActivity, e, existing) => {
   // existing : true = edit an activity that exists in the DB. false = add a new activity to the DB
 
   let newBadgeOutDate = newActivity.badgeOutTime.substring(0,10);
-  let displayProps = JSON.parse(e.target[23].innerText);
+  let displayProps = JSON.parse(e.target["displayProps"].innerText);
   let prevBadgeOutDate = displayProps.displayDay;
   let newActivityDay = activity.find(a => a.Date == newBadgeOutDate) //Get the activity document for the correct day
   let prevActivityDay = activity.find(a => a.Date == prevBadgeOutDate)
@@ -366,8 +366,8 @@ export default function Home({ isConnected, members, activity }) {
 
   const handleSubmitForgotID = (props,e) => {
     console.log("props",props)
-    //let displayProps = JSON.parse(e.target[23].innerText);
-    //let hiddenProps = JSON.parse(e.target[24].innerText);
+    //let displayProps = JSON.parse(e.target[24].innerText);
+    //let hiddenProps = JSON.parse(e.target[25].innerText);
     let numOfMembers = e.target.parentNode.children[2].children[1].value
     let newActivities = []
     for (let i=0; i<numOfMembers; i++){
@@ -420,7 +420,7 @@ export default function Home({ isConnected, members, activity }) {
     //setErrors(errs);
     //setisOpen(false);
 
-    let props = JSON.parse(e.target[24].innerText)
+    let props = JSON.parse(e.target[25].innerText)
     console.log("PROPS",props,"activityEvent",activityEvent)
 
     updateActivityLog(activity, activityEvent, e, true)
@@ -524,7 +524,7 @@ export default function Home({ isConnected, members, activity }) {
               <OtherToolsUtilized onChange={this.handleOtherToolsUtilized.bind(this)}/>
             </div>
 
-            <textarea style={{display:"none"}} defaultValue={JSON.stringify(displayProps)}></textarea>
+            <textarea style={{display:"none"}} id="displayProps" defaultValue={JSON.stringify(displayProps)}></textarea>
             <textarea style={{display:"none"}} id="hiddenProps" defaultValue={JSON.stringify(this.props)}></textarea>
 
             <Button type='button' name={activityEvent._id} id="deleteActivityButton" onClick={(e) => deleteActivity([activity, this.state, activityEvent._id, activityEvent.member])} style={trashButtonCSS}></Button>
