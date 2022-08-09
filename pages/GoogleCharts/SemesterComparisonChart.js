@@ -15,6 +15,7 @@ let Years = {
     "2022 - 2023": new Date("8/24/22"),
 }
 
+
 function SemesterComparisonChart ({google,calStats}) {
     const [chart, setChart] = useState(null);
     const [semCompVarOfInterest, setSemCompVarOfInterest] = useState(defaultVarOfInterest)
@@ -60,27 +61,49 @@ function SemesterComparisonChart ({google,calStats}) {
 
 
     function createDataTable(varOfInterest){
-        console.log("dddd",calStats)
         const dataTable = new google.visualization.DataTable();
 
         let segments; 
         if(segmentation == "Year"){ segments = Years }
         if(segmentation == "Semester"){ segments = Semesters }
 
-        //Define columns
-        if (segmentation == "Semester" || segmentation == "Year"){
-            dataTable.addColumn({ type: 'number', id: 'numOfDays' }); //The x-axis: number of days since beginning of semester/year.
-        } else { 
-            dataTable.addColumn({ type: 'date', id: 'Date' }); 
+
+        function findClosestValue(date){
+            let found = false;
+            for (let i=1;i<calStats[varOfInterest].length;i++){
+                if (date < calStats[varOfInterest][i][0]){
+                    found = true;
+                    return [calStats[varOfInterest][i-1][2],i]
+                }
+            }
+            if (found == false){ 
+                console.log("findCLosestValue notfound")
+                return [null,null] }
         }
-        dataTable.addColumn({ type: 'string', role: 'annotation'});
+        function findLastIndex(date){
+            let found = false;
+            for (let i=calStats[varOfInterest].length; i>0; i--){
+                if (date > calStats[varOfInterest][i-1][0]){
+                    found = true;
+                    return [calStats[varOfInterest][i][2],i]
+                }
+            }
+            if (found == false){ 
+                console.log("findLastIndex notfound")
+                return [null,null] }
+        }
+
+
+        //Define columns
         if (segmentation == "Cummulative"){
+            dataTable.addColumn({ type: 'date', id: 'Date' }); 
+            dataTable.addColumn({ type: 'string', role: 'annotation'});
             dataTable.addColumn({ type: 'number', id: varOfInterest });
+            //dataTable.addColumn({ type: 'number', id: segment });
         } else { 
-            Object.keys(segments).forEach( segment =>
-                dataTable.addColumn({ type: 'number', id: segment })
-            )
-        } 
+            //dataTable.addColumn({ type: 'number', id: 'numOfDays' }); //The x-axis: number of days since beginning of semester/year.
+            //dataTable.addColumn({ type: 'string', role: 'annotation'});
+        }
 
         //Convert dates (as strings) into DateObjs. Add timezone offset which was lost in transport (because date was saved as a string).
         //Convert String to Date Obj          
@@ -97,10 +120,11 @@ function SemesterComparisonChart ({google,calStats}) {
         }
 
         calStats[varOfInterest] = calStats[varOfInterest].sort(function(a, b){ return a[0] - b[0] }); //Sort by date
-
-        //Add data to the DataTable
+        
+        //Prepare data for DataTable
         let data = [];
-        if (segmentation == "Cummulative"){
+        let dataCols = {}
+        //if (segmentation == "Cummulative"){
             //Convert daily stat to a cummulative stat
             let cumStatValue = 0;
             for (let i=0;i<calStats[varOfInterest].length;i++){
@@ -109,56 +133,63 @@ function SemesterComparisonChart ({google,calStats}) {
                 //calStats[varOfInterest][i][1] = null //Annotation
                 data[i] = [ calStats[varOfInterest][i][0], null, cumStatValue ]
             }
-        } else {
+        /*} else {
             //Count days since beginning of semester/year.
             //Calculate semester/yearly cummulative statistics.
 
             //Segment the data by Year/Semester
-            let start;
-            let dataCols = {}
-            for (let i=0; i<Object.keys(Semesters); i++){
-                let sem = Object.keys(Semesters)[i] //name
-                start = Semesters[sem] //Beginning Date
+            for (let i=0; i<Object.keys(segments).length-1; i++){
+                let sem = Object.keys(segments)[i] //name
 
-                //calStats[varOfInterest][0:firstIndex]
-                //dataCols[semm] = []
-                //Index of First Value: findClosestValue(Semesters[sem])[1]
-                //First Value: findClosestValue(Semesters[sem])[0]
+                console.log("seg",sem,"i",i,"max",Object.keys(Semesters).length-1)
+                
+                let [v2,startIndex] = findLastIndex(Semesters[Object.keys(Semesters)[i]])
+                let [v3,endIndex] = findClosestValue(Semesters[Object.keys(Semesters)[i+1]])
 
-                //get index of last value
-                //save that slice [b:e]
-                //add the slice into the dataTable with addColumn
-                //dataTable.addRow([ daysSince, null, segment1, segment2... ])
+                let seg;
+                if (endIndex == null){ 
+                    seg = calStats[varOfInterest].slice(startIndex) 
+                } else { 
+                    seg = calStats[varOfInterest].slice(startIndex,endIndex) 
+                }
+
+                console.log("i0",startIndex,"i1",endIndex,"seg",seg)
+
+                dataTable.addColumn({ type: 'number', id: sem }, seg)
             }
+            dataTable.sort({ column: 0 });
+        }*/
+        console.log("data",data)
+
+        if (segmentation !== "Cummulative"){
+            console.log("data.length",data.length)
+            for(let i=0; i<data.length; i++){
+                for(let j=0; j<segments.length; j++){
+                    console.log("t")
+                } 
+            }
+            //convert date to days since nearest segment start
+            //for 0 -> largest number daysSince
+            
+            //dataTable.addColumn({ type: 'number', id: 'numOfDays' }); //The x-axis: number of days since beginning of semester/year.
+            //dataTable.addColumn({ type: 'string', role: 'annotation'});
+            //addColumn 
         }
 
-        dataTable.addRows( data );
+        //Create DataTable
+        if(segmentation == "Cummulative"){
+            dataTable.addRows( data );
 
-        //Create Semester Annotations
-        console.log("ddddddddddd",calStats)
-        function findClosestValue(date){ 
-            let found = false;
-            for (let i=1;i<calStats[varOfInterest].length;i++){
-                if (date < calStats[varOfInterest][i][0]){
-                    let ValueAndIndex = [data[i-1][2],i]
-                    console.log(ValueAndIndex,"ddd",data[i-1][2])
-                    found = true;
-                    return ValueAndIndex
-                    //return [calStats[varOfInterest][i-1][2],i]
+            //Create Semester Annotations
+            for (let i=0; i< Object.keys(Semesters).length; i++){
+                let sem = Object.keys(Semesters)[i]
+                if (findClosestValue(Semesters[sem]) !== null){
+                    dataTable.addRow([Semesters[sem], sem, findClosestValue(Semesters[sem])[0]])
                 }
             }
-            if (found == false){
-                return null
-            }
+
+            dataTable.sort({ column: 0 });
         }
-        
-        for (let i=0; i< Object.keys(Semesters).length; i++){
-            let sem = Object.keys(Semesters)[i]
-            if (findClosestValue(Semesters[sem]) !== null){
-                dataTable.addRow([Semesters[sem], sem, findClosestValue(Semesters[sem])[0]])
-            }
-        }
-        dataTable.sort({ column: 0 });
 
         console.log("dt",dataTable)
         DataTables[semCompVarOfInterest+segmentation] = dataTable //Save the DataTable to an object so we don't have to compute it again.
@@ -177,7 +208,7 @@ function SemesterComparisonChart ({google,calStats}) {
                 'height':300,
                 'annotations': { 
                     'style': 'line',
-                    'stem': { 'color': 'red', }
+                    'stem': { 'color': 'red' }
                 },
             };
     
