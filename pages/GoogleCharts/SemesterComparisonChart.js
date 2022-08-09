@@ -1,16 +1,33 @@
 import { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 
-let defaultVarOfInterest = "cumSessionMinutes"
+let defaultVarOfInterest = "Certification"
 let DataTables = {}
+
+//Event Annotations
+let Semesters = {
+    "Spring 2022": new Date("1/10/22"),
+    "Summer 2022": new Date("5/14/22"), 
+    "Fall 2022": new Date("8/24/22"),
+}
+let Years = {
+    "2021 - 2022": new Date("8/18/21"), 
+    "2022 - 2023": new Date("8/24/22"),
+}
 
 function SemesterComparisonChart ({google,calStats}) {
     const [chart, setChart] = useState(null);
-    const [semCompVarOfInterest, setSemCompVarOfInterest] = useState("defaultVarOfInterest")
+    const [semCompVarOfInterest, setSemCompVarOfInterest] = useState(defaultVarOfInterest)
+    const [segmentation, setSegmentation] = useState("Cummulative");
 
     function changeVarOfInterest(idOfSelectElem){
         let selectValue = document.getElementById(idOfSelectElem).value
         setSemCompVarOfInterest(selectValue);
+    }
+
+    function changeSegmentation(idOfSelectElem){
+        let selectValue = document.getElementById(idOfSelectElem).value
+        setSegmentation(selectValue);
     }
 
     useEffect(() => {
@@ -18,12 +35,16 @@ function SemesterComparisonChart ({google,calStats}) {
             var options = {
                 'title':'Semester Comparison - '+semCompVarOfInterest,
                 'width':400,
-                'height':300
+                'height':300,
+                'annotations': { 
+                    'style': 'line',
+                    'stem': { 'color': 'red', }
+                },
             };
 
-            if (Object.keys(DataTables).includes(semCompVarOfInterest)){
+            if (Object.keys(DataTables).includes(semCompVarOfInterest+segmentation)){
                 //load a DataTable which was computed previously 
-                let dataTable = DataTables[semCompVarOfInterest]
+                let dataTable = DataTables[semCompVarOfInterest+segmentation]
                 const newChart = new google.visualization.LineChart(document.getElementById('semesterComparisonChart'));
                 newChart.draw(dataTable, options);
                 setChart(newChart);
@@ -35,14 +56,31 @@ function SemesterComparisonChart ({google,calStats}) {
                 setChart(newChart);
             }
         }
-    }, [semCompVarOfInterest]);
+    }, [semCompVarOfInterest, segmentation]);
 
 
     function createDataTable(varOfInterest){
-        // Create the data table.
+        console.log("dddd",calStats)
         const dataTable = new google.visualization.DataTable();
-        dataTable.addColumn({ type: 'date', id: 'Date' });
-        dataTable.addColumn({ type: 'number', id: 'Won/Loss' });
+
+        let segments; 
+        if(segmentation == "Year"){ segments = Years }
+        if(segmentation == "Semester"){ segments = Semesters }
+
+        //Define columns
+        if (segmentation == "Semester" || segmentation == "Year"){
+            dataTable.addColumn({ type: 'number', id: 'numOfDays' }); //The x-axis: number of days since beginning of semester/year.
+        } else { 
+            dataTable.addColumn({ type: 'date', id: 'Date' }); 
+        }
+        dataTable.addColumn({ type: 'string', role: 'annotation'});
+        if (segmentation == "Cummulative"){
+            dataTable.addColumn({ type: 'number', id: varOfInterest });
+        } else { 
+            Object.keys(segments).forEach( segment =>
+                dataTable.addColumn({ type: 'number', id: segment })
+            )
+        } 
 
         //Convert dates (as strings) into DateObjs. Add timezone offset which was lost in transport (because date was saved as a string).
         //Convert String to Date Obj          
@@ -60,18 +98,70 @@ function SemesterComparisonChart ({google,calStats}) {
 
         calStats[varOfInterest] = calStats[varOfInterest].sort(function(a, b){ return a[0] - b[0] }); //Sort by date
 
-        //Convert daily stat to a cummulative stat
-        let cumCerts = 0;
-        for (let i=0;i<calStats[varOfInterest].length;i++){
-            cumCerts += calStats[varOfInterest][i][1]
-            calStats[varOfInterest][i][1] = cumCerts
+        //Add data to the DataTable
+        let data = [];
+        if (segmentation == "Cummulative"){
+            //Convert daily stat to a cummulative stat
+            let cumStatValue = 0;
+            for (let i=0;i<calStats[varOfInterest].length;i++){
+                cumStatValue += calStats[varOfInterest][i][1]
+                //calStats[varOfInterest][i][2] = cumStatValue
+                //calStats[varOfInterest][i][1] = null //Annotation
+                data[i] = [ calStats[varOfInterest][i][0], null, cumStatValue ]
+            }
+        } else {
+            //Count days since beginning of semester/year.
+            //Calculate semester/yearly cummulative statistics.
+
+            //Segment the data by Year/Semester
+            let start;
+            let dataCols = {}
+            for (let i=0; i<Object.keys(Semesters); i++){
+                let sem = Object.keys(Semesters)[i] //name
+                start = Semesters[sem] //Beginning Date
+
+                //calStats[varOfInterest][0:firstIndex]
+                //dataCols[semm] = []
+                //Index of First Value: findClosestValue(Semesters[sem])[1]
+                //First Value: findClosestValue(Semesters[sem])[0]
+
+                //get index of last value
+                //save that slice [b:e]
+                //add the slice into the dataTable with addColumn
+                //dataTable.addRow([ daysSince, null, segment1, segment2... ])
+            }
         }
 
-        dataTable.addRows(
-            calStats[varOfInterest] // looks like:  [ new Date(2012, 3, 13), 8 ]
-        );
+        dataTable.addRows( data );
 
-        DataTables[semCompVarOfInterest] = dataTable //Save the DataTable to an object so we don't have to compute it again.
+        //Create Semester Annotations
+        console.log("ddddddddddd",calStats)
+        function findClosestValue(date){ 
+            let found = false;
+            for (let i=1;i<calStats[varOfInterest].length;i++){
+                if (date < calStats[varOfInterest][i][0]){
+                    let ValueAndIndex = [data[i-1][2],i]
+                    console.log(ValueAndIndex,"ddd",data[i-1][2])
+                    found = true;
+                    return ValueAndIndex
+                    //return [calStats[varOfInterest][i-1][2],i]
+                }
+            }
+            if (found == false){
+                return null
+            }
+        }
+        
+        for (let i=0; i< Object.keys(Semesters).length; i++){
+            let sem = Object.keys(Semesters)[i]
+            if (findClosestValue(Semesters[sem]) !== null){
+                dataTable.addRow([Semesters[sem], sem, findClosestValue(Semesters[sem])[0]])
+            }
+        }
+        dataTable.sort({ column: 0 });
+
+        console.log("dt",dataTable)
+        DataTables[semCompVarOfInterest+segmentation] = dataTable //Save the DataTable to an object so we don't have to compute it again.
         
         return dataTable
     }
@@ -84,7 +174,11 @@ function SemesterComparisonChart ({google,calStats}) {
             var options = {
                 'title':'Semester Comparison - '+defaultVarOfInterest,
                 'width':400,
-                'height':300
+                'height':300,
+                'annotations': { 
+                    'style': 'line',
+                    'stem': { 'color': 'red', }
+                },
             };
     
             // Instantiate and draw our chart, passing in some options.
@@ -98,10 +192,10 @@ function SemesterComparisonChart ({google,calStats}) {
         <>
             {!google && <Spinner />}
             <div id="semesterComparisonChart" className={!google ? 'd-none' : ''} />
-            <select id="semCompEventType" onChange={() => changeVarOfInterest("semCompEventType")}>
+            <select id="semCompEventType" onChange={() => changeVarOfInterest("semCompEventType")} defaultValue={semCompVarOfInterest}>
                 <option value="Total visits">Total visits</option>
-                <option value="avgSessionMinutes">avgSessionMinutes</option>
-                <option value="cumSessionMinutes">cumSessionMinutes</option>
+                <option disabled value="avgSessionMinutes">avgSessionMinutes</option>
+                <option disabled value="cumSessionMinutes">cumSessionMinutes</option>
                 <option disabled>──────────</option>
                 <option value="Certification">Certification</option>
                 <option value="Individual">Individual</option>
@@ -112,10 +206,11 @@ function SemesterComparisonChart ({google,calStats}) {
                 <option value="Staff on Duty">Staff on Duty</option>
                 <option value="Undefined">Undefined</option>
             </select>
-            <label>
-                <input type="checkbox" defaultChecked="true"></input>
-                Cummulative / Per-Semester
-            </label>
+            <select id="segmentation" onChange={() => changeSegmentation("segmentation")} defaultValue={segmentation}>
+                <option value="Cummulative">Cummulative</option>
+                <option value="Semester">Semester</option>
+                <option value="Year">Year</option>
+            </select>
         </>
     )
 }

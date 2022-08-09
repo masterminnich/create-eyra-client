@@ -399,33 +399,6 @@ export default function Home({ isConnected, members, activity }) {
     // N - create new activity
   }
 
-  /*const handleSubmitExisting = (e) => {
-    //Get badge in/out datetimes. Convert local time to UTC!
-    let badgedInDateTime = new Date(e.target.badgeInDate.value+" "+e.target.badgeInTime.value+" EDT")
-    let badgedOutDateTime = new Date(e.target.badgeOutDate.value+" "+e.target.badgeOutTime.value+" EDT")
-    
-    //Calculate sessionLengthMinutes
-    let sessionLengthMinutes = Math.round(badgedOutDateTime - badgedInDateTime)/60000   
-
-    let newActivity = activityEvent;
-    newActivity.badgeInTime = badgedInDateTime.toISOString()
-    newActivity.badgeOutTime = badgedOutDateTime.toISOString()
-    newActivity.event = e.target[0].value
-    newActivity.sessionLengthMinutes = sessionLengthMinutes
-    newActivity.machineUtilized = getMachinesUtilized()
-    newActivity.otherToolsUtilized = getotherToolsUtilized() 
-
-    //e.preventDefault();
-    //let errs = validate(e);
-    //setErrors(errs);
-    //setisOpen(false);
-
-    let props = JSON.parse(e.target[25].innerText)
-    console.log("PROPS",props,"activityEvent",activityEvent)
-
-    updateActivityLog(activity, activityEvent, e, true)
-  }*/
-
   const closePopup = async() => {
     setisOpen(false);
     if(isOpen == false){ document.getElementsByClassName("Popup")[0].remove() }
