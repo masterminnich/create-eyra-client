@@ -286,7 +286,7 @@ function SemesterComparisonChart ({google,calStats}) {
             <select id="semCompEventType" onChange={() => changeVarOfInterest("semCompEventType")} defaultValue={semCompVarOfInterest}>
                 <option value="Total visits">Total visits</option>
                 <option disabled value="avgSessionMinutes">avgSessionMinutes</option>
-                <option disabled value="cumSessionMinutes">cumSessionMinutes</option>
+                <option value="cumSessionMinutes">cumSessionMinutes</option>
                 <option disabled>──────────</option>
                 <option value="Certification">Certification</option>
                 <option value="Individual">Individual</option>

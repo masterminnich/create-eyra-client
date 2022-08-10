@@ -352,7 +352,17 @@ export default function Home({ isConnected, members, activity }) {
     newActivity.sessionLengthMinutes = Math.round(new Date(activityEvent.badgeOutTime) - new Date(activityEvent.badgeInTime))/60000
     newActivity.MemberID = activityEvent.MemberID
     newActivity._id = activityEvent._id
-    updateActivityLog(activity, newActivity, e, false)
+    if (existingInDB == true){
+      /*let actDayEvents = activity.filter(a => a.Date == new Date(badgeOutDate.value).toISOString().substring(0,10))[0].Events
+      let found = actDayEvents.filter(ev => ev._id == activityEvent._id)
+      let remainingEvents = actDayEvents.filter(ev => ev._id !== activityEvent._id)
+      console.log("found",found,"actDay",actDayEvents)
+      console.log("activityEvent",activityEvent._id,"activity",activity,"badgeOutDate",badgeOutDate.value)
+      remainingEvents.push(newActivity)*/
+      updateActivityLog(activity, newActivity, e, true)
+    } else {
+      updateActivityLog(activity, newActivity, e, false)
+    }
     let memberToUpdate = members.filter(m => m._id == activityEvent.MemberID)[0]
     if (existingInDB == false){ memberToUpdate.badgedIn = false }
     if (newActivity.event == "Certification"){
