@@ -22,7 +22,7 @@ function CalendarChart ({google, calStats}) {
     }
 
     function loadChart(){
-        console.log("drawing CalendarChart.js calStats",calStats)
+        //console.log("drawing CalendarChart.js calStats",calStats)
         const dataTable = new google.visualization.DataTable();
         dataTable.addColumn({ type: 'date', id: 'Date' });
         dataTable.addColumn({ type: 'number', id: 'Won/Loss' });

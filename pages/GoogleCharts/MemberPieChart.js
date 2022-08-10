@@ -29,7 +29,6 @@ function WorkshopPopularityPieChart ({google,memberStats}) {
 
     function loadChart(){
         // Create the data table.
-        console.log("varOFI",varOfInterest)
         let dataForPieChart = [["Member",varOfInterest]]
         let keys = Object.keys(memberStats)
         for (let i=0;i<keys.length;i++){ //memberStats is {stat:{Registered:dp1, cumEvents:dp2}}

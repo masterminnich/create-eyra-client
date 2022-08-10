@@ -6,6 +6,7 @@ let DataTables = {}
 
 //Event Annotations
 let Semesters = {
+    "Fall 2021": new Date("8/18/21"),
     "Spring 2022": new Date("1/10/22"),
     "Summer 2022": new Date("5/14/22"), 
     "Fall 2022": new Date("8/24/22"),
@@ -76,11 +77,9 @@ function SemesterComparisonChart ({google,calStats}) {
                     return [calStats[varOfInterest][i-1][2],i]
                 }
             }
-            if (found == false){ 
-                console.log("findCLosestValue notfound")
-                return [null,null] }
+            if (found == false){ return [null,null] }
         }
-        function findLastIndex(date){
+        /*function findLastIndex(date){
             let found = false;
             for (let i=calStats[varOfInterest].length; i>0; i--){
                 if (date > calStats[varOfInterest][i-1][0]){
@@ -88,10 +87,8 @@ function SemesterComparisonChart ({google,calStats}) {
                     return [calStats[varOfInterest][i][2],i]
                 }
             }
-            if (found == false){ 
-                console.log("findLastIndex notfound")
-                return [null,null] }
-        }
+            if (found == false){ return [null,null] }
+        }*/
 
 
         //Define columns
@@ -100,9 +97,6 @@ function SemesterComparisonChart ({google,calStats}) {
             dataTable.addColumn({ type: 'string', role: 'annotation'});
             dataTable.addColumn({ type: 'number', id: varOfInterest });
             //dataTable.addColumn({ type: 'number', id: segment });
-        } else { 
-            //dataTable.addColumn({ type: 'number', id: 'numOfDays' }); //The x-axis: number of days since beginning of semester/year.
-            //dataTable.addColumn({ type: 'string', role: 'annotation'});
         }
 
         //Convert dates (as strings) into DateObjs. Add timezone offset which was lost in transport (because date was saved as a string).
@@ -121,59 +115,98 @@ function SemesterComparisonChart ({google,calStats}) {
 
         calStats[varOfInterest] = calStats[varOfInterest].sort(function(a, b){ return a[0] - b[0] }); //Sort by date
         
-        //Prepare data for DataTable
+
+        //Convert daily stat to a cummulative stat
         let data = [];
-        let dataCols = {}
         //if (segmentation == "Cummulative"){
-            //Convert daily stat to a cummulative stat
-            let cumStatValue = 0;
-            for (let i=0;i<calStats[varOfInterest].length;i++){
-                cumStatValue += calStats[varOfInterest][i][1]
-                //calStats[varOfInterest][i][2] = cumStatValue
-                //calStats[varOfInterest][i][1] = null //Annotation
-                data[i] = [ calStats[varOfInterest][i][0], null, cumStatValue ]
-            }
-        /*} else {
-            //Count days since beginning of semester/year.
-            //Calculate semester/yearly cummulative statistics.
+        let cumStatValue = 0;
+        for (let i=0;i<calStats[varOfInterest].length;i++){
+            cumStatValue += calStats[varOfInterest][i][1]
+            data[i] = [ calStats[varOfInterest][i][0], null, cumStatValue ]
+        }
+        //console.log("cummulative stats computed. data=",data,"calStats[varOfInterest]",calStats[varOfInterest])
+        
 
-            //Segment the data by Year/Semester
-            for (let i=0; i<Object.keys(segments).length-1; i++){
-                let sem = Object.keys(segments)[i] //name
-
-                console.log("seg",sem,"i",i,"max",Object.keys(Semesters).length-1)
-                
-                let [v2,startIndex] = findLastIndex(Semesters[Object.keys(Semesters)[i]])
-                let [v3,endIndex] = findClosestValue(Semesters[Object.keys(Semesters)[i+1]])
-
-                let seg;
-                if (endIndex == null){ 
-                    seg = calStats[varOfInterest].slice(startIndex) 
-                } else { 
-                    seg = calStats[varOfInterest].slice(startIndex,endIndex) 
-                }
-
-                console.log("i0",startIndex,"i1",endIndex,"seg",seg)
-
-                dataTable.addColumn({ type: 'number', id: sem }, seg)
-            }
-            dataTable.sort({ column: 0 });
-        }*/
-        console.log("data",data)
-
+        //Segment that data
         if (segmentation !== "Cummulative"){
-            console.log("data.length",data.length)
+            let daysInSemester = 0;
+
+            //Reformat values
+            for(let j=0; j<Object.keys(segments).length; j++){
+                let d = Object.keys(segments)[j]
+            }            
+
+            //console.log("creating a 5 col array. finding daysSince and columnIndex for each datapoint. data=",data)
+            //data now looks like... [Date, annotation, datapoint, daysSince, segmentIndex]
+
+            //Find daysSince and columnIndex
             for(let i=0; i<data.length; i++){
-                for(let j=0; j<segments.length; j++){
-                    console.log("t")
+                let o = {}
+                let date = data[i][0]
+                let datapoint = data[i][2]
+                for(let j=0; j<Object.keys(segments).length-1; j++){
+                    let d = Object.keys(segments)[j]
+                    if (date >= segments[d]){
+                        let days = -Math.round((segments[d]-date)/(60000*60*24))
+                        o[days]=j
+                    }
                 } 
+                let l = Object.keys(o).filter(x => x >= 0)
+                l = l.sort((a, b) => a-b)
+                let daysSince = l[0] //Get the minimum positive value
+                let columnIndex = o[daysSince]
+                data[i][3] = parseInt(daysSince)
+                data[i][4] = columnIndex
+                //if (daysSince > daysInSemester){ daysInSemester = daysSince }
             }
-            //convert date to days since nearest segment start
-            //for 0 -> largest number daysSince
-            
-            //dataTable.addColumn({ type: 'number', id: 'numOfDays' }); //The x-axis: number of days since beginning of semester/year.
-            //dataTable.addColumn({ type: 'string', role: 'annotation'});
-            //addColumn 
+
+            daysInSemester = Math.max.apply(Math, data.map(function(o) { return o[3]; })) //Get max value in column 3 (daysSince)
+
+            //data now looks like... [Date, annotation, datapoint, daysSince, segmentIndex]
+            //console.log("about to reformat the data",data)
+
+            //Create the DataTable. Take data:[Date, annotation, datapoint, daysSince, segmentIndex] and turn it into newData [daysSince, annotation, seg1, seg2...]
+            let lastDataFound = Array(Object.keys(segments).length-1).fill(null)
+            let newData = []
+            for (let i=0; i<daysInSemester; i++){
+                let row = [i, null] //annotation = null
+                let dataFound = false;
+                for (let j=0; j<data.length; j++){
+                    //let dataFound = []; //list of columnIndexs
+                    let [daysSince, datapoint, columnIndex] = [data[j][3], data[j][2], data[j][4]]
+                    if (daysSince == i){
+                        //dataFound.push(i)
+                        dataFound = true;
+                        lastDataFound[columnIndex] = datapoint // store the datapoint
+                    }
+                }
+                lastDataFound.forEach(segDatapoint => row.push(segDatapoint))
+                newData.push(row)
+            }
+
+            //Beginning of each segment should start at 0.
+
+            //Trim Tails. Some semesters are longer than others. This finds the max value and trims the data to that point.
+            //for (let i=0; i<newData[0].length; i++){ //For each column
+                //Find the max value of each segment 
+                //replace each datapoint until the end of the array with null
+
+                /*let endIndex = row.indexOf(Math.max(...row))
+                for (let k=endIndex; k<daysInSemester; k++){
+                    row[k]=null
+                }*/
+            //}
+
+            //Add Columns
+            let index = [...Array(daysInSemester).keys()] //This will be the x-axis. It reprsents daysSince beginning of segment (semester/year). It looks like  [0,1,2,3...daysInSemester-1]
+            dataTable.addColumn({ type: 'number', id: 'numOfDays' }, index); //The x-axis: number of days since beginning of semester/year.
+            dataTable.addColumn({ type: 'string', role: 'annotation'});
+            for (let i=0; i<Object.keys(segments).length-1; i++){
+                let segmentName = Object.keys(segments)[i]
+                dataTable.addColumn('number', segmentName)
+            }
+
+            dataTable.addRows( newData );
         }
 
         //Create DataTable
