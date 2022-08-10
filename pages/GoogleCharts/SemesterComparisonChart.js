@@ -184,7 +184,34 @@ function SemesterComparisonChart ({google,calStats}) {
                 newData.push(row)
             }
 
-            //Beginning of each segment should start at 0.
+            //Force each segment to start at 0.
+            if (true){
+                let numOfColumns = newData[0].length
+                let lastVal = 0;
+                let daysSinceCol = newData.map((x) => x[0])
+                let annotationCol = newData.map((x) => x[1])
+                let newData2 = [ daysSinceCol, annotationCol ]
+                for (let i=2; i<numOfColumns; i++){
+                    let col = newData.map((x) => x[i])
+                    col = col.map(x => x-lastVal)
+                    if(Math.max(...col) > 0){
+                        lastVal = Math.max(...col)
+                    } else {
+                        lastVal = 0
+                    }
+                    // Replace all negative values with 0. Artifact of null values.
+                    for (let j=0; j<col.length; j++){
+                        if(col[j] < 0){ col[j] = 0 }
+                    }
+                    newData2.push(col)
+                }
+                function transpose(a) {
+                    return Object.keys(a[0]).map(function(c) {
+                        return a.map(function(r) { return r[c]; });
+                    });
+                }
+                newData = transpose(newData2)
+            }
 
             //Trim Tails. Some semesters are longer than others. This finds the max value and trims the data to that point.
             //for (let i=0; i<newData[0].length; i++){ //For each column
