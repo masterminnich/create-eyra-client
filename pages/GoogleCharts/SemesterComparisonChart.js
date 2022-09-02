@@ -10,6 +10,7 @@ let Semesters = {
     "Spring 2022": new Date("1/10/22"),
     "Summer 2022": new Date("5/14/22"), 
     "Fall 2022": new Date("8/24/22"),
+    "Spring 2023": new Date("1/16/23"),
 }
 let Years = {
     "2021 - 2022": new Date("8/18/21"), 
@@ -194,10 +195,13 @@ function SemesterComparisonChart ({google,calStats}) {
                 for (let i=2; i<numOfColumns; i++){
                     let col = newData.map((x) => x[i])
                     col = col.map(x => x-lastVal)
-                    if(Math.max(...col) > 0){
-                        lastVal = Math.max(...col)
+                    let lastValueInSegment = Math.max(...col)
+                    if(lastValueInSegment > 0){
+                        lastVal += lastValueInSegment
+                        console.log("set to lastValueInSegment",lastVal)
                     } else {
-                        lastVal = 0
+                        lastVal += 0
+                        console.log("set to 0")
                     }
                     // Replace all negative values with 0. Artifact of null values.
                     for (let j=0; j<col.length; j++){

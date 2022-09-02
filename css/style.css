@@ -143,8 +143,6 @@ table#recentActivity {
     border-spacing: 0;
 }
 
-table#recentActivity th{ width: 50% }
-
 section#recentActivity{ 
     width: 65ch;
     margin-top: 25px;

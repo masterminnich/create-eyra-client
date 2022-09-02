@@ -2,6 +2,9 @@ import Head from 'next/head'
 import clientPromise from '../lib/mongodb'
 import React, { Component, useState, useEffect } from 'react';
 import { Button, Form } from 'semantic-ui-react';
+import FileSaver from 'file-saver';
+import {Blob} from 'buffer';
+import { useRouter } from 'next/router';
 
 
 let hoverTimerId;
@@ -165,42 +168,6 @@ const createNewActivity = async (date, events, originFn) => {
   } catch (error) { console.log("ERROR in",originFn,":",error) }
 }
 
-const deleteActivity = async(props) => {
-  let [activity, popUpState, activityID, member] = props
-  console.log("p",props)
-  let date = popUpState.badgeOutDate.substring(0,10)
-  let activityDay;
-  let remainingActivities;
-  if(typeof(activityID)=="string"){
-    activityDay = activity.find(a => a.Date == date)
-    remainingActivities = activityDay.Events.filter(a => a._id !== activityID)
-    console.log("dddd",remainingActivities)
-  } else if (activityID == undefined){ //delete from badgeOut Screen
-    member.badgedIn = !member.badgedIn
-    updateMemberBadgeInStatus(member)
-  } else { //list of IDs
-    console.log("FIX BATCH DELETE from deleteActivity()")
-  }
-  updateActivityByDate(date, remainingActivities, "deleteActivity")
-}
-
-const badgeInByRFID = async (RFID_UID_input) => {
-  try {
-    const res = await fetch('/api/badgeIn', {
-      method: 'POST',
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({rfid: RFID_UID_input})
-    }).then(setTimeout(() => { window.location.reload() }, 200));
-    let response = res.json();
-    response.then((resp) => {
-      console.log(resp.data);
-    });
-  } catch (error) { console.log("Error badging in member",error) }
-}
-
 //creates a new activity upon badge out
 const updateActivityLog = async (activity, newActivity, e, existing) => {
   // activity : The activities collection
@@ -258,6 +225,13 @@ export default function Home({ isConnected, members, activity }) {
   const [batchEvents, setBatchEvents] = useState({});
   const [submitType, setSubmitType] = useState({});
 
+  const router = useRouter();
+  // Call this function whenever you want to refresh props!
+  const refreshData = () => {
+    setisOpen(false);
+    router.replace(router.asPath);
+  }
+
   /*function validate(e) {
     let err = {};
     let reqVariables = ['MemberID', 'Name','badgeInTime','badgeOutTime', 'event'];
@@ -273,6 +247,45 @@ export default function Home({ isConnected, members, activity }) {
     }
     return err;
   }*/
+
+  const deleteActivity = async(props) => {
+    let [activity, popUpState, activityID, member] = props
+    console.log("p",props)
+    let date = popUpState.badgeOutDate.substring(0,10)
+    let activityDay;
+    let remainingActivities;
+    if(typeof(activityID)=="string"){
+      activityDay = activity.find(a => a.Date == date)
+      remainingActivities = activityDay.Events.filter(a => a._id !== activityID)
+      console.log("dddd",remainingActivities)
+    } else if (activityID == undefined){ //delete from badgeOut Screen
+      member.badgedIn = !member.badgedIn
+      updateMemberBadgeInStatus(member)
+    } else { //list of IDs
+      console.log("FIX BATCH DELETE from deleteActivity()")
+    }
+    updateActivityByDate(date, remainingActivities, "deleteActivity")
+    refreshData() //refreshes serverSideProps
+  }
+
+  const badgeInByRFID = async (RFID_UID_input) => {
+    try {
+      const res = await fetch('/api/badgeIn', {
+        method: 'POST',
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({rfid: RFID_UID_input})
+      }).then(setTimeout(() => { window.location.reload() }, 200));
+      let response = res.json();
+      response.then((resp) => {
+        console.log(resp.data);
+      });
+    } catch (error) { console.log("Error badging in member",error) }
+    refreshData(); //refreshes serverSideProps
+  }
+
 
   class QuestionTooltip extends React.Component{
     render(){
@@ -339,6 +352,7 @@ export default function Home({ isConnected, members, activity }) {
     let eventsToKeep = deleteDate.Events.filter(e => !eventIdsToDelete.includes(e._id))
     //console.log("e",e,"selected",selected,"eventsToKeep",eventsToKeep,"toDelete",eventsToDelete)
     updateActivityByDate(date, eventsToKeep, "batchDelete")
+    refreshData() //refreshes serverSideProps
   }
 
   const handleSubmitPopUp = (existingInDB, e) => { //handleSubmitBadgeOut
@@ -353,12 +367,6 @@ export default function Home({ isConnected, members, activity }) {
     newActivity.MemberID = activityEvent.MemberID
     newActivity._id = activityEvent._id
     if (existingInDB == true){
-      /*let actDayEvents = activity.filter(a => a.Date == new Date(badgeOutDate.value).toISOString().substring(0,10))[0].Events
-      let found = actDayEvents.filter(ev => ev._id == activityEvent._id)
-      let remainingEvents = actDayEvents.filter(ev => ev._id !== activityEvent._id)
-      console.log("found",found,"actDay",actDayEvents)
-      console.log("activityEvent",activityEvent._id,"activity",activity,"badgeOutDate",badgeOutDate.value)
-      remainingEvents.push(newActivity)*/
       updateActivityLog(activity, newActivity, e, true)
     } else {
       updateActivityLog(activity, newActivity, e, false)
@@ -371,7 +379,7 @@ export default function Home({ isConnected, members, activity }) {
     console.log("memberToUpdate",memberToUpdate)
     //finish: check whether to update lastBadgeIn
     updateMemberBadgeInStatus(memberToUpdate)
-    
+    refreshData() //refreshes serverSideProps
   }
 
   const handleSubmitForgotID = (props,e) => {
@@ -402,6 +410,10 @@ export default function Home({ isConnected, members, activity }) {
       let activities = oldEvents.concat(newActivities)
       updateActivityByDate(date, activities, "handleSubmitForgotID")
     } else { createNewActivity(date, newActivities, "handleSubmitForgotID") }
+
+    refreshData() //triggers serverSideProps to refresh
+
+    //Close the popup.
     
     //new Activity
     //Does newActivityDay exist
@@ -511,7 +523,7 @@ export default function Home({ isConnected, members, activity }) {
             <textarea style={{display:"none"}} id="hiddenProps" defaultValue={JSON.stringify(this.props)}></textarea>
 
             <Button type='button' name={activityEvent._id} id="deleteActivityButton" onClick={(e) => deleteActivity([activity, this.state, activityEvent._id, activityEvent.member])} style={trashButtonCSS}></Button>
-            <Button type='submit' id="submitBadgeOutPopup">{this.props.submitButtonText}</Button>
+            <Button type='submit' id="submitBadgeOutPopup" onClick={this.props.submitting}>{this.props.submitButtonText}</Button>
             <Button type='button' id="cancelPopupButton" onClick={() => closePopup()}>Cancel</Button>
           </Form>
         </>
@@ -655,6 +667,7 @@ export default function Home({ isConnected, members, activity }) {
               submitButtonText="Create"
               existsInDB={false}
               noId={true}
+              submitting={this.props.toggle}
             />
 
             <div>
@@ -685,7 +698,7 @@ export default function Home({ isConnected, members, activity }) {
     }
 
     toggle(){ 
-      this.setState({"showPopup":!this.state.showPopup}) 
+      this.setState({"showPopup":!this.state.showPopup})
       setSubmitType("(e) => handleSubmitForgotID(this.getInfo(),e)");
     }
 
@@ -887,11 +900,11 @@ export default function Home({ isConnected, members, activity }) {
       this.state = {
         activity: activity,
         displayingActivities: activity.filter(act => act.Date == displayingDay)[0],
-        toggle: false,
+        toggle: false, //toggle batch selections on and off. If true, batch selections are on. 
         firstCheckboxSelected: undefined,
         selected: [] //A list of selected elements
       };
-      //console.log("RecentActivity.state =",this.state)
+      console.log("RecentActivity.state =",this.state)
     }
 
     changeDay(arg,dayToChange){
@@ -948,9 +961,10 @@ export default function Home({ isConnected, members, activity }) {
             <caption id="date">{displayingDay}</caption>
             <thead>
               <tr key={"head_tr"}>
-                <th>Member Name</th>
-                <th>Visit Type</th>
-                <th onClick={() => this.setState({toggle:!this.state.toggle})}>Edit Activity</th>
+                <th style={{"width":"16rem"}}>Member Name</th>
+                <th style={{"width":"4rem"}}>Flags</th>
+                <th style={{"width":"12rem"}}>Visit Type</th>
+                <th style={{"text-align": "center"}} onClick={() => this.setState({toggle:!this.state.toggle})}>Edit Activity</th>
               </tr>
             </thead>
             <tbody id="recentActivityTbody">
@@ -962,6 +976,29 @@ export default function Home({ isConnected, members, activity }) {
               this.state.displayingActivities.Events.map((actEvent,i) => ( 
                 <tr id={actEvent._id} key={actEvent._id+"_tr"}>
                   <td onMouseEnter={(e) => hover([{actEvent}.actEvent.MemberID,e])} onMouseLeave={hoverOut}>{actEvent.Name}</td>
+                  {actEvent.flags.includes("noID") ? (
+                    <td>
+                      <svg viewBox="0 0 512 512" style={{width:"1.75rem"}}>
+                      {/*License: CC0. Original art by SVG Repo: https://www.svgrepo.com/svg/202851/ghost */}
+                        <path style={{fill:"#CCCCCC"}} d="M420.607,164.6v303.522c0,20.451-23.636,31.857-39.647,19.119v-0.013
+                          c-8.906-7.079-21.53-7.079-30.436,0l-24.435,19.449c-8.906,7.092-21.517,7.092-30.423,0l-24.435-19.449
+                          c-8.906-7.079-21.53-7.079-30.436,0l-24.435,19.462c-8.906,7.079-21.517,7.079-30.423,0l-24.448-19.462
+                          c-8.906-7.079-21.53-7.079-30.436,0l-0.013,0.013c-15.998,12.738-39.647,1.345-39.647-19.119V164.6
+                          C91.393,73.686,165.092,0,256.006,0c45.445,0,86.601,18.421,116.39,48.21C402.185,77.987,420.607,119.143,420.607,164.6z"/>
+                        <g>
+                          <path style={{fill:"#666666"}} d="M195.084,114.487c17.838,0,32.301,14.45,32.301,32.288s-14.463,32.301-32.301,32.301
+                            s-32.288-14.463-32.288-32.301S177.246,114.487,195.084,114.487z"/>
+                          <path style={{fill:"#666666"}} d="M316.916,114.487c17.838,0,32.288,14.45,32.288,32.288s-14.45,32.301-32.288,32.301
+                            c-17.838,0-32.288-14.463-32.288-32.301S299.078,114.487,316.916,114.487z"/>
+                        </g>
+                        <path style={{fill:"#CCCCCC"}} d="M283.918,2.36C274.846,0.812,265.522,0,256.006,0C165.092,0,91.393,73.686,91.393,164.6v303.522
+                          c0,20.464,23.648,31.857,39.647,19.119l0.013-0.013c6.014-4.783,13.727-6.331,20.845-4.656c-2.918-3.933-4.681-8.855-4.681-14.45
+                          V164.6C147.216,83.201,206.299,15.605,283.918,2.36z"/>
+                      </svg>
+                    </td>
+                  ) : (
+                    <td></td>
+                  )}
                   <td>{actEvent.event}</td>
                   <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: displayingDay, submitButtonText: "Add Info", "message":"Editing "+actEvent.Name+"'s event..."}, "(e) => handleSubmitPopUp(true,e)")} showCheckbox={this.state.toggle} index={i}/></td>
                 </tr>))
