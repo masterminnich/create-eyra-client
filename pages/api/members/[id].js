@@ -5,16 +5,11 @@ import Member from '../../../models/Member';
 
 
 // Initialize the cors middleware. You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
-const cors = initMiddleware(
-   Cors({
-    methods: ['GET', 'POST', 'OPTIONS', "PUT", "DELETE"], // Only allow requests with GET, POST and OPTIONS
-  })
-)
+const cors = initMiddleware( Cors({ methods: ['GET', 'POST', 'OPTIONS', "PUT", "DELETE"] }) )
 
 export default async function handler(req, res) {
-    // Run cors
+    
     await cors(req, res)
-
   
     connectToDatabase();
 
@@ -40,7 +35,6 @@ export default async function handler(req, res) {
         case 'PUT':
             try {
                 //Update Member
-                //console.log("PUT| req.body = ",req.body);
                 const member = await Member.findByIdAndUpdate(id, req.body, {
                     new: true,
                     runValidators: true

@@ -2,9 +2,8 @@ import Head from 'next/head'
 import clientPromise from '../lib/mongodb'
 import React, { Component, useState, useEffect } from 'react';
 import { Button, Form } from 'semantic-ui-react';
-import FileSaver from 'file-saver';
-import {Blob} from 'buffer';
 import { useRouter } from 'next/router';
+//import { textSpanContainsPosition } from 'typescript';
 
 
 let hoverTimerId;
@@ -13,7 +12,7 @@ const certFullNameList = ['UltimakerCertified', 'GlowforgeCertified', 'FourAxisM
 let certNameList = ["FourAxisMill","BantamMill","Glowforge","P9000","Sewing","Silhouette","Ultimaker","Fusion","VectorCAD","CircuitDesign","IndustrialSewing"]
 let otherToolsNameList = ["ButtonPress","3D Scanners","WacomTablets","VR","Comb Binder","Hand Tools"]
 const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
-
+const headers = {"Accept": "application/json", "Content-Type": "application/json"}
 
 function getMachinesUtilized(){ //Get list of machinesUtilized from an on-screen PopUp
   let machinesUtilized = []
@@ -96,25 +95,22 @@ function createTooltip(dataToDisplay,parentElement){
 
 const getMemberDataFromID = async (MemberID,parentElement) => { //Fetch member data from MongoDB for a specific member
   try {  
-      const res = await fetch(`/api/members/${MemberID}`, {
-          method: 'GET',
-          headers: {
-              "Accept": "application/json",
-              "Content-Type": "application/json"
-          }
-      })
-      let response = res.json();
-      response.then((resp) => {
-        let memberData = resp.data
-        let dataToDisplay;
-        if (memberData !== undefined){  
-          dataToDisplay = {"Patron Type":memberData["PatronType"],"Major":memberData["Major"],"GraduationYear":memberData["GraduationYear"],"RFID UID":memberData["rfid"],"joinedDate":new Date(memberData["joinedDate"]).toLocaleString("en-CA", localDateTimeOptions)}
-          console.log("memberData",memberData)
-        } else { //Create Tooltip for users not in the members collection
-          dataToDisplay = {"RFID UID":"N/A"}
-        }
-        createTooltip(dataToDisplay,parentElement)
-      })
+    const res = await fetch(`/api/members/${MemberID}`, {
+        method: 'GET',
+        headers: headers
+    })
+    let response = res.json();
+    response.then((resp) => {
+      let memberData = resp.data
+      let dataToDisplay;
+      if (memberData !== undefined){  
+        dataToDisplay = {"Patron Type":memberData["PatronType"],"Major":memberData["Major"],"GraduationYear":memberData["GraduationYear"],"RFID UID":memberData["rfid"],"joinedDate":new Date(memberData["joinedDate"]).toLocaleString("en-CA", localDateTimeOptions)}
+        console.log("memberData",memberData)
+      } else { //Create Tooltip for users not in the members collection
+        dataToDisplay = {"RFID UID":"N/A"}
+      }
+      createTooltip(dataToDisplay,parentElement)
+    })
   } catch (error) { console.log(error); }
 }
 
@@ -128,48 +124,38 @@ function createMemberTooltip(memberDataOrId,parentElement){
 }
 /* End Tooltips Code */
 
-const updateMemberBadgeInStatus = async (member) => {
+const updateMember = async (member) => {
   try {  
     const res = await fetch(`/api/members/${member._id}`, {
       method: 'PUT',
-      headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json"
-      },
+      headers: headers,
       body: JSON.stringify(member)
     })//.then(setTimeout(() => { window.location.reload() }, 200));
-  } catch (error) { console.log("ERROR:",error); }
+  } catch (error) { console.log("ERROR in updateMember() ",error); }
 }
 
-const updateActivityByDate = async (date, events, originFn) => {
-  console.log("date",date,"Evemts",events)
+const updateActivityByDate = async (date, events) => {
   try {  
     const res = await fetch(`/api/activity`, {
       method: 'PUT',
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json"
-      },
+      headers: headers,
       body: JSON.stringify({Date: date, Events: events})
     })//.then(setTimeout(() => { window.location.reload() }, 200));
-  } catch (error) { console.log("ERROR in",originFn,":",error); }
+  } catch (error) { console.log("ERROR :",error); }
 }
 
 const createNewActivity = async (date, events, originFn) => {
   try {
     const res = await fetch(`/api/activity`, {
         method: 'POST',
-        headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-        },
+        headers: headers,
         body: JSON.stringify({Date: date, Events: events})
     })//.then(setTimeout(() => { window.location.reload() }, 200));
   } catch (error) { console.log("ERROR in",originFn,":",error) }
 }
 
 //creates a new activity upon badge out
-const updateActivityLog = async (activity, newActivity, e, existing) => {
+const updateActivityLog = async (activitiesCollection, newActivity, e, existing) => {
   // activity : The activities collection
   // newActivity: the activityEvent to update
   // existing : true = edit an activity that exists in the DB. false = add a new activity to the DB
@@ -177,60 +163,60 @@ const updateActivityLog = async (activity, newActivity, e, existing) => {
   let newBadgeOutDate = newActivity.badgeOutTime.substring(0,10);
   let displayProps = JSON.parse(e.target["displayProps"].innerText);
   let prevBadgeOutDate = displayProps.displayDay;
-  let newActivityDay = activity.find(a => a.Date == newBadgeOutDate) //Get the activity document for the correct day
-  let prevActivityDay = activity.find(a => a.Date == prevBadgeOutDate)
+  let newActivityDay = activitiesCollection.find(a => a.Date == newBadgeOutDate) //Get the activity document for the correct day
+  let prevActivityDay = activitiesCollection.find(a => a.Date == prevBadgeOutDate)
+
+  let newActivities;
 
   if (existing !== false){ //Updating an existing event
-    console.log('activity',activity,'newActivity',newActivity,'newActivityDay',newActivityDay);
+    //console.log('activity',activity,'newActivity',newActivity,'newActivityDay',newActivityDay);
 
     if (prevBadgeOutDate !== newBadgeOutDate){ //Check if the activity is being moved to another date.
       //Date of the activity has changed. Delete the event from the old activity.
       let prevActivityEvents = prevActivityDay.Events.filter(a => a._id !== newActivity._id)
-      updateActivityByDate(prevBadgeOutDate, prevActivityEvents, "updateActivityLog 1"); //Delete activity from old date
+      updateActivityByDate(prevBadgeOutDate, prevActivityEvents); //Delete activity from old date
       
       if (newActivityDay){ //If activities exist for this day, update the list. 
-        let newActivities = newActivityDay.Events.concat(newActivity)
-        updateActivityByDate(newBadgeOutDate,newActivities,"updateActivityLog 1.1")
-      } else { 
-        createNewActivity(newBadgeOutDate,newActivity)
+        newActivities = newActivityDay.Events.concat(newActivity)
       }
 
       //finish: check to update member.lastBadgeOut
     } else { //Event is not being moved to a different day. Edited single activity.
       let DayEvents = newActivityDay.Events.filter(a => a._id !== newActivity._id) //Remove the event from the ActivityDaily document so we can add it back in.
-      let DayEventsAfter = DayEvents.concat(newActivity); //All events from the day.
-      console.log("DayEvents",DayEvents,"DayEventsAfter",DayEventsAfter)
-      updateActivityByDate(newBadgeOutDate, DayEventsAfter, "updateActivityLog 2");
+      newActivities = DayEvents.concat(newActivity); //All events from the day.
     }
   } else {
-    if (newActivityDay){
-      //Activities exist for this day... updating existing activity list
+    if (newActivityDay){ //Activities exist for this day... updating existing activity list
       let acitivitiesBefore = newActivityDay.Events
-      let activitiesAfter = acitivitiesBefore.concat(newActivity);
-      updateActivityByDate(newBadgeOutDate, activitiesAfter, "updateActivityLog 3");
-    } else { 
-      //No acitivities yet for this day... adding a new date to the Activity collection.
-      createNewActivity(newBadgeOutDate, newActivity);
+      newActivities = acitivitiesBefore.concat(newActivity);
     }
+  }
+
+  //Add events to the DB
+  if (newActivityDay){
+    updateActivityByDate(newBadgeOutDate,newActivities)
+  } else { 
+    createNewActivity(newBadgeOutDate,newActivity)
   }
 }
 
-export default function Home({ isConnected, members, activity }) {
+export default function Home({ members, activities }){
+  const [state, setState] = useState({
+    membersCollection: members,
+    activitiesCollection: activities,
+    displayingDay: new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10),
+    isOpen: false,
+    activityEvent: "",
+    displayProps: {},
+    batchEvents: {},
+    submitType: {},
+    showConfigPopup: false,
+    showForgotIDPopup: false,
+  });
 
-  const [displayingDay, setDisplayingDay] = useState(new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10));
-  const [isOpen, setisOpen] = useState(false);
-  const [activityEvent, setActivityEvent] = useState("");
-  const [errors, setErrors] = useState({});
-  const [displayProps, setDisplayProps] = useState({});
-  const [batchEvents, setBatchEvents] = useState({});
-  const [submitType, setSubmitType] = useState({});
+  //console.log("state",state)
 
-  const router = useRouter();
-  // Call this function whenever you want to refresh props!
-  const refreshData = () => {
-    setisOpen(false);
-    router.replace(router.asPath);
-  }
+  function toggleConfigPopup(){ setState({...state, showConfigPopup: !state.showConfigPopup}); }
 
   /*function validate(e) {
     let err = {};
@@ -249,33 +235,29 @@ export default function Home({ isConnected, members, activity }) {
   }*/
 
   const deleteActivity = async(props) => {
-    let [activity, popUpState, activityID, member] = props
+    let [activitiesCollection, popUpState, activityID, member] = props
     console.log("p",props)
     let date = popUpState.badgeOutDate.substring(0,10)
     let activityDay;
     let remainingActivities;
     if(typeof(activityID)=="string"){
-      activityDay = activity.find(a => a.Date == date)
+      activityDay = activitiesCollection.find(a => a.Date == date)
       remainingActivities = activityDay.Events.filter(a => a._id !== activityID)
-      console.log("dddd",remainingActivities)
     } else if (activityID == undefined){ //delete from badgeOut Screen
       member.badgedIn = !member.badgedIn
-      updateMemberBadgeInStatus(member)
+      updateMember(member)
     } else { //list of IDs
       console.log("FIX BATCH DELETE from deleteActivity()")
     }
     updateActivityByDate(date, remainingActivities, "deleteActivity")
-    refreshData() //refreshes serverSideProps
+    setState({...state, isOpen: false}); //close the popup
   }
 
   const badgeInByRFID = async (RFID_UID_input) => {
     try {
       const res = await fetch('/api/badgeIn', {
         method: 'POST',
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json"
-        },
+        headers: headers,
         body: JSON.stringify({rfid: RFID_UID_input})
       }).then(setTimeout(() => { window.location.reload() }, 200));
       let response = res.json();
@@ -283,7 +265,7 @@ export default function Home({ isConnected, members, activity }) {
         console.log(resp.data);
       });
     } catch (error) { console.log("Error badging in member",error) }
-    refreshData(); //refreshes serverSideProps
+    setState({...state, isOpen: false}); //close the popup
   }
 
 
@@ -332,54 +314,53 @@ export default function Home({ isConnected, members, activity }) {
 
   const batchEdit = (e,selected) => {
     let date = document.getElementById("date").innerText
-    let editDate = activity.filter(a => a.Date== date)[0]
+    let editDate = state.activitiesCollection.filter(a => a.Date== date)[0]
     let eventIdsToEdit = []; //list of event ids to delete
     selected.forEach(item => eventIdsToEdit.push(item.parentNode.parentNode.id)) //Get a list of event ids to delete
     let eventsToKeep = editDate.Events.filter(e => eventIdsToEdit.includes(e._id))
     //console.log("e",e,"eventsToKeep",eventsToKeep)
     let dummyEvent = eventsToKeep[0];
-    setBatchEvents(eventsToKeep)
-    setActivityEvent(eventsToKeep)
+    setState({
+      ...state, 
+      activityEvent: eventsToKeep,
+      batchEvents: eventsToKeep
+    })
     let message = "Editing ("+eventIdsToEdit.length+") events..."
-    openPopUp(dummyEvent,{submitButtonText:"Batch Update","message":message}, "() => this.batchEdit()") //onSubmit) setActivityEvent()
+    openPopUp(dummyEvent,{submitButtonText:"Batch Update","message":message}, "() => this.batchEdit()") 
   }
 
   const batchDelete = (e,selected) => {
     let date = document.getElementById("date").innerText
-    let deleteDate = activity.filter(a => a.Date== date)[0]
+    let deleteDate = state.activitiesCollection.filter(a => a.Date== date)[0]
     let eventIdsToDelete = []; //list of event ids to delete
     selected.forEach(item => eventIdsToDelete.push(item.parentNode.parentNode.id)) //Get a list of event ids to delete
     let eventsToKeep = deleteDate.Events.filter(e => !eventIdsToDelete.includes(e._id))
     //console.log("e",e,"selected",selected,"eventsToKeep",eventsToKeep,"toDelete",eventsToDelete)
     updateActivityByDate(date, eventsToKeep, "batchDelete")
-    refreshData() //refreshes serverSideProps
+    setState({...state, isOpen: false}); //close the popup
   }
 
   const handleSubmitPopUp = (existingInDB, e) => { //handleSubmitBadgeOut
     //console.log("existingInDB",existingInDB,"e",e)
-    let newActivity = activityEvent
+    let newActivity = state.activityEvent
     newActivity.badgeInTime = new Date(e.target.badgeInDate.value+" "+e.target.badgeInTime.value+" EDT").toISOString()
     newActivity.badgeOutTime = new Date(e.target.badgeOutDate.value+" "+e.target.badgeOutTime.value+" EDT").toISOString()
     newActivity.machineUtilized = getMachinesUtilized()
     newActivity.otherToolsUtilized = getotherToolsUtilized()
     newActivity.event = e.target[0].value
-    newActivity.sessionLengthMinutes = Math.round(new Date(activityEvent.badgeOutTime) - new Date(activityEvent.badgeInTime))/60000
-    newActivity.MemberID = activityEvent.MemberID
-    newActivity._id = activityEvent._id
-    if (existingInDB == true){
-      updateActivityLog(activity, newActivity, e, true)
-    } else {
-      updateActivityLog(activity, newActivity, e, false)
-    }
-    let memberToUpdate = members.filter(m => m._id == activityEvent.MemberID)[0]
+    newActivity.sessionLengthMinutes = Math.round(new Date(state.activityEvent.badgeOutTime) - new Date(state.activityEvent.badgeInTime))/60000
+    newActivity.MemberID = state.activityEvent.MemberID
+    newActivity._id = state.activityEvent._id
+    updateActivityLog(state.activitiesCollection, newActivity, e, existingInDB)
+    let memberToUpdate = state.membersCollection.filter(m => m._id == state.activityEvent.MemberID)[0]
     if (existingInDB == false){ memberToUpdate.badgedIn = false }
     if (newActivity.event == "Certification"){
       newActivity.machineUtilized.forEach(c => memberToUpdate[c+"Certified"] = true) //memberToUpdate[c]
     }
     console.log("memberToUpdate",memberToUpdate)
     //finish: check whether to update lastBadgeIn
-    updateMemberBadgeInStatus(memberToUpdate)
-    refreshData() //refreshes serverSideProps
+    updateMember(memberToUpdate)
+    setState({...state, isOpen: false}); //close the popup
   }
 
   const handleSubmitForgotID = (props,e) => {
@@ -403,7 +384,7 @@ export default function Home({ isConnected, members, activity }) {
     }
     let date = newActivities[0].badgeOutTime.substring(0,10)
     console.log("updating Activities collection...  newActivities=",newActivities)
-    let activityDay = activity.filter(a => a.Date == date)[0]
+    let activityDay = state.activitiesCollection.filter(a => a.Date == date)[0]
     console.log("activityDay",activityDay,"newActivities",newActivities)
     if (activityDay){
       let oldEvents = activityDay.Events
@@ -411,26 +392,23 @@ export default function Home({ isConnected, members, activity }) {
       updateActivityByDate(date, activities, "handleSubmitForgotID")
     } else { createNewActivity(date, newActivities, "handleSubmitForgotID") }
 
-    refreshData() //triggers serverSideProps to refresh
-
-    //Close the popup.
-    
-    //new Activity
-    //Does newActivityDay exist
-    // Y - update activity
-    // N - create new activity
+    setState({...state, isOpen: false}); //close the popup
   }
 
   const closePopup = async() => {
-    setisOpen(false);
-    if(isOpen == false){ document.getElementsByClassName("Popup")[0].remove() }
+    setState({
+      ...state, 
+      isOpen: false,
+      showForgotIDPopup: false,
+    });
+    if(state.isOpen == false){ document.getElementsByClassName("Popup")[0].remove() }
   }
 
   class Popup extends React.Component{
     constructor(props) {
       super(props);
       let visitType;
-      if(activityEvent.event){ visitType = activityEvent.event } else { visitType = "Undefined" }
+      if(state.activityEvent.event){ visitType = state.activityEvent.event } else { visitType = "Undefined" }
       this.state = {
         badgeInDate: this.props.badgeInDate,
         badgeInTime: this.props.badgeInTime,
@@ -439,8 +417,6 @@ export default function Home({ isConnected, members, activity }) {
         visitType: visitType,
       }
     }
-
-   //componentDidUpdate(){ console.log("Popup.state",this.state) }
 
     updateBadgeInDate(item){ this.setState({"badgeInDate": item.target.value}) }
     updateBadgeInTime(item){ this.setState({"badgeInTime": item.target.value}) }
@@ -455,7 +431,7 @@ export default function Home({ isConnected, members, activity }) {
       let date = activityInfo.badgeOutTime.substring(0,10)
       let editedEvents = [];
       let eventIDList = []; //List of _id of each edited event
-      for (let i=0; i<batchEvents.length; i++){
+      for (let i=0; i<state.batchEvents.length; i++){
         let editedEvent = {};
         editedEvent.sessionLengthMinutes = activityInfo.sessionLengthMinutes;
         editedEvent.badgeInTime = activityInfo.badgeInTime
@@ -463,13 +439,13 @@ export default function Home({ isConnected, members, activity }) {
         editedEvent.machineUtilized = this.state.machineUtilized
         editedEvent.otherToolsUtilized = this.state.otherToolsUtilized
         editedEvent.event = this.state.visitType
-        editedEvent.Name = batchEvents[i].Name
-        editedEvent.MemberID = batchEvents[i].MemberID
-        editedEvent._id = batchEvents[i]._id
+        editedEvent.Name = state.batchEvents[i].Name
+        editedEvent.MemberID = state.batchEvents[i].MemberID
+        editedEvent._id = state.batchEvents[i]._id
         editedEvents.push(editedEvent)
-        eventIDList.push(batchEvents[i]._id)
+        eventIDList.push(state.batchEvents[i]._id)
       };
-      let activityDay = activity.filter(a => a.Date == date)[0]//Get previous events
+      let activityDay = state.activitiesCollection.filter(a => a.Date == date)[0]//Get previous events
       let oldEvents = activityDay.Events
       oldEvents = oldEvents.filter(e => !eventIDList.contains(e._id))//remove edited Events
       editedEvents = editedEvents.concat(oldEvents)
@@ -497,12 +473,12 @@ export default function Home({ isConnected, members, activity }) {
       //console.log("popup props",this.props,"batchEvents type",batchEvents)
       let trashButtonCSS = {"display": "block"}
       if(this.props.noId && this.props.noId == true){ trashButtonCSS = {"display": "none"} }
-      if(batchEvents.length > 0){ trashButtonCSS = {"display": "none"} }
+      if(state.batchEvents.length > 0){ trashButtonCSS = {"display": "none"} }
       return (
         <>
           <h1 id="badgingOutTitle">{this.props.message}</h1>
-          <Form onSubmit={eval(submitType)}>
-            <VisitType onChange={this.handleVisitType.bind(this)} selectValue={activityEvent.event}/>
+          <Form onSubmit={eval(state.submitType)}>
+            <VisitType onChange={this.handleVisitType.bind(this)} selectValue={state.activityEvent.event}/>
             <div id="badgeInTime" style={{display: "flex"}}>
               <label htmlFor="badgeInTime">Badged In: </label>
               <input onChange={value => this.updateBadgeInDate(value)} id="badgeInDate" type="date" className="date" defaultValue={this.props.badgeInDate}></input>
@@ -519,10 +495,10 @@ export default function Home({ isConnected, members, activity }) {
               <OtherToolsUtilized onChange={this.handleOtherToolsUtilized.bind(this)}/>
             </div>
 
-            <textarea style={{display:"none"}} id="displayProps" defaultValue={JSON.stringify(displayProps)}></textarea>
+            <textarea style={{display:"none"}} id="displayProps" defaultValue={JSON.stringify(state.displayProps)}></textarea>
             <textarea style={{display:"none"}} id="hiddenProps" defaultValue={JSON.stringify(this.props)}></textarea>
 
-            <Button type='button' name={activityEvent._id} id="deleteActivityButton" onClick={(e) => deleteActivity([activity, this.state, activityEvent._id, activityEvent.member])} style={trashButtonCSS}></Button>
+            <Button type='button' name={state.activityEvent._id} id="deleteActivityButton" onClick={(e) => deleteActivity([state.activitiesCollection, this.state, state.activityEvent._id, state.activityEvent.member])} style={trashButtonCSS}></Button>
             <Button type='submit' id="submitBadgeOutPopup" onClick={this.props.submitting}>{this.props.submitButtonText}</Button>
             <Button type='button' id="cancelPopupButton" onClick={() => closePopup()}>Cancel</Button>
           </Form>
@@ -532,24 +508,32 @@ export default function Home({ isConnected, members, activity }) {
   }
 
   function badgeOutManually(member, activity){
-    //console.log("activityEvent",activityEvent,"member",member,"activity",activity)
-    setActivityEvent({
-      badgeInTime: new Date(member.lastBadgeIn).toISOString(),
-      badgeOutTime: new Date().toISOString(), 
-      Name: member.Name,
-      MemberID: member._id,
-      member: member,
+    setState({
+      ...state,
+      activityEvent: {
+        badgeInTime: new Date(member.lastBadgeIn).toISOString(),
+        badgeOutTime: new Date().toISOString(), 
+        Name: member.Name,
+        MemberID: member._id,
+        member: member,
+      },
+      displayingProps: {
+        submitButtonText:"Badge Out",
+        message:"Badging out "+member.Name+"..."
+      },
+      submitType: "(e) => handleSubmitPopUp(false,e)",
+      isOpen: true,
     })
-    setDisplayProps({submitButtonText:"Badge Out",message:"Badging out "+member.Name+"..."});
-    setSubmitType("(e) => handleSubmitPopUp(false,e)");
-    setisOpen(true);
   }
 
   const openPopUp = async (actEvent,displayProps,submitFn) => {
-    setActivityEvent(actEvent);
-    setSubmitType(submitFn);
-    setDisplayProps(displayProps);
-    setisOpen(true); //Open popup
+    setState({
+      ...state,
+      activityEvent: actEvent,
+      submitType: submitFn,
+      displayProps: displayProps,
+      isOpen: true,
+    })
   }
 
   const certificationNames = ['Ultimaker','Glowforge','Four Axis Mill', 'Bantam Mill', 'P9000', 'Sewing', 'Silhouette', 'Fusion', 'VectorCAD', 'CircuitDesign'];
@@ -557,8 +541,8 @@ export default function Home({ isConnected, members, activity }) {
   class MachinesUtilized extends React.Component{
     constructor(props){
       super(props);
-      if(typeof(activityEvent.machineUtilized)!=="undefined"){
-        this.state = { machines: activityEvent.machineUtilized } //List of machines utilize
+      if(typeof(state.activityEvent.machineUtilized)!=="undefined"){
+        this.state = { machines: state.activityEvent.machineUtilized } //List of machines utilize
       } else { 
         this.state = { machines: [] } //List of machines utilize
       }
@@ -601,8 +585,8 @@ export default function Home({ isConnected, members, activity }) {
   class OtherToolsUtilized extends React.Component{
     constructor(props){
       super(props);
-      if(typeof(activityEvent.otherToolsUtilized)!=="undefined"){
-        this.state = { otherTools: activityEvent.otherToolsUtilized } //List of other tools that don't require certification
+      if(typeof(state.activityEvent.otherToolsUtilized)!=="undefined"){
+        this.state = { otherTools: state.activityEvent.otherToolsUtilized } //List of other tools that don't require certification
       } else { 
         this.state = { otherTools: [] } //List of other tools that don't require certification
       }
@@ -645,7 +629,6 @@ export default function Home({ isConnected, members, activity }) {
       this.state = {
         members: [0], //An array whose number of elements corresponds to the number of members being badged in.
       }
-      console.log("state",this.state)
     }
 
     numOfMembersChanged(){
@@ -691,22 +674,21 @@ export default function Home({ isConnected, members, activity }) {
   class BadgeInForgotIDButton extends React.Component{
     constructor(props){
       super(props);
-      this.state = {
-        showPopup: false
-      };
-      this.toggle = this.toggle.bind(this);
     }
 
     toggle(){ 
-      this.setState({"showPopup":!this.state.showPopup})
-      setSubmitType("(e) => handleSubmitForgotID(this.getInfo(),e)");
+      setState({ 
+        ...state,
+        submitType: "(e) => handleSubmitForgotID(this.getInfo(),e)" ,
+        showForgotIDPopup: !state.showForgotIDPopup,
+      })
     }
 
     render(){
       return(
         <>
           <button onClick={() => this.toggle()} type="button">Forgot ID</button>
-          {this.state.showPopup ? 
+          {state.showForgotIDPopup ? 
             <BadgeInForgotIDPopUp/>
             : <div></div>
           }
@@ -725,8 +707,6 @@ export default function Home({ isConnected, members, activity }) {
         selection: "",
         showEditMemberPopup: false,
       }
-      this.showEditMemberPopup = this.showEditMemberPopup.bind(this);
-      this.hideEditMemberPopup = this.hideEditMemberPopup.bind(this);
     }
 
     onKeyUpCapture(e){
@@ -734,13 +714,6 @@ export default function Home({ isConnected, members, activity }) {
         //Searches for a member by name, then badges in the member.
         let searchInput = e.target.value
         let listOfMembers = members.map(x => [x.Name,x._id,x.rfid])
-        /*let listOfMemberNames = [] //Get a list of all member names
-        let listOfMemberIds = [] //Save member name and id
-        for(let i=0; i<listOfMembers.length; i++){
-          listOfMemberNames.push(listOfMembers[i][0])
-          //listOfMemberIds.push(listOfMembers[i][1])
-          listOfMemberRFID.push(listOfMembers[i][2])
-        }*/
         const regexSearch = new RegExp("(.*"+searchInput+".*)","i") //Create a regex rule to match the search input exactly and capture the entire names of any matching searches. i flag ignores case sensitivity.
         const memberNamesMatchingSearch = listOfMembers.filter(memberName => regexSearch.test(memberName[0]));
         //console.log("members:",memberNamesMatchingSearch)
@@ -770,21 +743,12 @@ export default function Home({ isConnected, members, activity }) {
       console.log("Badging in Member",this.state.selection[0],"w/ RFID UID:",this.state.selection[1])
       badgeInByRFID(this.state.selection[1])
     }
-
-    showEditMemberPopup(){
-      console.log("this feature isn't finished yet :P")
-      this.setState({showEditMemberPopup: true})
-    }
-
-    hideEditMemberPopup(){
-      this.setState({showEditMemberPopup: false})
-    }
     
     render(){
       return(
         <>
         {this.state.showEditMemberPopup ? 
-          <EditMemberPopup rfid={this.state.selection[1]} cancel={this.hideEditMemberPopup}/>
+          <EditMemberPopup rfid={this.state.selection[1]} cancel={() => this.setState({showEditMemberPopup: false})}/>
           : <div></div>
         }
 
@@ -798,7 +762,7 @@ export default function Home({ isConnected, members, activity }) {
         {this.state.selectionMade ? 
           <>
             <SubmitSelection result={this.state.selection} handleSubmit={this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
-            <button type="button" onClick={this.showEditMemberPopup}>Edit Member</button>
+            <button type="button" onClick={() => this.setState({showEditMemberPopup: true})}>Edit Member</button>
           </>
           : <div></div>}
         </div>
@@ -842,7 +806,7 @@ export default function Home({ isConnected, members, activity }) {
     }
 
     render(){
-      let member = members.filter(mem => mem.rfid == this.props.rfid)[0]
+      let member = state.membersCollection.filter(mem => mem.rfid == this.props.rfid)[0]
       //display joinedDate??
 
       return(
@@ -860,6 +824,47 @@ export default function Home({ isConnected, members, activity }) {
 
             <button type="button" onClick={this.props.cancel}>Cancel</button>
             <button type="button">Update</button>
+            <button type="button">Delete</button>
+          </section>
+        </>
+      )
+    }
+  }
+
+  {/*class ConfigPopupButton extends React.Component{
+    constructor(props){
+      super(props);
+      this.state = { 
+      }
+    }
+
+    render(){
+      return(
+        <button></button>
+      )
+    }
+  }*/}
+
+  class ConfigPopup extends React.Component{
+    constructor(props){
+      super(props);
+    }
+
+    render(){
+      //let config = getConfig()
+
+      return(
+        <>
+          <section className="Popup">
+            <p>Editing Config</p>
+
+            <p>Certifications: </p>
+            <input type="text"></input>
+
+            <p>otherTools: </p>
+
+            <button type="button" onClick={this.props.cancel}>Cancel</button>
+            <button type="button" onClick={this.props.updateConfig}>Update</button>
             <button type="button">Delete</button>
           </section>
         </>
@@ -897,14 +902,28 @@ export default function Home({ isConnected, members, activity }) {
   class RecentActivity extends React.Component {
     constructor(props) {
       super(props);     
+
+      let displayingActivities = state.activitiesCollection.filter(act => act.Date == state.displayingDay)[0]
+
+      //Sort the activities by badgeInTime
+      if (typeof displayingActivities !== 'undefined'){ //Check to make sure the activity exists
+        displayingActivities.Events.sort(function(a, b) {
+          let dateA = new Date(a.badgeOutTime);
+          let dateB = new Date(b.badgeOutTime);
+          if (dateA < dateB) return -1;
+          if (dateA > dateB) return 1;
+          return 0;
+        });
+      }
+
       this.state = {
-        activity: activity,
-        displayingActivities: activity.filter(act => act.Date == displayingDay)[0],
+        activity: state.activitiesCollection,
+        displayingActivities: displayingActivities,
         toggle: false, //toggle batch selections on and off. If true, batch selections are on. 
         firstCheckboxSelected: undefined,
         selected: [] //A list of selected elements
       };
-      console.log("RecentActivity.state =",this.state)
+      //console.log("RecentActivity.state =",this.state)
     }
 
     changeDay(arg,dayToChange){
@@ -915,9 +934,7 @@ export default function Home({ isConnected, members, activity }) {
           currDate.setMinutes(currDate.getMinutes() - 24*60); //Change dateObj to the previous day
         }
         let currDay = currDate.toISOString().substring(0,10);
-        setDisplayingDay(currDay)
-        //let acti = activity.filter(act => act.Date == currDay)[0];
-        //this.setState({displayingDay:currDay,displayingActivities:acti})
+        setState({...state, displayingDay: currDay})
     }
     
     checkboxClicked(e){
@@ -954,17 +971,17 @@ export default function Home({ isConnected, members, activity }) {
     render() {
       return (
         <>
-          <a id="activitiesForward" onClick={() => this.changeDay("forward-one-day",displayingDay)}></a>
-          <a id="activitiesBackward" onClick={() => this.changeDay("backward-one-day",displayingDay)}></a>
+          <a id="activitiesForward" onClick={() => this.changeDay("forward-one-day",state.displayingDay)}></a>
+          <a id="activitiesBackward" onClick={() => this.changeDay("backward-one-day",state.displayingDay)}></a>
           <table id="recentActivity">
             <caption>Recent Activity</caption>
-            <caption id="date">{displayingDay}</caption>
+            <caption id="date">{state.displayingDay}</caption>
             <thead>
               <tr key={"head_tr"}>
                 <th style={{"width":"16rem"}}>Member Name</th>
                 <th style={{"width":"4rem"}}>Flags</th>
                 <th style={{"width":"12rem"}}>Visit Type</th>
-                <th style={{"text-align": "center"}} onClick={() => this.setState({toggle:!this.state.toggle})}>Edit Activity</th>
+                <th style={{"textAlign": "center"}} onClick={() => this.setState({toggle:!this.state.toggle})}>Edit Activity</th>
               </tr>
             </thead>
             <tbody id="recentActivityTbody">
@@ -1000,7 +1017,7 @@ export default function Home({ isConnected, members, activity }) {
                     <td></td>
                   )}
                   <td>{actEvent.event}</td>
-                  <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: displayingDay, submitButtonText: "Add Info", "message":"Editing "+actEvent.Name+"'s event..."}, "(e) => handleSubmitPopUp(true,e)")} showCheckbox={this.state.toggle} index={i}/></td>
+                  <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: state.displayingDay, submitButtonText: "Add Info", "message":"Editing "+actEvent.Name+"'s event..."}, "(e) => handleSubmitPopUp(true,e)")} showCheckbox={this.state.toggle} index={i}/></td>
                 </tr>))
             )}
             </tbody>
@@ -1029,38 +1046,35 @@ export default function Home({ isConnected, members, activity }) {
       </Head>
 
       <main> 
-        {isConnected ? (
-          <div></div>
-        ) : (
-          <h2 className="subtitle">
-            Error connecting to MongoDB. Check the <code>README.md</code>{' '}
-            for instructions.
-          </h2>
-        )}
-        <a className="cornerButton" id="stock" href="/stock">Stock</a>
+        {/*<a className="cornerButton" id="stock" href="/stock">Config</a>*/}
+        <button className="cornerButton" id="config" onClick={() => toggleConfigPopup()}>Config</button>
         <a className="cornerButton" id="stats" href="/stats">Stats</a>
       </main>
 
-      
-      {isOpen ? (
+      {state.isOpen ? (
         <React.Fragment>
           <section className="Popup">
             <Popup 
-              badgeInDate={new Date(activityEvent.badgeInTime).toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
-              badgeInTime={new Date(activityEvent.badgeInTime).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
-              badgeOutDate={new Date(activityEvent.badgeOutTime).toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
-              badgeOutTime={new Date(activityEvent.badgeOutTime).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
-              message={displayProps.message}
-              submitButtonText={displayProps.submitButtonText}
+              badgeInDate={new Date(state.activityEvent.badgeInTime).toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
+              badgeInTime={new Date(state.activityEvent.badgeInTime).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
+              badgeOutDate={new Date(state.activityEvent.badgeOutTime).toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
+              badgeOutTime={new Date(state.activityEvent.badgeOutTime).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
+              message={state.displayProps.message}
+              submitButtonText={state.displayProps.submitButtonText}
               existsInDB={false}
               noId={false}
-              event={activityEvent.event}
+              event={state.activityEvent.event}
             />
           </section>
         </React.Fragment>
       ) : (
         <div></div>
       )}
+
+      {state.showConfigPopup ? 
+        <ConfigPopup cancel={toggleConfigPopup} updateConfig={console.log("finsh updateConfig()")}/>
+        : <div></div>
+      }
 
       <section className="fit">
         {members.filter(member => member.badgedIn == true).length == 0 ? (
@@ -1089,7 +1103,7 @@ export default function Home({ isConnected, members, activity }) {
                         ) : ( <td key={member.id+"_"+cert+"_td"} className="false"></td>)
                     )}
                     <td>
-                      <button type="button" onClick={() => badgeOutManually(member, activity)}>Badge Out</button>
+                      <button type="button" onClick={() => badgeOutManually(member, state.activitiesCollection)}>Badge Out</button>
                     </td>
                   </tr>
                 ))}
@@ -1102,83 +1116,61 @@ export default function Home({ isConnected, members, activity }) {
       <section id="recentActivity" className="fit">
         <RecentActivity></RecentActivity>
       </section>
-      <h3>Bugs:</h3>
-      <ul>
-        <li>Fix: getMemberStats() (relies on member.sessions)</li>
-        <li>Some times are it the wrong timezone. +5 1/1-3/14. +4 3/14-</li>
-        <li>Point of User confusion: ?new popup still open. badgeOut popup should be a higher z-height</li>
-        <li>validation: no negative session minutes</li>
-        <li>Fix: lastBadgeIn. It should trigger after edits, if lastBadge (lessthan) badgeInTime then update.</li>
-      </ul>
-      <h3>Next up:</h3>
-      <ul>
-        <li>Finish: Edit Member Pop Up</li>
-        <li>Finish: SemesterComparisonChart</li>
-        <li>Either delete names from Activity collection or update previous activities?</li>
-        <li>New stat: semester comparison graph (new certs, new members)</li>
-        <li>Convert javascript to React.Component: badgeIn.js PopUps</li>
-        <li>New Feature: Add button to failed badgeIn popup. When clicked lets you search members, selected member get its RFID updated.</li>
-        <li>Give all activities flags (edited, auto-generated, noID).</li>
-        <li>New Feature: Auto-badge in</li>
-        <li>Add button to badgeIn allowing members to make accounts w/o an ID. We should flag all no id members w/ the same RFID_UID. They can select from the list of all accounts to badgeIn if they made an account already.</li>
-        <li>check if user badgeIn time is from a different day. Alert the user.</li>
-        <li>Prevent members from accessing this page (the backend)</li>
-        <li>Auto update index page (using state changes)</li>
-        <li>Perfect VisitType nomenclature. Also add a question mark button that gives definitions of each visitType. Add Meeting w/ Joe</li>
-        <li>Proper Coding Convention: Replace getMachinesUtilized(), getotherToolsUtilized() with props</li>
-        <li>editing events w/ flags.contain(noID): Ability to change name</li>
-      </ul>
-      <h3>Before v1 Release:</h3>
-      <ul>
-        <li>ReadMe / Documentation</li>
-        <li>Easy setup (config file)... List of certifications, List of other tools, List of majors, List of GraduationYears</li>
-        <li>Bun!</li>
-        <li>Look into railways.app / npm  / Vercel deployment</li>
-        <li>Timezone variable</li>
-      </ul>
-      <h3>Completed:</h3>
-      <ul>
-        <li>Add handtools to otherTools</li>
-        <li>Delete activites in members collection.</li>
-        <li>Remove activities from members collection.</li>
-        <li>Batch Edit/Delete. BadgeInForgotIDPopUp.</li>
-        <li>Combine: ForgotID + PopUp.   Clean up functions (notInDB,noID)</li>
-        <li style={{textDecoration: "line-through"}}>Add Grad Students to Graduation year List</li>
-        <li style={{textDecoration: "line-through"}}>Index Page: Combine EditPopUp and PopUp into one component (minify)</li>
-        <li style={{textDecoration: "line-through"}}>Change "Faculty" to "Fac/Staff" on newMember page</li>
-        <li style={{textDecoration: "line-through"}}>Add Comb Binder to Other Tools list</li>
-        <li style={{textDecoration: "line-through"}}>Tooltips CSS: Automatically resize based on amount of text to display</li>
-        <li style={{textDecoration: "line-through"}}>Potential Glitch: Disallow non-alphanumeric characters for Member Name upon sign up</li>
-        <li style={{textDecoration: "line-through"}}>Add button to backEnd allowing us to create activity entries w/o a RFID_UID for members who didn't use the badgeSystem</li>
-        <li style={{textDecoration: "line-through"}}>New Member Validation: red borders on missing info + message</li>
-        <li style={{textDecoration: "line-through"}}>Add button machine, VR to tools list under Other Tools</li>
-        <li style={{textDecoration: "line-through"}}>Add Homework/ClassProj to VisitType</li>
-        <li style={{textDecoration: "line-through"}}>Add a delete button to the editActivityPopUp</li>
-        <li style={{textDecoration: "line-through"}}>Change failed badge in message. Remove "Failed search". Change colors? Maybe, 'New Member? n/ Register [button]' Already Signed Up?, Try scanning again</li>
-        <li style={{textDecoration: "line-through"}}>Create a button for people who arrive w/o a CINO ID and haven't become a member yet.</li>
-        <li style={{textDecoration: "line-through"}}>CSS: index.js | conditionally render header row of Badge In Members table</li>
-        <li style={{textDecoration: "line-through"}}>Automatically badge in Members after they register.</li>
-        <li style={{textDecoration: "line-through"}}>Create a badge In member button. Lets you search a member</li>
-      </ul>
+
+      <details style={{"marginTop": "5vh"}}>
+        <summary>Developer Notes</summary>
+        <h3>Bugs:</h3>
+        <ul>
+          <li>Batch Edit: Flags disappear when changing days</li>
+          <li>/api/members PUT | Does not create an event! Just badges out.</li>
+          <li>Fix: getMemberStats() (relies on member.sessions)</li>
+          <li>Some times are it the wrong timezone. +5 1/1-3/14. +4 3/14-</li>
+          <li>Point of User confusion: ?new popup still open. badgeOut popup should be a higher z-height</li>
+          <li>validation: no negative session minutes</li>
+          <li>Fix: lastBadgeIn. It should trigger after edits, if lastBadge (lessthan) badgeInTime then update.</li>
+        </ul>
+        <h3>Next up:</h3>
+        <ul>
+          <li>Finish: Edit Member Pop Up</li>
+          <li>Convert javascript to React.Component: badgeIn.js PopUps</li>
+          <li>New Feature: Add button to failed badgeIn popup. When clicked lets you search members, selected member get its RFID updated.</li>
+          <li>Give all activities flags (edited, auto-generated, noID).</li>
+          <li>New Feature: Auto-badge in</li>
+          <li>Bash script executable: git pull updates, start the server, start PacsProbe</li>
+          <li>Add button to badgeIn allowing members to make accounts w/o an ID. We should flag all no id members w/ the same RFID_UID. They can select from the list of all accounts to badgeIn if they made an account already.</li>
+          <li>check if user badgeIn time is from a different day. Alert the user.</li>
+          <li>Prevent members from accessing this page (the backend)</li>
+          <li>Perfect VisitType nomenclature. Also add a question mark button that gives definitions of each visitType. Add Meeting w/ Joe</li>
+          <li>Proper Coding Convention: Replace getMachinesUtilized(), getotherToolsUtilized() with props</li>
+          <li>editing events w/ flags.contain(noID): Ability to change name</li>
+        </ul>
+        <h3>Before v1 Release:</h3>
+        <ul>
+          <li>ReadMe / Documentation</li>
+          <li>Easy setup (config file)... List of majors, List of GraduationYears</li>
+          <li>Bun!</li>
+          <li>Look into railways.app / npm  / Vercel deployment</li>
+          <li>Timezone variable</li>
+        </ul>
+        <p>Random dev note: Isomorphic-unfetch allows us to make HTTP requests inside out NextJS app</p>
+      </details>
     </div>
   )
 }
 
-export async function getServerSideProps(context) {
+export async function getStaticProps(context) {
   const client = await clientPromise
-  const isConnected = await client.isConnected();
 
-  //Get "members" Collection
+  //Fetch "members" and "activities" Collection as server-side props
   const membersCollection = await client.db().collection("members");
   const membersArray = await membersCollection.find({}).toArray();
   const membersP = JSON.parse(JSON.stringify(membersArray));
 
-  //Get "activities" Collection
   const activityCollection = await client.db().collection("activities");
   const activityArray = await activityCollection.find({}).toArray();
   const activityP = JSON.parse(JSON.stringify(activityArray));
 
-  return {
-    props: { isConnected, members: membersP, activity: activityP },
+  return { 
+    props: { members: membersP, activities: activityP } 
   }
 }

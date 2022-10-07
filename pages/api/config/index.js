@@ -1,39 +1,42 @@
 import Cors from 'cors'
 import initMiddleware from '../../../lib/init-middleware'
 import connectToDatabase from '../../../utils/connectToDatabase';
-import Member from '../../../models/Member';
-
+import Config from '../../../models/Config';
 
 // Initialize the cors middleware. You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
-const cors = initMiddleware( Cors({ methods: ['GET', 'POST', 'OPTIONS', "PUT"] }) )
+const cors = initMiddleware( Cors({ methods: ['GET'] }) )
 
 export default async function handler(req, res) {
-    
-    await cors(req, res)
 
+    await cors(req, res)
+    
     connectToDatabase();
 
-    const { method } = req;
-
+    const {
+        query: { id },
+        method
+    } = req;
+    
     switch (method) {
-        case 'GET':
+        case 'GET': //Returns all documents in activities collection
             try {
-                const members = await Member.find({});
-                res.status(200).json({ success: true, data: members })
+                const config = await Config.find({});
+                res.status(200).json({ success: true, data: config })
             } catch (error) {
                 res.status(400).json({ success: false });
             }
             break;
-        case 'POST':
+        case 'PUT': //Editing configuration
             try {
-                const member = await Member.create(req.body);
-                console.log("New member added to database:",member.Name);
-                res.status(201).json({ success: true, data: member })
+                const config = await Config.findByIdAndUpdate(id, req.body, {
+                    new: true,
+                    runValidators: true
+                });
+                res.status(200).json({ success: false });
             } catch (error) {
-                console.log("Error at /api/members/index.js|POST",error);
+                console.log("Failed to update config.",error)
                 res.status(400).json({ success: false });
             }
-            break;
         default:
             res.status(400).json({ success: false });
             break;

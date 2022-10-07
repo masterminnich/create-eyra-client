@@ -8,11 +8,7 @@ const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",ho
 
 
 // Initialize the cors middleware. You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
-const cors = initMiddleware(
-   Cors({
-    methods: ['GET', 'POST', 'OPTIONS', "PUT"], // Only allow requests with GET, POST and OPTIONS
-  })
-)
+const cors = initMiddleware( Cors({ methods: ['GET', 'POST', 'OPTIONS', "PUT"] }) )
 
 const addEventToActivityCollection = async (member, prevBadgeIn) => {
     let badgeOutTime = member.lastBadgeIn;
@@ -39,53 +35,43 @@ const addEventToActivityCollection = async (member, prevBadgeIn) => {
                 runValidators: true
             });
         } catch (error) {
-            console.log("api/badgeIn (1) ERROR:",error)
+            console.log("Error while updaying existing activity (/api/badgeIn) :",error)
         }
     } else { //Create new activity document in activity collection
         try {
             const activity = await Activity.create({Date: date, Events: newEvent});
-            console.log("New activity added to database (new date inserted):",activity);
+            console.log("New activity added to database:",activity.date);
         } catch (error) {
-            console.log("api/badgeIn (2) ERROR:",error);
+            console.log("Error while creating new activity (/api/badgeIn):",error);
         }
     }
 }
 
 const updateMemberBadgeInStatus = async (member) => {
     try {
-        const bagdgeInStatusBefore = member.badgedIn;
         member.badgedIn = !member.badgedIn;
-        const bagdgeInStatusAfter = member.badgedIn;
-
-        if(bagdgeInStatusAfter == bagdgeInStatusBefore){
-            console.log("ERROR! Failed to change badge in status.")
-        } else { console.log("Successfully changed members badge in status to",member.badgedIn) }
+        console.log("Successfully changed "+member.Name+"'s badge in status to",member.badgedIn)
         
         let prevBadgeIn = member.lastBadgeIn
         member.lastBadgeIn = new Date().toISOString(); //update member.lastBadgeIn
         
         let res = {};
-        try {
-            //Update Member
-            const member2 = await Member.findByIdAndUpdate(member._id, member, {
-                new: true,
-                runValidators: true
-            });
+        //Update Member
+        const member2 = await Member.findByIdAndUpdate(member._id, member, {
+            new: true,
+            runValidators: true
+        });
 
-            if (!member2) {
-                return res.status(400).json({ success: false });
-            }
-            if (member.badgedIn){ 
-                console.log(member2.Name,"badged in!"); 
-            } else { 
-                console.log("mem1 vs mem2",prevBadgeIn," ",member2.lastBadgeIn)
-                addEventToActivityCollection(member2, prevBadgeIn)
-                console.log(member2.Name,"badged out!") 
-            }
-        } catch (error) {
-            console.log("Error at api/badgeIn... error:", error)
+        if (!member2) {
+            return res.status(400).json({ success: false });
         }
-
+        if (member.badgedIn){ 
+            console.log(member2.Name,"badged in!"); 
+        } else { 
+            console.log("mem1 vs mem2",prevBadgeIn," ",member2.lastBadgeIn)
+            addEventToActivityCollection(member2, prevBadgeIn)
+            console.log(member2.Name,"badged out!") 
+        }
     } catch (error) {
         console.log(error);
     }

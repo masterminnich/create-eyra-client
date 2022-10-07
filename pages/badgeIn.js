@@ -5,70 +5,8 @@ import ReactDOM from 'react-dom';
 //This file contains functionality to search for the RFID, record key strokes.
 
 var createReactClass = require('create-react-class');
-var RFID_UID_input = "";
-var last_RFID_UID_input = "";
-
-/*const getActivitiesCollection = async (memberData) => {
-    try {
-        const res = await fetch('/api/activity', {
-            method: 'GET',
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json"
-            },
-        })
-        let response = res.json();
-        response.then((resp) => {
-            updateActivityLog(resp.data, memberData);
-        })
-    } catch (error) { console.log("error @ badgeIn|getActivitiesCollection(): ",error); }
-}
-
-//Copied from index.js -- Make sure to update any changes to both documents.
-const updateActivityLog = async (activity, memberData) => {
-    console.log("memerData!",memberData)
-    //let session = memberData.sessions[memberData.sessions.length-1]
-    let dateStr = new Date().toISOString.substring(0,10); //Get Date
-    let ActivityDay = activity.find(a => a.Date == dateStr) //Get the activity document for the correct day
-    let newActivity = {MemberID: memberData._id, Name: memberData.Name, badgeInTime: session.badgeIn, badgeOutTime: session.badgeOut, event: "Undefined",machineUtilized: [], sessionLengthMinutes: session.sessionLengthMinutes}
-    //console.log('activity',activity,"newActivity.... ",newActivity)
-
-    if (ActivityDay){
-      console.log("found Activities w/ date",dateStr);
-      try {
-        let acitivitiesBefore = ActivityDay.Events
-        let activitiesAfter = acitivitiesBefore.concat(newActivity);
-  
-        const res = await fetch(`/api/activity`, {
-          method: 'PUT',
-          headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({Date: dateStr, Events: activitiesAfter})})
-        
-      } catch (error) {
-        console.log("Error adding to Activity collection.",error);
-      }
-  
-    } else { 
-      //No acitivities yet today... adding a new date to the Activity collection.
-      console.log("No activity with date",dateStr);
-      try {
-        const res = await fetch(`/api/activity`, {
-          method: 'POST',
-          headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({Date: dateStr, Events: newActivity})
-        })
-  
-      } catch (error) {
-        console.log("Error adding to Activity collection.",error);
-      }
-    }
-}*/
+var search_input = "";
+var last_search_input = "";
 
 function timeout(delay) {
   return new Promise( res => setTimeout(res, delay) );
@@ -98,7 +36,7 @@ class NewCardButton extends React.Component {
 }
 
 function createPopUp(msg,code){
-  console.log("rfid:",last_RFID_UID_input)
+  console.log("rfid:",last_search_input)
   let f = document.getElementsByClassName("herf")[0]
   const p = document.createElement("p");
   const d = document.createElement("div");
@@ -114,10 +52,10 @@ function createPopUp(msg,code){
     a2.className = "close-button"
     a2.onclick = function closePopUp(){
       document.getElementsByClassName("popupMsg")[0].parentNode.remove()
-      RFID_UID_input="" 
+      search_input="" 
     }
     d.appendChild(a2);
-    let newLink = "newMember?rfid=" + last_RFID_UID_input.toString()
+    let newLink = "newMember?rfid=" + last_search_input.toString()
     a.href=newLink
     a.id="newMemberButton"
     a.innerText="Register"
@@ -127,7 +65,7 @@ function createPopUp(msg,code){
     helpMsg.className = "helpMsg"
     d.appendChild(helpMsg);
   }
-  RFID_UID_input=""
+  search_input=""
   if(code == "twohundred"){
     let T = timeout(4000);
     T.then((a) =>{
@@ -146,40 +84,53 @@ function showNewMemberMsg(){
 }
 
 const searchForRFID = async (RFID_UID_input) => {
-    try {
-        const res = await fetch('/api/badgeIn', {
-            method: 'POST',
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({rfid: RFID_UID_input})
-        });
-        let response = res.json()
-        response.then((resp) => {
-            let memberData = resp.data;
-            console.log("searchForRFID(): resp.data:",resp.data)
+  console.log("Searching database for RFID_UID matching",last_search_input,"...");
+  try {
+    const res = await fetch('/api/badgeIn', {
+      method: 'POST',
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({rfid: RFID_UID_input})
+    });
+    let response = res.json()
+    response.then((resp) => {
+      let memberData = resp.data;
+      console.log("searchForRFID(): resp.data:",resp.data)
 
-            if (res.status == 406){ 
-                let fullMsg = "Search failed. Multiple members with same RFID." //Already registered? Ask makerspace staff for assistance.
-                console.log(fullMsg);
-                createPopUp(fullMsg,"fourohsix")
-            } else if (res.status == 404){
-                let fullMsg = "New member? Create an account!"
-                console.log(fullMsg);
-                createPopUp(fullMsg,"fourohfour")
-            } else if (res.status == 200) {
-                let msg = ""
-                if(memberData.badgedIn){msg = "badged in"}else{msg = "badged out"}
-                let fullMsg = memberData.Name+" "+msg+"!"
-                console.log(fullMsg)
-                createPopUp(fullMsg,"twohundred")
-            } else { return "something really wrong happened"};
-        });
-    } catch (error) {
-        console.log(error);
-        return "something really wrong happened (2)";
-    }
+      if (res.status == 406){ 
+        let fullMsg = "Search failed. Multiple members with same RFID." //Already registered? Ask makerspace staff for assistance.
+        console.log(fullMsg);
+        createPopUp(fullMsg,"fourohsix")
+      } else if (res.status == 404){
+        let fullMsg = "New member? Create an account!"
+        console.log(fullMsg);
+        createPopUp(fullMsg,"fourohfour")
+      } else if (res.status == 200) {
+        let msg = ""
+        if(memberData.badgedIn){msg = "badged in"}else{msg = "badged out"}
+        let fullMsg = memberData.Name+" "+msg+"!"
+        console.log(fullMsg)
+        createPopUp(fullMsg,"twohundred")
+      } else { return "something really wrong happened"};
+    });
+  } catch (error) {
+    console.log("Error searching for RFID.",error);
+  }
+}
+
+const searchForMagstripe = async (magstripe_input) => {
+  searchForID(magstripe_input.slice(1,8)) //Convert Magstrip UID to CINO ID
+}
+
+const searchForID = async (id) => {
+  console.log("Searching database for ID matching",id,"...");
+  try {
+    console.log("Need to implement an api route for ID searching....")
+  } catch (error) {
+    console.log("Error searching for ID.",error);
+  }
 }
 
 class App extends Component {
@@ -191,27 +142,50 @@ class App extends Component {
   handleKeyDown = e => {
     checkFocus()
 
-    if (["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","1","2","3","4","5","6","7","8","9","0"].includes(e.key)){ //Ignore all keypresses except alphanumeric characters.
-      RFID_UID_input += e.key.toUpperCase(); //Force all letters to be Upper Case
+    //If you want to detect both RFID and Magstripe, at least one of the inputs needs a pre or post stroke.
+    const EXPECTED_RFID_LENGTH = 16 //Set value to 0 if not in use
+    const EXPECTED_RFID_PRESTROKE = "" //Can be a pre or post stroke. Set to "" if not in use.
+    const EXPECTED_MAGSTRIPE_LENGTH = 13 //Set value to 0 if not in use
+    const EXPECTED_MAGSTRIPE_PRESTROKE = ";" //Can be a pre or post stroke. Set to "" if not in use.
+
+    const MIN_INPUT_LENGTH = Math.min.apply(null,[EXPECTED_RFID_LENGTH,EXPECTED_MAGSTRIPE_LENGTH].filter(x => x>0))
+    const MAX_INPUT_LENGTH = Math.max.apply(null,[EXPECTED_RFID_LENGTH,EXPECTED_MAGSTRIPE_LENGTH].filter(x => x>0))
+
+    if ([EXPECTED_RFID_PRESTROKE,EXPECTED_MAGSTRIPE_PRESTROKE,"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","1","2","3","4","5","6","7","8","9","0"].includes(e.key)){ //Ignore all keypresses except alphanumeric characters.
+      search_input += e.key.toUpperCase(); //Force all letters to be Upper Case
       console.log("keypress: ", e.key.toUpperCase());
-    }
+    
+      if (search_input.length >= MIN_INPUT_LENGTH){ //Wait a short amount of time before searching database for string, if another keypress comes wait until keypresses finish then search last (16) characters. Helps minimize accidental keypresses.
+        window.clearTimeout(Timer)
+        let lengthBefore = search_input.length 
+        var Timer = window.setTimeout(function(){
+          if (lengthBefore < search_input.length){
+            console.log("removed leading characters...")
+          } else { //If no additional keypresses follow, search for the RFID/Magstripe
+            last_search_input = search_input.slice(-MAX_INPUT_LENGTH)
+            if ((EXPECTED_MAGSTRIPE_LENGTH == 0) || (last_search_input.includes(EXPECTED_RFID_PRESTROKE) & EXPECTED_RFID_PRESTROKE !== "")){
+              last_search_input = last_search_input.slice(-EXPECTED_RFID_LENGTH)
+              console.log("r1")
+              searchForRFID(last_search_input)
+            } else if ((EXPECTED_RFID_LENGTH == 0) || (last_search_input.includes(EXPECTED_MAGSTRIPE_PRESTROKE) & EXPECTED_MAGSTRIPE_PRESTROKE !== "")){
+              last_search_input = last_search_input.slice(-EXPECTED_MAGSTRIPE_LENGTH)
+              searchForMagstripe(last_search_input)
+            } else {
+              //The input lacks a pre/post stroke 
+              if (EXPECTED_RFID_PRESTROKE == ""){
+                last_search_input = last_search_input.slice(-EXPECTED_RFID_LENGTH)
+                console.log("r2")
+                searchForRFID(last_search_input)
+              } else {
+                last_search_input = last_search_input.slice(-EXPECTED_MAGSTRIPE_LENGTH)
+                searchForMagstripe(last_search_input)
+              }
+            }
+            search_input = ""
+          }
+        }, 200);
+      }
 
-    const RFID_LENGTH = 16
-
-    if (RFID_UID_input.length >= RFID_LENGTH){ //Wait a short amount of time before searching database for string, if another keypress comes wait until keypresses finish then search last (16) characters. Helps minimize accidental keypresses.
-      window.clearTimeout(Timer)
-      let lengthBefore = RFID_UID_input.length 
-      var Timer = window.setTimeout(function(){
-        if (lengthBefore < RFID_UID_input.length){
-          console.log("removed leading characters...")
-        } else {
-          last_RFID_UID_input = RFID_UID_input.slice(-RFID_LENGTH)
-          console.log("Searching database for RFID_UID matching",last_RFID_UID_input,"...");
-          searchForRFID(last_RFID_UID_input);
-          console.log("last_RFID_UID_input",last_RFID_UID_input)
-          RFID_UID_input = ""
-        }
-      }, 200);
     }
   }
 

@@ -70,7 +70,7 @@ const updateActivityLog = async (activities, newMemberData) => {
       }
 }
 
-class Box0 extends React.Component {
+class NewMember extends React.Component {
     constructor(props) {
         super(props);
         this.router = props.router;
@@ -301,4 +301,4 @@ class Box0 extends React.Component {
     }
 }
 
-export default withRouter(Box0);//NewMember;
+export default withRouter(NewMember);//NewMember;

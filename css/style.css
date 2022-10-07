@@ -277,7 +277,7 @@ a#activitiesForward,a#activitiesBackward{ font-weight: 700; }
 
 a#activitiesForward{ float: right; }
 
-a.cornerButton {/* Navigation buttons in top corners */
+a.cornerButton, button.cornerButton {/* Navigation buttons in top corners */
     color: black;
     border: 1px solid black;
     padding: 4px;
@@ -287,12 +287,12 @@ a.cornerButton {/* Navigation buttons in top corners */
     top: 4px;
 }
 
-a#stock{
-    background-color: lightpink;
+button#config {
+    background-color: lightpink; /*palevioletred*/
     left: calc(100% - 48px - 5px);
 }
 
-a#stock:hover { background-color: palevioletred; }
+button#config:hover { background-color: palevioletred; }
 
 a#stats{ background-color: lightskyblue; }
 
