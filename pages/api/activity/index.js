@@ -45,17 +45,19 @@ export default async function handler(req, res) {
             
             //To find the events which have changed, compare the activity (current on the DB) with the new activity
             let eventsInDB = activityFound[0].Events; 
+            console.log("events already in db",eventsInDB)
             
             let idList = [];
             eventsInDB.filter(e => idList.push(e._id.toString()))
             let eventsAdded = newActivityEvents.filter(e => !idList.includes(e._id)) //Drop the events that don't change.
-
+            
             // Assuming Events already exist for this date... Find the events for that day and replace with request body.
             try {
                 let activitiesAfter = await Activity.findByIdAndUpdate(activityFound[0]._id, {id: activityFound[0]._id, Date: dateToSearch, Events: newActivityEvents}, {
                     new: true,
                     runValidators: true
                 });
+                console.log("I can get here too. eventsAdded...",eventsAdded)
                 eventsAdded.forEach(eventAdded => console.log("Successfully edited an existing activity ("+eventAdded.Name+"|"+eventAdded.event+")") )
                 res.status(201).json({ success: true, date: dateToSearch, found: activityFound[0], after: activitiesAfter, toAdd: newActivityEvents })
             } catch (error) {

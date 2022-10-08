@@ -2,8 +2,6 @@ import Head from 'next/head'
 import clientPromise from '../lib/mongodb'
 import React, { Component, useState, useEffect } from 'react';
 import { Button, Form } from 'semantic-ui-react';
-import { useRouter } from 'next/router';
-//import { textSpanContainsPosition } from 'typescript';
 
 
 let hoverTimerId;
@@ -50,7 +48,6 @@ function ensureCertifications(form, member){
 function hover(params){ //Checks to see if an element has been hovered over for 2 seconds or more. params = [memberDataOrId, parentElement]. parentElement is the element is which the hover originated. 
   let memberDataOrId = params[0] 
   let parentElement = params[1].target
-  //console.log("target",parentElement,"memberDataOrId:",memberDataOrId,typeof(memberDataOrId))
   isHovering = true 
   hoverTimerId = setTimeout(function() { //Start the timer
     if (isHovering){
@@ -209,7 +206,7 @@ export default function Home({ members, activities, config }){
     isOpen: false,
     activityEvent: "",
     displayProps: {},
-    batchEvents: {},
+    batchEvents: [],
     submitType: {},
     showConfigPopup: false,
     showForgotIDPopup: false,
@@ -318,16 +315,17 @@ export default function Home({ members, activities, config }){
     let editDate = state.activitiesCollection.filter(a => a.Date== date)[0]
     let eventIdsToEdit = []; //list of event ids to delete
     selected.forEach(item => eventIdsToEdit.push(item.parentNode.parentNode.id)) //Get a list of event ids to delete
-    let eventsToKeep = editDate.Events.filter(e => eventIdsToEdit.includes(e._id))
-    //console.log("e",e,"eventsToKeep",eventsToKeep)
-    let dummyEvent = eventsToKeep[0];
-    setState({
-      ...state, 
-      activityEvent: eventsToKeep,
-      batchEvents: eventsToKeep
+    let eventsToEdit = editDate.Events.filter(e => eventIdsToEdit.includes(e._id))
+    let eventInfo = eventsToEdit[0];
+    console.log("EventsToEdit",eventsToEdit)
+    //needs to find and pass batchEventsToEdit
+    /*setState({
+      ...state,
+      batchEvents: eventsToEdit,
     })
+    console.log("EventsToEdit",eventsToEdit)*/
     let message = "Editing ("+eventIdsToEdit.length+") events..."
-    openPopUp(dummyEvent,{submitButtonText:"Batch Update","message":message}, "() => this.batchEdit()") 
+    openBatchEditPopUp(eventsToEdit,eventInfo,{submitButtonText:"Batch Update","message":message}, "() => this.batchEdit()") 
   }
 
   const batchDelete = (e,selected) => {
@@ -352,12 +350,16 @@ export default function Home({ members, activities, config }){
     newActivity.sessionLengthMinutes = Math.round(new Date(state.activityEvent.badgeOutTime) - new Date(state.activityEvent.badgeInTime))/60000
     newActivity.MemberID = state.activityEvent.MemberID
     newActivity._id = state.activityEvent._id
+    newActivity.flags = state.activityEvent.flags
     updateActivityLog(state.activitiesCollection, newActivity, e, existingInDB)
     let memberToUpdate = state.membersCollection.filter(m => m._id == state.activityEvent.MemberID)[0]
     if (existingInDB == false){ memberToUpdate.badgedIn = false }
     if (newActivity.event == "Certification"){
       newActivity.machineUtilized.forEach(c => memberToUpdate[c+"Certified"] = true) //memberToUpdate[c]
     }
+    //if memberToUpdate is undefinded it could be because its a ghost activity. No need to update the member.
+    //How can we detect if this is a noID activity.
+    if(newActivity.flags.includes("noID")){ console.log("no need to update member...") }
     console.log("memberToUpdate",memberToUpdate)
     //finish: check whether to update lastBadgeIn
     updateMember(memberToUpdate)
@@ -432,6 +434,9 @@ export default function Home({ members, activities, config }){
       let date = activityInfo.badgeOutTime.substring(0,10)
       let editedEvents = [];
       let eventIDList = []; //List of _id of each edited event
+      let eventIDsToDelete = [];
+      let dayMovingFromL = [];
+      console.log("state",state,"activityInfo",activityInfo)
       for (let i=0; i<state.batchEvents.length; i++){
         let editedEvent = {};
         editedEvent.sessionLengthMinutes = activityInfo.sessionLengthMinutes;
@@ -443,14 +448,34 @@ export default function Home({ members, activities, config }){
         editedEvent.Name = state.batchEvents[i].Name
         editedEvent.MemberID = state.batchEvents[i].MemberID
         editedEvent._id = state.batchEvents[i]._id
+        editedEvent.flags = state.batchEvents[i].flags
         editedEvents.push(editedEvent)
         eventIDList.push(state.batchEvents[i]._id)
+        let dayMovingFrom = state.batchEvents[i].badgeOutTime.substring(0,10)
+        if (dayMovingFrom !== activityInfo.badgeOutTime.substring(0,10)){ 
+          eventIDsToDelete.push(state.batchEvents[i]._id) 
+          dayMovingFromL.push(dayMovingFrom)
+        }
       };
+      //updateActivityLog(activitiesCollection, newActivity, e, existing)
       let activityDay = state.activitiesCollection.filter(a => a.Date == date)[0]//Get previous events
-      let oldEvents = activityDay.Events
-      oldEvents = oldEvents.filter(e => !eventIDList.contains(e._id))//remove edited Events
-      editedEvents = editedEvents.concat(oldEvents)
-      updateActivityByDate(date,editedEvents,"Popup.batchEdit()")
+      if (activityDay){
+        let oldEvents = activityDay.Events
+        console.log("oldEvents",oldEvents,"date",date,"displayingProps",state.displayProps)
+        oldEvents = oldEvents.filter(e => !eventIDList.includes(e._id))//remove edited Events
+        console.log("editedEvents",editedEvents)
+        editedEvents = editedEvents.concat(oldEvents)
+        console.log("updateAcitivtyByDate() editiedevents",editedEvents)
+        updateActivityByDate(date,editedEvents,"Popup.batchEdit()")
+        if (eventIDsToDelete){ //delete oldEvents if moving
+          console.log("moving events to another day... removing original events.")
+          let origActivityDay = state.activitiesCollection.filter(a => a.Date == dayMovingFromL[0])[0]
+          let keepEvents = origActivityDay.Events.filter(e => !eventIDsToDelete.includes(e._id))
+          updateActivityByDate(dayMovingFromL[0], keepEvents, "moving events to another day...")
+        }
+      } else { 
+        console.log("about to created activity w/ editedEvents",editedEvents)
+        createNewActivity(date, editedEvents, "Popup.batchEdit()") }
     }
 
     getInfo(){
@@ -460,11 +485,10 @@ export default function Home({ members, activities, config }){
         badgeInTime: badgeInTime.toISOString(),
         badgeOutTime: badgeOutTime.toISOString(),
         event: this.state.visitType,
-        // visitType!!
-        //machineUtilized:
-        //otherToolsUtilized:
-        sessionLengthMinutes: Math.round(badgeOutTime - badgeInTime)/60000
+        machineUtilized: getMachinesUtilized(),
+        otherToolsUtilized: getotherToolsUtilized(),
         //_id:
+        sessionLengthMinutes: Math.round(badgeOutTime - badgeInTime)/60000
       }
       console.log("this.getInfo()| this.props",this.props,"activityInfo",activityInfo)
       return activityInfo
@@ -508,7 +532,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  function badgeOutManually(member, activity){
+  function badgeOutManually(member){
     setState({
       ...state,
       activityEvent: {
@@ -517,12 +541,24 @@ export default function Home({ members, activities, config }){
         Name: member.Name,
         MemberID: member._id,
         member: member,
+        flags: [],
       },
       displayingProps: {
         submitButtonText:"Badge Out",
         message:"Badging out "+member.Name+"..."
       },
-      submitType: "(e) => handleSubmitPopUp(false,e)",
+      submitType: "(e) => handleSubmitPopUp(false,e)", //badgeInByRFID
+      isOpen: true,
+    })
+  }
+
+  const openBatchEditPopUp = async (eventsToEdit,eventInfo,displayProps,submitFn) => {
+    setState({
+      ...state,
+      activityEvent: eventInfo,
+      batchEvents: eventsToEdit,
+      submitType: submitFn,
+      displayProps: displayProps,
       isOpen: true,
     })
   }
@@ -560,7 +596,6 @@ export default function Home({ members, activities, config }){
       } else {  
         machinesInUse = machinesInUse.filter(m => m !== e.target.id)
       }
-      //console.log("machines",machinesInUse,"vS",vSession)
       this.setState({"machines":machinesInUse})
     }
 
@@ -808,8 +843,6 @@ export default function Home({ members, activities, config }){
 
     render(){
       let member = state.membersCollection.filter(mem => mem.rfid == this.props.rfid)[0]
-      //display joinedDate??
-      console.log("state.configCollection.memberAttributes.majors",state.configCollection.memberAttributes.majors)
 
       return(
         <>
@@ -825,21 +858,21 @@ export default function Home({ members, activities, config }){
             <p>Major:</p>
             <select defaultValue={member.Major}>
               {state.configCollection.memberAttributes.majors.map((major) => 
-                <option>{major}</option>
+                <option key={major}>{major}</option>
               )}
             </select>
 
             <p>PatronType:</p> 
             <select defaultValue={member.PatronType}>
               {state.configCollection.memberAttributes.patronTypes.map((patronType) => 
-                <option>{patronType}</option>
+                <option key={patronType}>{patronType}</option>
               )}
             </select>
 
             <p>GraduationYear:</p>
             <select defaultValue={member.GraduationYear}>
               {state.configCollection.memberAttributes.graduationYears.map((gradYear) => 
-                <option>{gradYear}</option>
+                <option key={gradYear}>{gradYear}</option>
               )}
             </select>
 
@@ -870,12 +903,14 @@ export default function Home({ members, activities, config }){
 
             <p>Time Zone Settings</p>
 
-
             <p>Certifications: </p>
             <input type="text" value={state.configCollection.certifications.toString()}></input>
 
             <p>otherTools: </p>
             <input type="text" value={state.configCollection.otherTools.toString()}></input>
+
+            <p>visitType: </p>
+            <input type="text" value={state.configCollection.visitType.toString()}></input>
 
             <details>
               <summary>Member Attributes</summary>
@@ -902,8 +937,6 @@ export default function Home({ members, activities, config }){
         lastCheckboxSelected: undefined 
       }
     }
-
-    //componentDidUpdate(){ console.log("update!   AddInfoButton ",this.props) };
 
     render(){
       return(
@@ -1126,7 +1159,7 @@ export default function Home({ members, activities, config }){
                         ) : ( <td key={member.id+"_"+cert+"_td"} className="false"></td>)
                     )}
                     <td>
-                      <button type="button" onClick={() => badgeOutManually(member, state.activitiesCollection)}>Badge Out</button>
+                      <button type="button" onClick={() => badgeOutManually(member)}>Badge Out</button>
                     </td>
                   </tr>
                 ))}
