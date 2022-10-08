@@ -200,8 +200,9 @@ const updateActivityLog = async (activitiesCollection, newActivity, e, existing)
   }
 }
 
-export default function Home({ members, activities }){
+export default function Home({ members, activities, config }){
   const [state, setState] = useState({
+    configCollection: config[0],
     membersCollection: members,
     activitiesCollection: activities,
     displayingDay: new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10),
@@ -808,19 +809,42 @@ export default function Home({ members, activities }){
     render(){
       let member = state.membersCollection.filter(mem => mem.rfid == this.props.rfid)[0]
       //display joinedDate??
+      console.log("state.configCollection.memberAttributes.majors",state.configCollection.memberAttributes.majors)
 
       return(
         <>
           <section className="Popup">
             <p>EDITING MEMBER</p>
-            <p>Name : </p>
+
+            <p>Name:</p>
             <input type="text" defaultValue={member.Name}></input>
-            <p>RFID : </p>
+
+            <p>RFID:</p>
             <input type="text" defaultValue={this.props.rfid}></input>
-            <p>Major : </p>
-            <p>PatronType : </p>
-            <p>GraduationYear : </p>
-            <p>CERTS : </p>
+
+            <p>Major:</p>
+            <select defaultValue={member.Major}>
+              {state.configCollection.memberAttributes.majors.map((major) => 
+                <option>{major}</option>
+              )}
+            </select>
+
+            <p>PatronType:</p> 
+            <select defaultValue={member.PatronType}>
+              {state.configCollection.memberAttributes.patronTypes.map((patronType) => 
+                <option>{patronType}</option>
+              )}
+            </select>
+
+            <p>GraduationYear:</p>
+            <select defaultValue={member.GraduationYear}>
+              {state.configCollection.memberAttributes.graduationYears.map((gradYear) => 
+                <option>{gradYear}</option>
+              )}
+            </select>
+
+            <p>CERTS:</p>
+            <input type="text" defaultValue={"test"/*member.Certifications.toString()*/}></input>
 
             <button type="button" onClick={this.props.cancel}>Cancel</button>
             <button type="button">Update</button>
@@ -830,20 +854,6 @@ export default function Home({ members, activities }){
       )
     }
   }
-
-  {/*class ConfigPopupButton extends React.Component{
-    constructor(props){
-      super(props);
-      this.state = { 
-      }
-    }
-
-    render(){
-      return(
-        <button></button>
-      )
-    }
-  }*/}
 
   class ConfigPopup extends React.Component{
     constructor(props){
@@ -858,14 +868,27 @@ export default function Home({ members, activities }){
           <section className="Popup">
             <p>Editing Config</p>
 
+            <p>Time Zone Settings</p>
+
+
             <p>Certifications: </p>
-            <input type="text"></input>
+            <input type="text" value={state.configCollection.certifications.toString()}></input>
 
             <p>otherTools: </p>
+            <input type="text" value={state.configCollection.otherTools.toString()}></input>
+
+            <details>
+              <summary>Member Attributes</summary>
+              <p>Majors</p>
+              <input type="text" value={state.configCollection.memberAttributes.majors.toString()}></input>
+              <p>Patron Types</p>
+              <input type="text" value={state.configCollection.memberAttributes.patronTypes.toString()}></input>
+              <p>Graduation Years</p>
+              <input type="text" value={state.configCollection.memberAttributes.graduationYears.toString()}></input>
+            </details>
 
             <button type="button" onClick={this.props.cancel}>Cancel</button>
-            <button type="button" onClick={this.props.updateConfig}>Update</button>
-            <button type="button">Delete</button>
+            <button type="button" onClick={console.log("update config collection (TODO)")}>Update</button>
           </section>
         </>
       )
@@ -1072,7 +1095,7 @@ export default function Home({ members, activities }){
       )}
 
       {state.showConfigPopup ? 
-        <ConfigPopup cancel={toggleConfigPopup} updateConfig={console.log("finsh updateConfig()")}/>
+        <ConfigPopup cancel={toggleConfigPopup}/>
         : <div></div>
       }
 
@@ -1170,7 +1193,11 @@ export async function getStaticProps(context) {
   const activityArray = await activityCollection.find({}).toArray();
   const activityP = JSON.parse(JSON.stringify(activityArray));
 
+  const configCollection = await client.db().collection("config");
+  const configArray = await configCollection.find({}).toArray();
+  const configP = JSON.parse(JSON.stringify(configArray));
+
   return { 
-    props: { members: membersP, activities: activityP } 
+    props: { members: membersP, activities: activityP, config: configP } 
   }
 }
