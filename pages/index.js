@@ -6,8 +6,8 @@ import { Button, Form } from 'semantic-ui-react';
 
 let hoverTimerId;
 let isHovering = false; //Whether the user is currently hovering over an element of interest
-const certFullNameList = ['UltimakerCertified', 'GlowforgeCertified', 'FourAxisMillCertified', 'BantamMillCertified', 'P9000Certified', 'SewingCertified', 'SilhouetteCertified', 'FusionCertified', 'VectorCADCertified', 'CircuitDesignCertified',"IndustrialSewingCertified"];
-let certNameList = ["FourAxisMill","BantamMill","Glowforge","P9000","Sewing","Silhouette","Ultimaker","Fusion","VectorCAD","CircuitDesign","IndustrialSewing"]
+//const certFullNameList = ['UltimakerCertified', 'GlowforgeCertified', 'FourAxisMillCertified', 'BantamMillCertified', 'P9000Certified', 'SewingCertified', 'SilhouetteCertified', 'FusionCertified', 'VectorCADCertified', 'CircuitDesignCertified',"IndustrialSewingCertified"];
+//let certNameList = ["FourAxisMill","BantamMill","Glowforge","P9000","Sewing","Silhouette","Ultimaker","Fusion","VectorCAD","CircuitDesign","IndustrialSewing"]
 let otherToolsNameList = ["ButtonPress","3D Scanners","WacomTablets","VR","Comb Binder","Hand Tools"]
 const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
 const headers = {"Accept": "application/json", "Content-Type": "application/json"}
@@ -34,7 +34,7 @@ function getotherToolsUtilized(){ //Get list of otherToolsUtilized from an on-sc
   return otherToolsUtilized
 }
 
-function ensureCertifications(form, member){
+/*function ensureCertifications(form, member){
   console.log("member",member)
   if (form.event == "Certification"){
     for(let t=0;t<certFullNameList.length;t++){
@@ -42,7 +42,7 @@ function ensureCertifications(form, member){
     }  
   }
   return member
-}
+}*/
 
 /* Start Tooltips Code */
 function hover(params){ //Checks to see if an element has been hovered over for 2 seconds or more. params = [memberDataOrId, parentElement]. parentElement is the element is which the hover originated. 
@@ -355,7 +355,12 @@ export default function Home({ members, activities, config }){
     let memberToUpdate = state.membersCollection.filter(m => m._id == state.activityEvent.MemberID)[0]
     if (existingInDB == false){ memberToUpdate.badgedIn = false }
     if (newActivity.event == "Certification"){
-      newActivity.machineUtilized.forEach(c => memberToUpdate[c+"Certified"] = true) //memberToUpdate[c]
+      let memberCerts = new Set(memberToUpdate.Certifications)
+      console.log("certs before",memberCerts)
+      newActivity.machineUtilized.forEach( c => memberCerts.add(c) )
+      console.log("certs after",memberCerts)
+      memberToUpdate["Certifications"] = [...memberCerts]
+      console.log("saved",memberToUpdate["Certifications"])
     }
     //if memberToUpdate is undefinded it could be because its a ghost activity. No need to update the member.
     //How can we detect if this is a noID activity.
@@ -461,11 +466,9 @@ export default function Home({ members, activities, config }){
       let activityDay = state.activitiesCollection.filter(a => a.Date == date)[0]//Get previous events
       if (activityDay){
         let oldEvents = activityDay.Events
-        console.log("oldEvents",oldEvents,"date",date,"displayingProps",state.displayProps)
         oldEvents = oldEvents.filter(e => !eventIDList.includes(e._id))//remove edited Events
-        console.log("editedEvents",editedEvents)
         editedEvents = editedEvents.concat(oldEvents)
-        console.log("updateAcitivtyByDate() editiedevents",editedEvents)
+        //console.log("updateAcitivtyByDate() editiedevents",editedEvents)
         updateActivityByDate(date,editedEvents,"Popup.batchEdit()")
         if (eventIDsToDelete){ //delete oldEvents if moving
           console.log("moving events to another day... removing original events.")
@@ -573,8 +576,6 @@ export default function Home({ members, activities, config }){
     })
   }
 
-  const certificationNames = ['Ultimaker','Glowforge','Four Axis Mill', 'Bantam Mill', 'P9000', 'Sewing', 'Silhouette', 'Fusion', 'VectorCAD', 'CircuitDesign'];
-
   class MachinesUtilized extends React.Component{
     constructor(props){
       super(props);
@@ -605,7 +606,7 @@ export default function Home({ members, activities, config }){
           <div onClick={this.updateState} className="checkboxes" style={{display:'flow-root', width: "50%"}}>
             <p>Machines Utilized (Certification Required):</p>
             <fieldset onChange={(e) => this.MachineUtilizedChange(e)} id="machinesUtilized" style={{"display": "inline-block","position": "relative","textAlign": "initial","float":"left","border":"none"}}>
-              {certNameList.map((CertName) => 
+              {state.configCollection.certifications.map((CertName) => 
                 <label htmlFor={CertName} key={"label_"+CertName}>
                   <input type="checkbox" id={CertName} name={CertName} defaultChecked={this.state.machines.includes(CertName)}></input>
                   {CertName}
@@ -646,7 +647,7 @@ export default function Home({ members, activities, config }){
           <div onClick={this.updateState} className="checkboxes" style={{display:'flow-root', width: "50%"}}>
             <p>Other Tools Utilized (No Certification Required):</p>
             <fieldset onChange={(e) => this.OtherToolsUtilizedChange(e)} id="otherToolsUtilized" style={{"display": "inline-block","position": "relative","textAlign": "initial","float":"left","border":"none"}}>
-              {otherToolsNameList.map((ToolName) => 
+              {state.configCollection.otherTools.map((ToolName) => 
                 <label htmlFor={ToolName} key={"label_"+ToolName}>
                   <input type="checkbox" id={ToolName} name={ToolName} defaultChecked={this.state.otherTools.includes(ToolName)}></input>
                   {ToolName}
@@ -877,7 +878,7 @@ export default function Home({ members, activities, config }){
             </select>
 
             <p>CERTS:</p>
-            <input type="text" defaultValue={"test"/*member.Certifications.toString()*/}></input>
+            <input type="text" defaultValue={member.Certifications.toString()}></input>
 
             <button type="button" onClick={this.props.cancel}>Cancel</button>
             <button type="button">Update</button>
@@ -1143,7 +1144,7 @@ export default function Home({ members, activities, config }){
                 <tr>
                   <th key={"NameHeader"}>Name</th>
                   <th key={"MajorHeader"}>Major</th>
-                  { certificationNames.map((cert) => 
+                  { state.configCollection.certifications.map((cert) => 
                     <th key={cert+"_th"} className="rotated"><div><span>{cert}</span></div></th>
                     )}
                 </tr>
@@ -1153,11 +1154,11 @@ export default function Home({ members, activities, config }){
                   <tr key={member._id+"_tr"}>
                     <td onMouseEnter={(e) => hover([{member},e])} onMouseLeave={hoverOut}>{member.Name}</td>
                     <td>{member.Major}</td>
-                    { certFullNameList.map((cert) => 
-                      member[cert] ? (
+                    {state.configCollection.certifications.map((cert) => 
+                      member.Certifications.includes(cert) ? (
                         <td key={member.id+"_"+cert+"_td"} className="true"></td>
                         ) : ( <td key={member.id+"_"+cert+"_td"} className="false"></td>)
-                    )}
+                      )}
                     <td>
                       <button type="button" onClick={() => badgeOutManually(member)}>Badge Out</button>
                     </td>

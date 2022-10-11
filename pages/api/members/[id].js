@@ -35,6 +35,7 @@ export default async function handler(req, res) {
         case 'PUT':
             try {
                 //Update Member
+                console.log("body",req.body)
                 const member = await Member.findByIdAndUpdate(id, req.body, {
                     new: true,
                     runValidators: true

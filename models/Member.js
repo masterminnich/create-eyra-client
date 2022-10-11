@@ -38,35 +38,8 @@ const MemberSchema = new Schema({
     rfid: {
         type: String,
     },
-    FourAxisMillCertified: {
-        type: Boolean,
-    },
-    BantamMillCertified: {
-        type: Boolean,
-    },
-    GlowforgeCertified: {
-        type: Boolean,
-    },
-    P9000Certified: {
-        type: Boolean,
-    },
-    SewingCertified: {
-        type: Boolean,
-    },
-    SilhouetteCertified: {
-        type: Boolean,
-    },
-    UltimakerCertified: {
-        type: Boolean,
-    },
-    FusionCertified: {
-        type: Boolean,
-    },
-    VectorCADCertified: {
-        type: Boolean,
-    },
-    CircuitDesignCertified: {
-        type: Boolean,
+    Certifications: {
+        type: Array,
     }
 })
 

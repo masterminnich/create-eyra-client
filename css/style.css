@@ -8,7 +8,11 @@ td.true{ background-color: greenyellow; }
 
 td.false{ background-color: hotpink; }
 
-thead.badgeInMembers { height: 90px; }
+thead.badgeInMembers { 
+    height: 130px;
+    top: 2ch;
+    position: relative; 
+}
 
 th { white-space: nowrap; }
 
