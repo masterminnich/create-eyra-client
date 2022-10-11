@@ -6,9 +6,6 @@ import { Button, Form } from 'semantic-ui-react';
 
 let hoverTimerId;
 let isHovering = false; //Whether the user is currently hovering over an element of interest
-//const certFullNameList = ['UltimakerCertified', 'GlowforgeCertified', 'FourAxisMillCertified', 'BantamMillCertified', 'P9000Certified', 'SewingCertified', 'SilhouetteCertified', 'FusionCertified', 'VectorCADCertified', 'CircuitDesignCertified',"IndustrialSewingCertified"];
-//let certNameList = ["FourAxisMill","BantamMill","Glowforge","P9000","Sewing","Silhouette","Ultimaker","Fusion","VectorCAD","CircuitDesign","IndustrialSewing"]
-let otherToolsNameList = ["ButtonPress","3D Scanners","WacomTablets","VR","Comb Binder","Hand Tools"]
 const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
 const headers = {"Accept": "application/json", "Content-Type": "application/json"}
 
@@ -212,7 +209,7 @@ export default function Home({ members, activities, config }){
     showForgotIDPopup: false,
   });
 
-  //console.log("state",state)
+  console.log("state",state)
 
   function toggleConfigPopup(){ setState({...state, showConfigPopup: !state.showConfigPopup}); }
 
@@ -527,7 +524,7 @@ export default function Home({ members, activities, config }){
             <textarea style={{display:"none"}} id="hiddenProps" defaultValue={JSON.stringify(this.props)}></textarea>
 
             <Button type='button' name={state.activityEvent._id} id="deleteActivityButton" onClick={(e) => deleteActivity([state.activitiesCollection, this.state, state.activityEvent._id, state.activityEvent.member])} style={trashButtonCSS}></Button>
-            <Button type='submit' id="submitBadgeOutPopup" onClick={this.props.submitting}>{this.props.submitButtonText}</Button>
+            <Button type='submit' id="submitBadgeOutPopup" onClick={this.props.submitting}>{state.displayProps.submitButtonText}</Button>
             <Button type='button' id="cancelPopupButton" onClick={() => closePopup()}>Cancel</Button>
           </Form>
         </>
@@ -546,7 +543,7 @@ export default function Home({ members, activities, config }){
         member: member,
         flags: [],
       },
-      displayingProps: {
+      displayProps: {
         submitButtonText:"Badge Out",
         message:"Badging out "+member.Name+"..."
       },
@@ -1188,6 +1185,7 @@ export default function Home({ members, activities, config }){
         </ul>
         <h3>Next up:</h3>
         <ul>
+          <li>Update newMember page to pull majors, patronTypes</li>
           <li>Finish: Edit Member Pop Up</li>
           <li>Convert javascript to React.Component: badgeIn.js PopUps</li>
           <li>New Feature: Add button to failed badgeIn popup. When clicked lets you search members, selected member get its RFID updated.</li>
