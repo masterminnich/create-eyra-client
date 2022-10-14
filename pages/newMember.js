@@ -7,29 +7,6 @@ import clientPromise from '../lib/mongodb'
 const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
 const headers = {"Accept": "application/json", "Content-Type": "application/json"}
 
-/*const getConfigCollection = async () => {
-    try {  
-        const res = await fetch(`/api/config`, {
-        method: 'GET',
-        headers: headers,
-        })
-    } catch (error) { console.log("ERROR in updateMember() ",error); }
-}*/
-
-const getActivitiesCollection = async (newMemberData) => {
-    try {
-        const res = await fetch('/api/activity', {
-            method: 'GET',
-            headers: headers,
-        })
-        console.log("newMemberData",newMemberData)
-        let response = res.json();
-        response.then((resp) => {
-            updateActivityLog(resp.data,newMemberData)
-        })
-    } catch (error) { console.log("error @ getActivitiesCollection(): ",error); }
-}
-
 //Copied from index.js and badgeIn.js -- Make sure to update any changes to both documents.
 const updateActivityLog = async (activities, newMemberData) => {
     let dateStr = new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10);
@@ -42,41 +19,30 @@ const updateActivityLog = async (activities, newMemberData) => {
         try {
           let acitivitiesBefore = ActivityDay.Events
           let activitiesAfter = acitivitiesBefore.concat(newActivity);
-    
           const res = await fetch(`/api/activity`, {
               method: 'PUT',
               headers: headers,
               body: JSON.stringify({Date: dateStr, Events: activitiesAfter})
           })
-          
-        } catch (error) {
-          console.log("Error adding to Activity collection.",error);
-        }
-    
-
-      } else { 
+        } catch (error) { console.log("Error adding to Activity collection.",error); }
+    } else { 
         //No acitivities yet today... adding a new date to the Activity collection.
         console.log("No activity with date",dateStr);
         try {
-          const res = await fetch(`/api/activity`, {
-              method: 'POST',
-              headers: headers,
-              body: JSON.stringify({Date: dateStr, Events: newActivity})
-          })
-    
-        } catch (error) {
-          console.log("Error adding to Activity collection.",error);
-        }
-      }
+            const res = await fetch(`/api/activity`, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({Date: dateStr, Events: newActivity})
+            });
+        } catch (error) { console.log("Error adding to Activity collection.",error); }
+    }
 }
 
 class NewMember extends React.Component {
     constructor(props) {
         super(props);
         this.router = props.router;
-
         let currDate = new Date().toLocaleString("en-CA", localDateTimeOptions);
-
         this.state = {
             form: {
                 Name: '', Major: '', PatronType:"", GraduationYear:"N/A", badgedIn: false, lastBadgeIn: currDate, joinedDate: currDate, rfid: "globalRFID", Certifications: []
@@ -97,10 +63,6 @@ class NewMember extends React.Component {
         }
     }
 
-    componentDidUpdate(){
-        //console.log("update detected!  state.rfid =", this.state.form.rfid)
-    }
-
     createMember = async () => {
         try {
             console.log("Adding new member to DB: ",this.state.form);
@@ -112,14 +74,12 @@ class NewMember extends React.Component {
             let response = res.json();
             response.then((resp) => {
                 if (resp.success == true){ //Only send the user to the next page if member creation is successful.
-                    getActivitiesCollection(resp.data)
+                    updateActivityLog(this.props.activities,resp.data)
                     console.log("routing to /codeOfConduct ...")
                     this.router.push("/codeOfConduct");
                 } else { console.log("An error occured when creating member. This probably means the validate() function failed to do its job.")}
             })
-        } catch (error) {
-            console.log(error);
-        }
+        } catch (error) { console.log(error); }
     };
 
     handleSubmit = (e) => {
@@ -142,14 +102,6 @@ class NewMember extends React.Component {
     handleRadio = (e) => {
         document.querySelector('select').style.display = "inline-block"
         document.querySelectorAll('label')[4].style.display = "inline"
-        /*if(e.target.value == "Student" || e.target.value == "Makerspace Staff" || e.target.value === undefined){
-            document.querySelector('select').style.display = "inline-block"
-            document.querySelectorAll('label')[4].style.display = "inline"
-        } else { 
-            document.querySelector('select').style.display = "none"
-            document.querySelectorAll('label')[4].style.display = "none"
-        }*/
-        //console.log("e.target.name:",e.target.name," e.target.value:",e.target.value);
         
         let tempForm = this.state.form
         let radioSelected;
@@ -250,7 +202,10 @@ class NewMember extends React.Component {
                             </div>
                             <div className="formComponent" id="formMajor">
                                 <label htmlFor="Major">Major:</label>
-                                <select name="Major" onChange={this.handleSelectMajor} style={ this.state.errors.Major ? { border:"red solid" } : {  }}>
+                                <select name="Major" onChange={this.handleSelectMajor} defaultValue={"Select your major..."} style={ this.state.errors.Major ? { border:"red solid" } : {  }}>
+                                    <option key="Select your major..." value="Select your major..." disabled>Select your major...</option>
+                                    <option key="N/A" value="N/A">N/A</option>
+                                    <option key="Undecided" value="Undecided">Undecided</option>
                                     {this.props.config.memberAttributes.majors.map((major) => (
                                         <option key={major} value={major}>{major}</option>
                                     ))}
