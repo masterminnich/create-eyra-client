@@ -78,12 +78,9 @@ class NewMember extends React.Component {
         let currDate = new Date().toLocaleString("en-CA", localDateTimeOptions);
 
         this.state = {
-            form: 
-                {
-                Name: '', Major: '', PatronType:"", GraduationYear:"N/A", badgedIn: false, lastBadgeIn: currDate, joinedDate: currDate, rfid: "globalRFID",
-                FourAxisMillCertified: false, BantamMillCertified: false, GlowforgeCertified: false, P9000Certified: false, SewingCertified: false, SilhouetteCertified: false, UltimakerCertified: false,
-                FusionCertified: false, VectorCADCertified: false, CircuitDesignCertified: false
-                },
+            form: {
+                Name: '', Major: '', PatronType:"", GraduationYear:"N/A", badgedIn: false, lastBadgeIn: currDate, joinedDate: currDate, rfid: "globalRFID", Certifications: []
+            },
             isSubmitting: false,
             errors: "",
         };

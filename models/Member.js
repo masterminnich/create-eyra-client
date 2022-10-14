@@ -40,6 +40,7 @@ const MemberSchema = new Schema({
     },
     Certifications: {
         type: Array,
+        default: [],
     }
 })
 

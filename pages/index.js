@@ -209,7 +209,7 @@ export default function Home({ members, activities, config }){
     showForgotIDPopup: false,
   });
 
-  console.log("state",state)
+  //console.log("state",state)
 
   function toggleConfigPopup(){ setState({...state, showConfigPopup: !state.showConfigPopup}); }
 
@@ -314,7 +314,7 @@ export default function Home({ members, activities, config }){
     selected.forEach(item => eventIdsToEdit.push(item.parentNode.parentNode.id)) //Get a list of event ids to delete
     let eventsToEdit = editDate.Events.filter(e => eventIdsToEdit.includes(e._id))
     let eventInfo = eventsToEdit[0];
-    console.log("EventsToEdit",eventsToEdit)
+    //console.log("EventsToEdit",eventsToEdit)
     //needs to find and pass batchEventsToEdit
     /*setState({
       ...state,
@@ -362,14 +362,14 @@ export default function Home({ members, activities, config }){
     //if memberToUpdate is undefinded it could be because its a ghost activity. No need to update the member.
     //How can we detect if this is a noID activity.
     if(newActivity.flags.includes("noID")){ console.log("no need to update member...") }
-    console.log("memberToUpdate",memberToUpdate)
+    console.log("memberToUpdate",memberToUpdate.Name)
     //finish: check whether to update lastBadgeIn
     updateMember(memberToUpdate)
     setState({...state, isOpen: false}); //close the popup
   }
 
   const handleSubmitForgotID = (props,e) => {
-    console.log("props",props)
+    //console.log("props",props)
     //let displayProps = JSON.parse(e.target[24].innerText);
     //let hiddenProps = JSON.parse(e.target[25].innerText);
     let numOfMembers = e.target.parentNode.children[2].children[1].value
@@ -390,7 +390,7 @@ export default function Home({ members, activities, config }){
     let date = newActivities[0].badgeOutTime.substring(0,10)
     console.log("updating Activities collection...  newActivities=",newActivities)
     let activityDay = state.activitiesCollection.filter(a => a.Date == date)[0]
-    console.log("activityDay",activityDay,"newActivities",newActivities)
+    //console.log("activityDay",activityDay,"newActivities",newActivities)
     if (activityDay){
       let oldEvents = activityDay.Events
       let activities = oldEvents.concat(newActivities)
@@ -438,7 +438,7 @@ export default function Home({ members, activities, config }){
       let eventIDList = []; //List of _id of each edited event
       let eventIDsToDelete = [];
       let dayMovingFromL = [];
-      console.log("state",state,"activityInfo",activityInfo)
+      //console.log("state",state,"activityInfo",activityInfo)
       for (let i=0; i<state.batchEvents.length; i++){
         let editedEvent = {};
         editedEvent.sessionLengthMinutes = activityInfo.sessionLengthMinutes;
@@ -874,7 +874,7 @@ export default function Home({ members, activities, config }){
               )}
             </select>
 
-            <p>CERTS:</p>
+            <p>Certifications:</p>
             <input type="text" defaultValue={member.Certifications.toString()}></input>
 
             <button type="button" onClick={this.props.cancel}>Cancel</button>
