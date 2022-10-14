@@ -2,19 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, withRouter } from 'next/router';
 import fetch from 'isomorphic-unfetch';
 import { Button, Form, Loader, Radio, Dropdown } from 'semantic-ui-react';
-//import { render } from 'react-dom';
-//import Link from 'next/link';
+import clientPromise from '../lib/mongodb'
 
 const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
+const headers = {"Accept": "application/json", "Content-Type": "application/json"}
+
+/*const getConfigCollection = async () => {
+    try {  
+        const res = await fetch(`/api/config`, {
+        method: 'GET',
+        headers: headers,
+        })
+    } catch (error) { console.log("ERROR in updateMember() ",error); }
+}*/
 
 const getActivitiesCollection = async (newMemberData) => {
     try {
         const res = await fetch('/api/activity', {
             method: 'GET',
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json"
-            },
+            headers: headers,
         })
         console.log("newMemberData",newMemberData)
         let response = res.json();
@@ -39,10 +45,7 @@ const updateActivityLog = async (activities, newMemberData) => {
     
           const res = await fetch(`/api/activity`, {
               method: 'PUT',
-              headers: {
-                  "Accept": "application/json",
-                  "Content-Type": "application/json"
-              },
+              headers: headers,
               body: JSON.stringify({Date: dateStr, Events: activitiesAfter})
           })
           
@@ -57,10 +60,7 @@ const updateActivityLog = async (activities, newMemberData) => {
         try {
           const res = await fetch(`/api/activity`, {
               method: 'POST',
-              headers: {
-                  "Accept": "application/json",
-                  "Content-Type": "application/json"
-              },
+              headers: headers,
               body: JSON.stringify({Date: dateStr, Events: newActivity})
           })
     
@@ -84,6 +84,7 @@ class NewMember extends React.Component {
             isSubmitting: false,
             errors: "",
         };
+        console.log("props (activities and config...?)",props)
     };
 
     componentDidMount() {
@@ -105,10 +106,7 @@ class NewMember extends React.Component {
             console.log("Adding new member to DB: ",this.state.form);
             const res = await fetch('/api/members', {
                 method: 'POST',
-                headers: {
-                    "Accept": "application/json",
-                    "Content-Type": "application/json"
-                },
+                headers: headers,
                 body: JSON.stringify(this.state.form)
             })
             let response = res.json();
@@ -208,14 +206,12 @@ class NewMember extends React.Component {
         }
         if (!this.state.form.rfid || this.state.form.rfid == "globalRFID" ) {
             err.rfid = 'No RFID. rfid = '+this.state.form.rfid;
-            console.log("form.rfid = ",this.state.form.rfid,"RQ.RFID = ",RQ.rfid.toString())
         }
 
         return err;
     };
     
     render(){
-        const majorsList = ["Choose a Major...","N/A","Undecided","Accounting","Anthropology and Geography","Art History","Art Studio","Biochemistry","Biology","Chemistry","Communication","Computer Science","Digital Culture and Design","Early Childhood Education","Economics","Elementary Education","Engineering Science","English","Exercise and Sport Science","Finance","Graphic Design","Health Administration Completion Program","History","Hospitality, Resort and Tourism Management","Information Systems","Information Technology","Intelligence and National Security Studies","Interdisciplinary Studies","Languages and Intercultural Studies","Management","Marine Science","Marketing","Mathematics (Applied)","Middle Level Education","Music","Musical Theatre","Nursing BSN","Nursing 2+2 Residential Bridge Program","PGA Golf Management Program","Philosophy and Religious Studies","Physical Education/Teacher Education","Physics, Applied","Political Science","Psychology","Public Health","Recreation and Sport Management","Sociology","Special Education - Multicategorical","Theatre Arts"];  // https://www.coastal.edu/admissions/programs/
         return(
             <>
             <div className="form-container">
@@ -239,38 +235,23 @@ class NewMember extends React.Component {
                                 />
                             </div>
                             <div className="formComponent" id="formRadios" style={ this.state.errors.PatronType ? { border:"red solid" } : {  }}>
-                                <Form.Radio
-                                    label="Student"
-                                    value="Student"
-                                    name="PatronType"
-                                    type="radio"
-                                    id="studentRadio"
-                                    onClick={this.handleRadio}
-                                    checked={this.state.form.PatronType == "Student"}
-                                />
-                                <Form.Radio
-                                    label="Faculty/Staff"
-                                    value="Faculty"
-                                    name="PatronType"
-                                    type="radio"
-                                    id="facultyRadio"
-                                    checked={this.state.form.PatronType == "Faculty"}
-                                    onClick={this.handleRadio}
-                                />
-                                <Form.Radio
-                                    label="Makerspace Staff"
-                                    value="Makerspace Staff"
-                                    name="PatronType"
-                                    type="radio"
-                                    id="makerspaceStaffRadio"
-                                    checked={this.state.form.PatronType == "Makerspace Staff"}
-                                    onClick={this.handleRadio}
-                                />
+                                {this.props.config.memberAttributes.patronTypes.map((patronType) => (
+                                    <Form.Radio
+                                        label={patronType}
+                                        value={patronType}
+                                        name="PatronType"
+                                        type="radio"
+                                        id={patronType+"Radio"}
+                                        key={patronType+"Radio"}
+                                        onClick={this.handleRadio}
+                                        checked={this.state.form.PatronType == patronType}
+                                    />
+                                ))}
                             </div>
                             <div className="formComponent" id="formMajor">
                                 <label htmlFor="Major">Major:</label>
                                 <select name="Major" onChange={this.handleSelectMajor} style={ this.state.errors.Major ? { border:"red solid" } : {  }}>
-                                    {majorsList.map((major) => (
+                                    {this.props.config.memberAttributes.majors.map((major) => (
                                         <option key={major} value={major}>{major}</option>
                                     ))}
                                 </select>
@@ -298,4 +279,21 @@ class NewMember extends React.Component {
     }
 }
 
-export default withRouter(NewMember);//NewMember;
+export async function getStaticProps(context) {
+    const client = await clientPromise
+
+    const activityCollection = await client.db().collection("activities");
+    const activityArray = await activityCollection.find({}).toArray();
+    const activityP = JSON.parse(JSON.stringify(activityArray));
+
+    const configCollection = await client.db().collection("config");
+    const configArray = await configCollection.find({}).toArray();
+    const configP = JSON.parse(JSON.stringify(configArray));
+
+    return { 
+        props: { activities: activityP, config: configP[0] } 
+    }
+}
+
+//export default NewMember;
+export default withRouter(NewMember);
