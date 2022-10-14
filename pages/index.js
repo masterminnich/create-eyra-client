@@ -124,7 +124,7 @@ const updateMember = async (member) => {
       method: 'PUT',
       headers: headers,
       body: JSON.stringify(member)
-    })//.then(setTimeout(() => { window.location.reload() }, 200));
+    }).then(setTimeout(() => { window.location.reload() }, 200));
   } catch (error) { console.log("ERROR in updateMember() ",error); }
 }
 
@@ -134,7 +134,7 @@ const updateActivityByDate = async (date, events) => {
       method: 'PUT',
       headers: headers,
       body: JSON.stringify({Date: date, Events: events})
-    })//.then(setTimeout(() => { window.location.reload() }, 200));
+    }).then(setTimeout(() => { window.location.reload() }, 200));
   } catch (error) { console.log("ERROR :",error); }
 }
 
@@ -144,7 +144,7 @@ const createNewActivity = async (date, events, originFn) => {
         method: 'POST',
         headers: headers,
         body: JSON.stringify({Date: date, Events: events})
-    })//.then(setTimeout(() => { window.location.reload() }, 200));
+    }).then(setTimeout(() => { window.location.reload() }, 200));
   } catch (error) { console.log("ERROR in",originFn,":",error) }
 }
 
