@@ -2,7 +2,7 @@ import Cors from 'cors'
 import initMiddleware from '../../../lib/init-middleware'
 import connectToDatabase from '../../../utils/connectToDatabase';
 import Member from '../../../models/Member';
-
+import Activity from '../../../models/Activity';
 
 // Initialize the cors middleware. You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
 const cors = initMiddleware( Cors({ methods: ['GET', 'POST', 'OPTIONS', "PUT", "DELETE"] }) )
@@ -17,6 +17,8 @@ export default async function handler(req, res) {
         query: { id },
         method
     } = req;
+
+    
 
     switch (method) {
         case 'GET':
@@ -34,8 +36,8 @@ export default async function handler(req, res) {
             break;
         case 'PUT':
             try {
-                //Update Member
-                console.log("body",req.body)
+                //console.log("body",req.body)
+                
                 const member = await Member.findByIdAndUpdate(id, req.body, {
                     new: true,
                     runValidators: true
@@ -48,7 +50,10 @@ export default async function handler(req, res) {
                     console.log(member.Name,"badged in!"); 
                 } else { console.log(member.Name,"badged out!") }
 
-                res.status(200).json({ success: true, data: member });
+                let membersCollection = await Member.find();
+                //let activitiesCollection = await Member.find();
+
+                res.status(200).json({ success: true, data: member, after: membersCollection });
             } catch (error) {
                 res.status(400).json({ success: false });
             }

@@ -2,8 +2,9 @@ import Head from 'next/head'
 import clientPromise from '../lib/mongodb'
 import React, { Component, useState, useEffect } from 'react';
 import { Button, Form } from 'semantic-ui-react';
+import io from 'Socket.IO-client'
 
-
+let socket;
 let hoverTimerId;
 let isHovering = false; //Whether the user is currently hovering over an element of interest
 const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
@@ -99,7 +100,7 @@ const getMemberDataFromID = async (MemberID,parentElement) => { //Fetch member d
       let dataToDisplay;
       if (memberData !== undefined){  
         dataToDisplay = {"Patron Type":memberData["PatronType"],"Major":memberData["Major"],"GraduationYear":memberData["GraduationYear"],"RFID UID":memberData["rfid"],"joinedDate":new Date(memberData["joinedDate"]).toLocaleString("en-CA", localDateTimeOptions)}
-        console.log("memberData",memberData)
+        //console.log("memberData",memberData)
       } else { //Create Tooltip for users not in the members collection
         dataToDisplay = {"RFID UID":"N/A"}
       }
@@ -118,82 +119,6 @@ function createMemberTooltip(memberDataOrId,parentElement){
 }
 /* End Tooltips Code */
 
-const updateMember = async (member) => {
-  try {  
-    const res = await fetch(`/api/members/${member._id}`, {
-      method: 'PUT',
-      headers: headers,
-      body: JSON.stringify(member)
-    }).then(setTimeout(() => { window.location.reload() }, 200));
-  } catch (error) { console.log("ERROR in updateMember() ",error); }
-}
-
-const updateActivityByDate = async (date, events) => {
-  try {  
-    const res = await fetch(`/api/activity`, {
-      method: 'PUT',
-      headers: headers,
-      body: JSON.stringify({Date: date, Events: events})
-    }).then(setTimeout(() => { window.location.reload() }, 200));
-  } catch (error) { console.log("ERROR :",error); }
-}
-
-const createNewActivity = async (date, events, originFn) => {
-  try {
-    const res = await fetch(`/api/activity`, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify({Date: date, Events: events})
-    }).then(setTimeout(() => { window.location.reload() }, 200));
-  } catch (error) { console.log("ERROR in",originFn,":",error) }
-}
-
-//creates a new activity upon badge out
-const updateActivityLog = async (activitiesCollection, newActivity, e, existing) => {
-  // activity : The activities collection
-  // newActivity: the activityEvent to update
-  // existing : true = edit an activity that exists in the DB. false = add a new activity to the DB
-
-  let newBadgeOutDate = newActivity.badgeOutTime.substring(0,10);
-  let displayProps = JSON.parse(e.target["displayProps"].innerText);
-  let prevBadgeOutDate = displayProps.displayDay;
-  let newActivityDay = activitiesCollection.find(a => a.Date == newBadgeOutDate) //Get the activity document for the correct day
-  let prevActivityDay = activitiesCollection.find(a => a.Date == prevBadgeOutDate)
-
-  let newActivities;
-
-  if (existing !== false){ //Updating an existing event
-    //console.log('activity',activity,'newActivity',newActivity,'newActivityDay',newActivityDay);
-
-    if (prevBadgeOutDate !== newBadgeOutDate){ //Check if the activity is being moved to another date.
-      //Date of the activity has changed. Delete the event from the old activity.
-      let prevActivityEvents = prevActivityDay.Events.filter(a => a._id !== newActivity._id)
-      updateActivityByDate(prevBadgeOutDate, prevActivityEvents); //Delete activity from old date
-      
-      if (newActivityDay){ //If activities exist for this day, update the list. 
-        newActivities = newActivityDay.Events.concat(newActivity)
-      }
-
-      //finish: check to update member.lastBadgeOut
-    } else { //Event is not being moved to a different day. Edited single activity.
-      let DayEvents = newActivityDay.Events.filter(a => a._id !== newActivity._id) //Remove the event from the ActivityDaily document so we can add it back in.
-      newActivities = DayEvents.concat(newActivity); //All events from the day.
-    }
-  } else {
-    if (newActivityDay){ //Activities exist for this day... updating existing activity list
-      let acitivitiesBefore = newActivityDay.Events
-      newActivities = acitivitiesBefore.concat(newActivity);
-    }
-  }
-
-  //Add events to the DB
-  if (newActivityDay){
-    updateActivityByDate(newBadgeOutDate,newActivities)
-  } else { 
-    createNewActivity(newBadgeOutDate,newActivity)
-  }
-}
-
 export default function Home({ members, activities, config }){
   const [state, setState] = useState({
     configCollection: config[0],
@@ -208,8 +133,19 @@ export default function Home({ members, activities, config }){
     showConfigPopup: false,
     showForgotIDPopup: false,
   });
-
   //console.log("state",state)
+
+  useEffect(() => socketInitializer(), [])
+
+  const socketInitializer = async () => {
+    await fetch('/api/socket');
+    socket = io();
+
+    socket.on('connect', () => { console.log('WebSocket connected.') })
+    socket.on('update-membersCollection', msg => { setState({...state, membersCollection: msg})  })
+    socket.on('update-activitiesCollection', msg => { setState({...state, activitiesCollection: msg}); })
+    socket.on('update-both', data => {  setState({...state, activitiesCollection: data.activities, membersCollection: data.members}); })
+  }
 
   function toggleConfigPopup(){ setState({...state, showConfigPopup: !state.showConfigPopup}); }
 
@@ -229,23 +165,111 @@ export default function Home({ members, activities, config }){
     return err;
   }*/
 
+  const updateMember = async (member) => {
+    try {  
+      const res = await fetch(`/api/members/${member._id}`, {
+        method: 'PUT',
+        headers: headers,
+        body: JSON.stringify(member)
+      });
+      let response = res.json()
+      response.then((resp) => {
+        //console.log("resp.after",resp.after, "filter....",resp.after.filter(m=>m.badgedIn==true))
+        setState({...state, membersCollection: resp.after, isOpen: false})
+        socket.emit('membersCollection-change', resp.after)
+      });
+    } catch (error) { console.log("ERROR in updateMember() ",error); }
+  }
+
+  const updateActivityByDate = async (date, events) => {
+    try {
+      const res = await fetch(`/api/activity`, {
+        method: 'PUT',
+        headers: headers,
+        body: JSON.stringify({Date: date, Events: events})
+      });
+      let response = res.json()
+      response.then((resp) => {
+        let updatedActivities = state.activitiesCollection.map(e => (e.Date==resp.after.Date) ? resp.after : e ) //Update a single entry in the activitiesCollection
+        setState({...state, activitiesCollection: updatedActivities, isOpen: false})
+        socket.emit('activitiesCollection-change', updatedActivities)
+        //console.log("$state updated!",state)
+      });
+    } catch (error) { console.log("ERROR :",error); }
+  }
+  
+  const createNewActivity = async (date, events, originFn) => {
+    try {
+      const res = await fetch(`/api/activity`, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({Date: date, Events: events})
+      })
+      console.log("TODO: State needs to be updated here! FIX")
+    } catch (error) { console.log("ERROR in",originFn,":",error) }
+  }
+  
+  //creates a new activity upon badge out
+  const updateActivityLog = async (activitiesCollection, newActivity, e, existing) => {
+    // activity : The activities collection
+    // newActivity: the activityEvent to update
+    // existing : true = edit an activity that exists in the DB. false = add a new activity to the DB
+  
+    let newBadgeOutDate = newActivity.badgeOutTime.substring(0,10);
+    let displayProps = JSON.parse(e.target["displayProps"].innerText);
+    let prevBadgeOutDate = displayProps.displayDay;
+    let newActivityDay = activitiesCollection.find(a => a.Date == newBadgeOutDate) //Get the activity document for the correct day
+    let prevActivityDay = activitiesCollection.find(a => a.Date == prevBadgeOutDate)
+  
+    let newActivities;
+  
+    if (existing !== false){ //Updating an existing event
+      //console.log('activity',activity,'newActivity',newActivity,'newActivityDay',newActivityDay);
+  
+      if (prevBadgeOutDate !== newBadgeOutDate){ //Check if the activity is being moved to another date.
+        //Date of the activity has changed. Delete the event from the old activity.
+        let prevActivityEvents = prevActivityDay.Events.filter(a => a._id !== newActivity._id)
+        updateActivityByDate(prevBadgeOutDate, prevActivityEvents); //Delete activity from old date
+        
+        if (newActivityDay){ //If activities exist for this day, update the list. 
+          newActivities = newActivityDay.Events.concat(newActivity)
+        }
+  
+        //finish: check to update member.lastBadgeOut
+      } else { //Event is not being moved to a different day. Edited single activity.
+        let DayEvents = newActivityDay.Events.filter(a => a._id !== newActivity._id) //Remove the event from the ActivityDaily document so we can add it back in.
+        newActivities = DayEvents.concat(newActivity); //All events from the day.
+      }
+    } else {
+      if (newActivityDay){ //Activities exist for this day... updating existing activity list
+        let acitivitiesBefore = newActivityDay.Events
+        newActivities = acitivitiesBefore.concat(newActivity);
+      }
+    }
+  
+    //Add events to the DB
+    if (newActivityDay){
+      updateActivityByDate(newBadgeOutDate,newActivities)
+    } else { 
+      createNewActivity(newBadgeOutDate,newActivity)
+    }
+  }
+
   const deleteActivity = async(props) => {
     let [activitiesCollection, popUpState, activityID, member] = props
-    console.log("p",props)
     let date = popUpState.badgeOutDate.substring(0,10)
     let activityDay;
     let remainingActivities;
     if(typeof(activityID)=="string"){
       activityDay = activitiesCollection.find(a => a.Date == date)
       remainingActivities = activityDay.Events.filter(a => a._id !== activityID)
+      updateActivityByDate(date, remainingActivities, "deleteActivity")
     } else if (activityID == undefined){ //delete from badgeOut Screen
       member.badgedIn = !member.badgedIn
       updateMember(member)
     } else { //list of IDs
       console.log("FIX BATCH DELETE from deleteActivity()")
     }
-    updateActivityByDate(date, remainingActivities, "deleteActivity")
-    setState({...state, isOpen: false}); //close the popup
   }
 
   const badgeInByRFID = async (RFID_UID_input) => {
@@ -254,13 +278,15 @@ export default function Home({ members, activities, config }){
         method: 'POST',
         headers: headers,
         body: JSON.stringify({rfid: RFID_UID_input})
-      }).then(setTimeout(() => { window.location.reload() }, 200));
+      })
       let response = res.json();
       response.then((resp) => {
-        console.log(resp.data);
+        let updatedMembers = state.membersCollection.map(m => (m._id==resp.after._id) ? resp.after : m )
+        //console.log("badgeInByRFID resp:",resp,"updatedMembers",updatedMembers,"updatedActivities",resp.activities)
+        setState({...state, membersCollection: updatedMembers, activitiesCollection: resp.activities, isOpen: false});
+        socket.emit("membersAndActivities-change", {members: updatedMembers, activities: resp.activities})
       });
     } catch (error) { console.log("Error badging in member",error) }
-    setState({...state, isOpen: false}); //close the popup
   }
 
 
@@ -333,7 +359,6 @@ export default function Home({ members, activities, config }){
     let eventsToKeep = deleteDate.Events.filter(e => !eventIdsToDelete.includes(e._id))
     //console.log("e",e,"selected",selected,"eventsToKeep",eventsToKeep,"toDelete",eventsToDelete)
     updateActivityByDate(date, eventsToKeep, "batchDelete")
-    setState({...state, isOpen: false}); //close the popup
   }
 
   const handleSubmitPopUp = (existingInDB, e) => { //handleSubmitBadgeOut
@@ -348,14 +373,13 @@ export default function Home({ members, activities, config }){
     newActivity.MemberID = state.activityEvent.MemberID
     newActivity._id = state.activityEvent._id
     newActivity.flags = state.activityEvent.flags
-    updateActivityLog(state.activitiesCollection, newActivity, e, existingInDB)
+    
+
     let memberToUpdate = state.membersCollection.filter(m => m._id == state.activityEvent.MemberID)[0]
     if (existingInDB == false){ memberToUpdate.badgedIn = false }
     if (newActivity.event == "Certification"){
       let memberCerts = new Set(memberToUpdate.Certifications)
-      console.log("certs before",memberCerts)
       newActivity.machineUtilized.forEach( c => memberCerts.add(c) )
-      console.log("certs after",memberCerts)
       memberToUpdate["Certifications"] = [...memberCerts]
       console.log("saved",memberToUpdate["Certifications"])
     }
@@ -364,8 +388,16 @@ export default function Home({ members, activities, config }){
     if(newActivity.flags.includes("noID")){ console.log("no need to update member...") }
     console.log("memberToUpdate",memberToUpdate.Name)
     //finish: check whether to update lastBadgeIn
-    updateMember(memberToUpdate)
-    setState({...state, isOpen: false}); //close the popup
+
+    /*function updateActivities(){ return new Promise((resolve) => {
+      updateActivityLog(state.activitiesCollection, newActivity, e, existingInDB)
+    })}
+    updateActivities().then(
+      updateMember(memberToUpdate)
+    );*/
+
+    updateActivityLog(state.activitiesCollection, newActivity, e, existingInDB)
+    updateMember(memberToUpdate) //TODO FIX. This should wait for updateActivityLog to finish
   }
 
   const handleSubmitForgotID = (props,e) => {
@@ -396,17 +428,6 @@ export default function Home({ members, activities, config }){
       let activities = oldEvents.concat(newActivities)
       updateActivityByDate(date, activities, "handleSubmitForgotID")
     } else { createNewActivity(date, newActivities, "handleSubmitForgotID") }
-
-    setState({...state, isOpen: false}); //close the popup
-  }
-
-  const closePopup = async() => {
-    setState({
-      ...state, 
-      isOpen: false,
-      showForgotIDPopup: false,
-    });
-    if(state.isOpen == false){ document.getElementsByClassName("Popup")[0].remove() }
   }
 
   class Popup extends React.Component{
@@ -490,7 +511,7 @@ export default function Home({ members, activities, config }){
         //_id:
         sessionLengthMinutes: Math.round(badgeOutTime - badgeInTime)/60000
       }
-      console.log("this.getInfo()| this.props",this.props,"activityInfo",activityInfo)
+      //console.log("this.getInfo()| this.props",this.props,"activityInfo",activityInfo)
       return activityInfo
     }
     
@@ -525,14 +546,14 @@ export default function Home({ members, activities, config }){
 
             <Button type='button' name={state.activityEvent._id} id="deleteActivityButton" onClick={(e) => deleteActivity([state.activitiesCollection, this.state, state.activityEvent._id, state.activityEvent.member])} style={trashButtonCSS}></Button>
             <Button type='submit' id="submitBadgeOutPopup" onClick={this.props.submitting}>{state.displayProps.submitButtonText}</Button>
-            <Button type='button' id="cancelPopupButton" onClick={() => closePopup()}>Cancel</Button>
+            <Button type='button' id="cancelPopupButton" onClick={() => setState({ ...state,  isOpen: false, showForgotIDPopup: false })}>Cancel</Button>
           </Form>
         </>
       )
     }
   }
 
-  function badgeOutManually(member){
+  function openManualBadgeOutPopup(member){
     setState({
       ...state,
       activityEvent: {
@@ -1092,8 +1113,60 @@ export default function Home({ members, activities, config }){
     }
   }
 
+  class BadgedInMembers extends React.Component{
+    constructor(props){
+      super(props);
+      this.state = { }
+    }
+
+    render(){
+      return(
+        <>
+          <section className="fit">
+            {state.membersCollection.filter(member => member.badgedIn == true).length == 0 ? (
+              <p style={{"textAlign":"center"}}>No one badged in...</p>
+            ) : (
+              <>
+                <table>
+                  <caption>Badged In Members</caption>
+                  <thead className="badgeInMembers">
+                    <tr>
+                      <th key={"NameHeader"}>Name</th>
+                      <th key={"MajorHeader"}>Major</th>
+                      { state.configCollection.certifications.map((cert) => 
+                        <th key={cert+"_th"} className="rotated"><div><span>{cert}</span></div></th>
+                        )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {state.membersCollection.filter(member => member.badgedIn == true).map((member) => (
+                      <tr key={member._id+"_tr"}>
+                        <td onMouseEnter={(e) => hover([{member},e])} onMouseLeave={hoverOut}>{member.Name}</td>
+                        <td>{member.Major}</td>
+                        {state.configCollection.certifications.map((cert) => 
+                          member.Certifications.includes(cert) ? (
+                            <td key={member.id+"_"+cert+"_td"} className="true"></td>
+                            ) : ( <td key={member.id+"_"+cert+"_td"} className="false"></td>)
+                          )}
+                        <td>
+                          <button type="button" onClick={() => openManualBadgeOutPopup(member)}>Badge Out</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
+            <SearchMemberBadgeIn members={members}></SearchMemberBadgeIn>
+          </section>
+        </>
+      )
+    }
+  }
+
+
   return (
-    <div className="container">
+    <>
       <Head>
         <title>Makerspace Badging System</title>
         <link rel="icon" href="/favicon.ico" />
@@ -1130,43 +1203,7 @@ export default function Home({ members, activities, config }){
         : <div></div>
       }
 
-      <section className="fit">
-        {members.filter(member => member.badgedIn == true).length == 0 ? (
-          <p style={{"textAlign":"center"}}>No one badged in...</p>
-        ) : (
-          <>
-            <table>
-              <caption>Badged In Members</caption>
-              <thead className="badgeInMembers">
-                <tr>
-                  <th key={"NameHeader"}>Name</th>
-                  <th key={"MajorHeader"}>Major</th>
-                  { state.configCollection.certifications.map((cert) => 
-                    <th key={cert+"_th"} className="rotated"><div><span>{cert}</span></div></th>
-                    )}
-                </tr>
-              </thead>
-              <tbody>
-                {members.filter(member => member.badgedIn == true).map((member) => (
-                  <tr key={member._id+"_tr"}>
-                    <td onMouseEnter={(e) => hover([{member},e])} onMouseLeave={hoverOut}>{member.Name}</td>
-                    <td>{member.Major}</td>
-                    {state.configCollection.certifications.map((cert) => 
-                      member.Certifications.includes(cert) ? (
-                        <td key={member.id+"_"+cert+"_td"} className="true"></td>
-                        ) : ( <td key={member.id+"_"+cert+"_td"} className="false"></td>)
-                      )}
-                    <td>
-                      <button type="button" onClick={() => badgeOutManually(member)}>Badge Out</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </>
-        )}
-        <SearchMemberBadgeIn members={members}></SearchMemberBadgeIn>
-      </section>
+      <BadgedInMembers></BadgedInMembers>
       <section id="recentActivity" className="fit">
         <RecentActivity></RecentActivity>
       </section>
@@ -1175,6 +1212,7 @@ export default function Home({ members, activities, config }){
         <summary>Developer Notes</summary>
         <h3>Bugs:</h3>
         <ul>
+          <li>createNewActivity - does not update state</li>
           <li>Batch Edit: Flags disappear when changing days</li>
           <li>/api/members PUT | Does not create an event! Just badges out.</li>
           <li>Fix: getMemberStats() (relies on member.sessions)</li>
@@ -1209,7 +1247,7 @@ export default function Home({ members, activities, config }){
         </ul>
         <p>Random dev note: Isomorphic-unfetch allows us to make HTTP requests inside out NextJS app</p>
       </details>
-    </div>
+    </>
   )
 }
 

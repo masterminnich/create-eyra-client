@@ -69,7 +69,7 @@ const updateMemberBadgeInStatus = async (member) => {
             console.log(member2.Name,"badged in!"); 
         } else { 
             console.log("mem1 vs mem2",prevBadgeIn," ",member2.lastBadgeIn)
-            addEventToActivityCollection(member2, prevBadgeIn)
+            await addEventToActivityCollection(member2, prevBadgeIn)
             console.log(member2.Name,"badged out!") 
         }
     } catch (error) {
@@ -121,8 +121,9 @@ export default async function handler(req, res) {
                     
             default: //Member is found
                 console.log("Attempting to update member's badge in status....");
-                updateMemberBadgeInStatus(foundMember[0]);
-                res.status(200).json({ success: true, data: foundMember[0] })
+                await updateMemberBadgeInStatus(foundMember[0]);
+                let activitiesCollection = await Activity.find();
+                res.status(200).json({ success: true, after: foundMember[0], activities: activitiesCollection })
                 break;
         }
     } catch (error) {
