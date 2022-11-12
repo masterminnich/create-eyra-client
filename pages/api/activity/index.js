@@ -54,13 +54,14 @@ export default async function handler(req, res) {
 
             // Assuming Events already exist for this date... Find the events for that day and replace with request body.
             try {
-                let activitiesAfter = await Activity.findByIdAndUpdate(activityFound[0]._id, {id: activityFound[0]._id, Date: dateToSearch, Events: newActivityEvents}, {
+                let eventsAfter = await Activity.findByIdAndUpdate(activityFound[0]._id, {id: activityFound[0]._id, Date: dateToSearch, Events: newActivityEvents}, {
                     new: true,
                     runValidators: true
                 });
                 console.log("Number of eventsAdded...",eventsAdded.length)
                 eventsAdded.forEach(eventAdded => console.log("Successfully edited an existing activity ("+eventAdded.Name+"|"+eventAdded.event+")") )
-                res.status(201).json({ success: true, date: dateToSearch, found: activityFound[0], after: activitiesAfter, toAdd: newActivityEvents })
+                let activitiesCollection = await Activity.find({});
+                res.status(201).json({ success: true, date: dateToSearch, found: activityFound[0], after: eventsAfter, toAdd: newActivityEvents, activities: activitiesCollection })
             } catch (error) {
                 console.log("Error while editing activity [/api/activity/index PUT]:",error)
                 res.status(400).json({ success: false })

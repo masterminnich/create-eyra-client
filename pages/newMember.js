@@ -5,12 +5,14 @@ import { Button, Form, Loader, Radio, Dropdown } from 'semantic-ui-react';
 import clientPromise from '../lib/mongodb'
 import io from 'Socket.IO-client'
 
-let socket;
 const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
 const headers = {"Accept": "application/json", "Content-Type": "application/json"}
 
 //Copied from index.js and badgeIn.js -- Make sure to update any changes to both documents.
 const updateActivityLog = async (activities, newMemberData) => {
+    await fetch('/api/socket');
+    let socket = io();
+    socket.on('connect', () => { console.log('WebSocket connected.') })
     let dateStr = new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10);
     let dateObj = new Date();
     let ActivityDay = activities.find(a => a.Date == dateStr) //Get the activity document for the correct day
@@ -19,13 +21,17 @@ const updateActivityLog = async (activities, newMemberData) => {
     if (ActivityDay){
         console.log("found Activities w/ date",dateStr);
         try {
-          let acitivitiesBefore = ActivityDay.Events
-          let activitiesAfter = acitivitiesBefore.concat(newActivity);
-          const res = await fetch(`/api/activity`, {
-              method: 'PUT',
-              headers: headers,
-              body: JSON.stringify({Date: dateStr, Events: activitiesAfter})
-          })
+            let acitivitiesBefore = ActivityDay.Events
+            let activitiesAfter = acitivitiesBefore.concat(newActivity);
+            const res = await fetch(`/api/activity`, {
+                method: 'PUT',
+                headers: headers,
+                body: JSON.stringify({Date: dateStr, Events: activitiesAfter})
+            });
+            let response = res.json()
+            response.then((resp) => {
+                socket.emit('activitiesCollection-change', resp.activities);
+            });
         } catch (error) { console.log("Error adding to Activity collection.",error); }
     } else { 
         //No acitivities yet today... adding a new date to the Activity collection.
@@ -35,6 +41,10 @@ const updateActivityLog = async (activities, newMemberData) => {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({Date: dateStr, Events: newActivity})
+            });
+            let response = res.json()
+            response.then((resp) => {
+                socket.emit('activitiesCollection-change', resp.activities);
             });
         } catch (error) { console.log("Error adding to Activity collection.",error); }
     }
