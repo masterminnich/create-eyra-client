@@ -38,7 +38,7 @@ export default async function handler(req, res) {
             }
             break;
         case 'PUT':
-            console.log("activityPUT:  req.body",req.body)
+            //console.log("activityPUT:  req.body",req.body)
             let dateToSearch = req.body.Date
             let newActivityEvents = req.body.Events
 

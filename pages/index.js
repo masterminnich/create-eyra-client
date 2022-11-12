@@ -387,15 +387,6 @@ export default function Home({ members, activities, config }){
     //How can we detect if this is a noID activity.
     if(newActivity.flags.includes("noID")){ console.log("no need to update member...") }
     console.log("memberToUpdate",memberToUpdate.Name)
-    //finish: check whether to update lastBadgeIn
-
-    /*function updateActivities(){ return new Promise((resolve) => {
-      updateActivityLog(state.activitiesCollection, newActivity, e, existingInDB)
-    })}
-    updateActivities().then(
-      updateMember(memberToUpdate)
-    );*/
-
     updateActivityLog(state.activitiesCollection, newActivity, e, existingInDB)
     updateMember(memberToUpdate) //TODO FIX. This should wait for updateActivityLog to finish
   }
@@ -1119,7 +1110,12 @@ export default function Home({ members, activities, config }){
       this.state = { }
     }
 
+    
+
     render(){
+      let joe = state.membersCollection.filter(m=>m.Name=="Joseph Minnich")[0]
+      let d = state.activitiesCollection.filter(m=>m.Date=="2022-11-12")[0]
+      console.log("joe:",joe.badgedIn," day:",d)
       return(
         <>
           <section className="fit">
@@ -1212,7 +1208,7 @@ export default function Home({ members, activities, config }){
         <summary>Developer Notes</summary>
         <h3>Bugs:</h3>
         <ul>
-          <li>createNewActivity - does not update state</li>
+          <li>Fix WebSockets: ManualBadgeOut + NewMember.js</li>
           <li>Batch Edit: Flags disappear when changing days</li>
           <li>/api/members PUT | Does not create an event! Just badges out.</li>
           <li>Fix: getMemberStats() (relies on member.sessions)</li>

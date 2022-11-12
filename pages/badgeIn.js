@@ -1,9 +1,11 @@
 import React, { Component, useState } from 'react';
 import ReactDOM from 'react-dom';
+import io from 'Socket.IO-client'
 
 //This page allows users to manually type in their RFID number to badge in.
 //This file contains functionality to search for the RFID, record key strokes.
 
+//let socket;
 var createReactClass = require('create-react-class');
 var search_input = "";
 var last_search_input = "";
@@ -85,6 +87,10 @@ function showNewMemberMsg(){
 
 const searchForRFID = async (RFID_UID_input) => {
   console.log("Searching database for RFID_UID matching",last_search_input,"...");
+  await fetch('/api/socket');
+  let socket = io();
+  socket.on('connect', () => { console.log('WebSocket connected.') })
+  //socket.on('update-both', data => {  setState({...state, activitiesCollection: data.activities, membersCollection: data.members}); })
   try {
     const res = await fetch('/api/badgeIn', {
       method: 'POST',
@@ -96,8 +102,11 @@ const searchForRFID = async (RFID_UID_input) => {
     });
     let response = res.json()
     response.then((resp) => {
-      let memberData = resp.data;
-      console.log("searchForRFID(): resp.data:",resp.data)
+      let memberData = resp.after;
+      let updatedMembers = resp.members;
+      let updatedActivities = resp.activities;
+      let joe = updatedMembers.filter(m=>m.Name=="Joseph Minnich")[0]//debug
+      console.log("searchForRFID(): joe after:",joe.badgedIn)
 
       if (res.status == 406){ 
         let fullMsg = "Search failed. Multiple members with same RFID." //Already registered? Ask makerspace staff for assistance.
@@ -108,6 +117,7 @@ const searchForRFID = async (RFID_UID_input) => {
         console.log(fullMsg);
         createPopUp(fullMsg,"fourohfour")
       } else if (res.status == 200) {
+        socket.emit('membersAndActivities-change', {members: updatedMembers, activities: updatedActivities})
         let msg = ""
         if(memberData.badgedIn){msg = "badged in"}else{msg = "badged out"}
         let fullMsg = memberData.Name+" "+msg+"!"
@@ -138,7 +148,7 @@ class App extends Component {
       badgeStatus: "waiting",
       rfid: ''
   };
-
+  
   handleKeyDown = e => {
     checkFocus()
 
@@ -183,9 +193,8 @@ class App extends Component {
             }
             search_input = ""
           }
-        }, 200);
+        }, 1500);
       }
-
     }
   }
 

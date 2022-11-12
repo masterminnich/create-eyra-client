@@ -120,10 +120,11 @@ export default async function handler(req, res) {
                 break;
                     
             default: //Member is found
-                console.log("Attempting to update member's badge in status....");
+                console.log("Attempting to update "+foundMember[0].Name+"'s badge in status. (Currently: "+foundMember[0].badgedIn+")");
                 await updateMemberBadgeInStatus(foundMember[0]);
                 let activitiesCollection = await Activity.find();
-                res.status(200).json({ success: true, after: foundMember[0], activities: activitiesCollection })
+                let membersCollection = await Member.find();
+                res.status(200).json({ success: true, after: foundMember[0], members: membersCollection, activities: activitiesCollection })
                 break;
         }
     } catch (error) {
