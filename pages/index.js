@@ -165,6 +165,14 @@ export default function Home({ members, activities, config }){
     return err;
   }*/
 
+  const updateMemberThenActivities = async ({member, activityProps}) => {
+    try {
+      await updateMember(member);
+      console.log(activityProps);
+      updateActivityLog(activityProps[0],activityProps[1],activityProps[2],activityProps[3]);
+    } catch (error) { console.log("ERROR:",error) }
+  }
+
   const updateMember = async (member) => {
     try {  
       const res = await fetch(`/api/members/${member._id}`, {
@@ -214,7 +222,7 @@ export default function Home({ members, activities, config }){
     // activity : The activities collection
     // newActivity: the activityEvent to update
     // existing : true = edit an activity that exists in the DB. false = add a new activity to the DB
-  
+    console.log("newActivity prop",newActivity)
     let newBadgeOutDate = newActivity.badgeOutTime.substring(0,10);
     let displayProps = JSON.parse(e.target["displayProps"].innerText);
     let prevBadgeOutDate = displayProps.displayDay;
@@ -387,8 +395,9 @@ export default function Home({ members, activities, config }){
     //How can we detect if this is a noID activity.
     if(newActivity.flags.includes("noID")){ console.log("no need to update member...") }
     console.log("memberToUpdate",memberToUpdate.Name)
-    updateActivityLog(state.activitiesCollection, newActivity, e, existingInDB)
-    updateMember(memberToUpdate) //TODO FIX. This should wait for updateActivityLog to finish
+    updateMemberThenActivities({member: memberToUpdate, activityProps: [state.activitiesCollection, newActivity, e, existingInDB]})
+    //updateActivityLog(state.activitiesCollection, newActivity, e, existingInDB)
+    //updateMember(memberToUpdate) //TODO FIX. This should wait for updateActivityLog to finish
   }
 
   const handleSubmitForgotID = (props,e) => {
@@ -1113,9 +1122,9 @@ export default function Home({ members, activities, config }){
     
 
     render(){
-      let joe = state.membersCollection.filter(m=>m.Name=="Joseph Minnich")[0]
-      let d = state.activitiesCollection.filter(m=>m.Date=="2022-11-12")[0]
-      console.log("joe:",joe.badgedIn," day:",d)
+      //let joe = state.membersCollection.filter(m=>m.Name=="Joseph Minnich")[0]
+      //let d = state.activitiesCollection.filter(m=>m.Date=="2022-11-12")[0]
+      //console.log("joe:",joe.badgedIn," day:",d) //DELETE bebug notes
       return(
         <>
           <section className="fit">
@@ -1208,7 +1217,7 @@ export default function Home({ members, activities, config }){
         <summary>Developer Notes</summary>
         <h3>Bugs:</h3>
         <ul>
-          <li>Fix WebSockets: ManualBadgeOut + NewMember.js</li>
+          <li>Fix WebSockets: NewMember.js</li>
           <li>Batch Edit: Flags disappear when changing days</li>
           <li>/api/members PUT | Does not create an event! Just badges out.</li>
           <li>Fix: getMemberStats() (relies on member.sessions)</li>

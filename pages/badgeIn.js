@@ -105,8 +105,6 @@ const searchForRFID = async (RFID_UID_input) => {
       let memberData = resp.after;
       let updatedMembers = resp.members;
       let updatedActivities = resp.activities;
-      let joe = updatedMembers.filter(m=>m.Name=="Joseph Minnich")[0]//debug
-      console.log("searchForRFID(): joe after:",joe.badgedIn)
 
       if (res.status == 406){ 
         let fullMsg = "Search failed. Multiple members with same RFID." //Already registered? Ask makerspace staff for assistance.
