@@ -1244,6 +1244,7 @@ export default function Home({ members, activities, config }){
           <li>Look into railways.app / npm  / Vercel deployment</li>
           <li>Timezone variable</li>
           <li>Typescript!</li>
+          <li>NextJS 13 Migration: Pages to App routing<a href="https://beta.nextjs.org/docs/upgrade-guide#migrating-from-pages-to-app">Guide</a></li>
           <li>Badgr Integration! (public certs)</li>
           <li>Machine Restrictions (relay integration)</li>
         </ul>
