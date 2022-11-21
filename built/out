@@ -8,27 +8,13 @@ pages/index.tsx:170:19 - error TS2322: Type 'Promise<void>' is not assignable to
                                   ~~~~~~~~~~~~~~~~~~~~~~~~~
     The expected type comes from the return type of this signature.
 
-pages/index.tsx:348:12 - error TS2339: Property 'selectValue' does not exist on type 'VisitType'.
+pages/index.tsx:354:36 - error TS2349: This expression is not callable.
+  Type 'ChangeEvent<HTMLOptionElement>' has no call signatures.
 
-348       this.selectValue = this.props.selectValue;
-               ~~~~~~~~~~~
-
-pages/index.tsx:348:37 - error TS2339: Property 'selectValue' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-
-348       this.selectValue = this.props.selectValue;
-                                        ~~~~~~~~~~~
-
-pages/index.tsx:351:36 - error TS2339: Property 'onChange' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-
-351     VisitTypeChange(e){ this.props.onChange(e.target.value) }
+354     VisitTypeChange(e){ this.props.onChange(e.target.value) }
                                        ~~~~~~~~
 
-pages/index.tsx:358:82 - error TS2339: Property 'selectValue' does not exist on type 'VisitType'.
-
-358             <select onChange={(e) => this.VisitTypeChange(e)} defaultValue={this.selectValue} name="event">
-                                                                                     ~~~~~~~~~~~
-
-pages/index.tsx:368:30 - error TS2769: No overload matches this call.
+pages/index.tsx:371:30 - error TS2769: No overload matches this call.
   Overload 1 of 2, '(props: {} | Readonly<{}>): QuestionTooltip', gave the following error.
     Type '{ id: string; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<QuestionTooltip> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
       Property 'id' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<QuestionTooltip> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
@@ -36,209 +22,116 @@ pages/index.tsx:368:30 - error TS2769: No overload matches this call.
     Type '{ id: string; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<QuestionTooltip> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
       Property 'id' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<QuestionTooltip> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-368             <QuestionTooltip id="VisitTypeQuestion"/>
+371             <QuestionTooltip id="VisitTypeQuestion"/>
                                  ~~
 
 
-pages/index.tsx:411:51 - error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+pages/index.tsx:427:46 - error TS2802: Type 'Set<unknown>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
 
-411     newActivity.sessionLengthMinutes = Math.round(new Date(state.activityEvent.badgeOutTime) - new Date(state.activityEvent.badgeInTime))/60000
-                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-pages/index.tsx:411:96 - error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
-
-411     newActivity.sessionLengthMinutes = Math.round(new Date(state.activityEvent.badgeOutTime) - new Date(state.activityEvent.badgeInTime))/60000
-                                                                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-pages/index.tsx:422:46 - error TS2802: Type 'Set<unknown>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
-
-422       memberToUpdate["Certifications"] = [...memberCerts]
+427       memberToUpdate["Certifications"] = [...memberCerts]
                                                  ~~~~~~~~~~~
 
-pages/index.tsx:452:26 - error TS2345: Argument of type '{ Name: string; flags: string[]; badgeInTime: any; badgeOutTime: any; event: any; machineUtilized: string[]; otherToolsUtilized: string[]; sessionLengthMinutes: number; }' is not assignable to parameter of type 'event'.
+pages/index.tsx:457:26 - error TS2345: Argument of type '{ Name: string; flags: string[]; badgeInTime: any; badgeOutTime: any; event: any; machineUtilized: string[]; otherToolsUtilized: string[]; sessionLengthMinutes: number; }' is not assignable to parameter of type 'event'.
   Type '{ Name: string; flags: string[]; badgeInTime: any; badgeOutTime: any; event: any; machineUtilized: string[]; otherToolsUtilized: string[]; sessionLengthMinutes: number; }' is missing the following properties from type 'event': MemberID, _id
 
-452       newActivities.push(newActivity)
+457       newActivities.push(newActivity)
                              ~~~~~~~~~~~
 
-pages/index.tsx:471:33 - error TS2339: Property 'badgeInDate' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:488:60 - error TS2345: Argument of type '{ machineUtilized: string[]; }' is not assignable to parameter of type '{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; } | ((prevState: Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; }>, props: Readonly<...>) => { ...; } | ... 1 more ... | null) | Pick<...> | ...'.
+  Object literal may only specify known properties, and '"machineUtilized"' does not exist in type '{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; } | ((prevState: Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; }>, props: Readonly<...>) => { ...; } | ... 1 more ... | null) | Pick<...>'.
 
-471         badgeInDate: this.props.badgeInDate,
-                                    ~~~~~~~~~~~
+488     handleMachineUtilized(value: string[]){ this.setState({"machineUtilized": value}) }
+                                                               ~~~~~~~~~~~~~~~~~~~~~~~~
 
-pages/index.tsx:472:33 - error TS2339: Property 'badgeInTime' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:489:63 - error TS2345: Argument of type '{ otherToolsUtilized: string[]; }' is not assignable to parameter of type '{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; } | ((prevState: Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; }>, props: Readonly<...>) => { ...; } | ... 1 more ... | null) | Pick<...> | ...'.
+  Object literal may only specify known properties, and '"otherToolsUtilized"' does not exist in type '{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; } | ((prevState: Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; }>, props: Readonly<...>) => { ...; } | ... 1 more ... | null) | Pick<...>'.
 
-472         badgeInTime: this.props.badgeInTime,
-                                    ~~~~~~~~~~~
+489     handleOtherToolsUtilized(value: string[]){ this.setState({"otherToolsUtilized": value}) }
+                                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-pages/index.tsx:473:34 - error TS2339: Property 'badgeOutDate' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:506:50 - error TS2339: Property 'machineUtilized' does not exist on type 'Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; }>'.
 
-473         badgeOutDate: this.props.badgeOutDate,
-                                     ~~~~~~~~~~~~
-
-pages/index.tsx:474:34 - error TS2339: Property 'badgeOutTime' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-
-474         badgeOutTime: this.props.badgeOutTime,
-                                     ~~~~~~~~~~~~
-
-pages/index.tsx:501:50 - error TS2339: Property 'machineUtilized' does not exist on type 'Readonly<{}>'.
-
-501         editedEvent.machineUtilized = this.state.machineUtilized
+506         editedEvent.machineUtilized = this.state.machineUtilized
                                                      ~~~~~~~~~~~~~~~
 
-pages/index.tsx:502:53 - error TS2339: Property 'otherToolsUtilized' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:507:53 - error TS2339: Property 'otherToolsUtilized' does not exist on type 'Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; }>'.
 
-502         editedEvent.otherToolsUtilized = this.state.otherToolsUtilized
+507         editedEvent.otherToolsUtilized = this.state.otherToolsUtilized
                                                         ~~~~~~~~~~~~~~~~~~
 
-pages/index.tsx:503:40 - error TS2339: Property 'visitType' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:509:21 - error TS2339: Property 'Name' does not exist on type 'event'.
 
-503         editedEvent.event = this.state.visitType
-                                           ~~~~~~~~~
-
-pages/index.tsx:504:21 - error TS2339: Property 'Name' does not exist on type 'event'.
-
-504         editedEvent.Name = state.batchEvents[i].Name
+509         editedEvent.Name = singleEvent.Name
                         ~~~~
 
-pages/index.tsx:504:49 - error TS2339: Property 'Name' does not exist on type 'never'.
+pages/index.tsx:509:40 - error TS2339: Property 'Name' does not exist on type 'event'.
 
-504         editedEvent.Name = state.batchEvents[i].Name
-                                                    ~~~~
-
-pages/index.tsx:505:53 - error TS2339: Property 'MemberID' does not exist on type 'never'.
-
-505         editedEvent.MemberID = state.batchEvents[i].MemberID
-                                                        ~~~~~~~~
-
-pages/index.tsx:506:48 - error TS2339: Property '_id' does not exist on type 'never'.
-
-506         editedEvent._id = state.batchEvents[i]._id
-                                                   ~~~
-
-pages/index.tsx:507:50 - error TS2339: Property 'flags' does not exist on type 'never'.
-
-507         editedEvent.flags = state.batchEvents[i].flags
-                                                     ~~~~~
-
-pages/index.tsx:508:27 - error TS2345: Argument of type 'event' is not assignable to parameter of type 'Event'.
-  Type 'event' is missing the following properties from type 'Event': bubbles, cancelBubble, cancelable, composed, and 18 more.
-
-508         editedEvents.push(editedEvent)
-                              ~~~~~~~~~~~
-
-pages/index.tsx:509:47 - error TS2339: Property '_id' does not exist on type 'never'.
-
-509         eventIDList.push(state.batchEvents[i]._id)
-                                                  ~~~
-
-pages/index.tsx:510:58 - error TS2339: Property 'badgeOutTime' does not exist on type 'never'.
-
-510         let dayMovingFrom: string = state.batchEvents[i].badgeOutTime.substring(0,10)
-                                                             ~~~~~~~~~~~~
-
-pages/index.tsx:512:33 - error TS2345: Argument of type 'ObjectId | null' is not assignable to parameter of type 'ObjectId'.
-  Type 'null' is not assignable to type 'ObjectId'.
-
-512           eventIDsToDelete.push(singleEvent._id)
-                                    ~~~~~~~~~~~~~~~
-
-pages/index.tsx:536:45 - error TS2339: Property 'badgeInDate' does not exist on type 'Readonly<{}>'.
-
-536       let badgeInTime = new Date(this.state.badgeInDate+" "+this.state.badgeInTime+" EDT");
-                                                ~~~~~~~~~~~
-
-pages/index.tsx:536:72 - error TS2339: Property 'badgeInTime' does not exist on type 'Readonly<{}>'.
-
-536       let badgeInTime = new Date(this.state.badgeInDate+" "+this.state.badgeInTime+" EDT");
-                                                                           ~~~~~~~~~~~
-
-pages/index.tsx:537:46 - error TS2339: Property 'badgeOutDate' does not exist on type 'Readonly<{}>'.
-
-537       let badgeOutTime = new Date(this.state.badgeOutDate+" "+this.state.badgeOutTime+" EDT");
-                                                 ~~~~~~~~~~~~
-
-pages/index.tsx:537:74 - error TS2339: Property 'badgeOutTime' does not exist on type 'Readonly<{}>'.
-
-537       let badgeOutTime = new Date(this.state.badgeOutDate+" "+this.state.badgeOutTime+" EDT");
-                                                                             ~~~~~~~~~~~~
-
-pages/index.tsx:541:27 - error TS2339: Property 'visitType' does not exist on type 'Readonly<{}>'.
-
-541         event: this.state.visitType,
-                              ~~~~~~~~~
-
-pages/index.tsx:545:42 - error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
-
-545         sessionLengthMinutes: Math.round(badgeOutTime - badgeInTime)/60000
-                                             ~~~~~~~~~~~~
-
-pages/index.tsx:545:57 - error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
-
-545         sessionLengthMinutes: Math.round(badgeOutTime - badgeInTime)/60000
-                                                            ~~~~~~~~~~~
-
-pages/index.tsx:554:21 - error TS2339: Property 'noId' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-
-554       if(this.props.noId && this.props.noId == true){ trashButtonCSS = {"display": "none"} }
-                        ~~~~
-
-pages/index.tsx:554:40 - error TS2339: Property 'noId' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-
-554       if(this.props.noId && this.props.noId == true){ trashButtonCSS = {"display": "none"} }
+509         editedEvent.Name = singleEvent.Name
                                            ~~~~
 
-pages/index.tsx:558:48 - error TS2339: Property 'message' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:513:27 - error TS2345: Argument of type 'event' is not assignable to parameter of type 'Event'.
+  Type 'event' is missing the following properties from type 'Event': bubbles, cancelBubble, cancelable, composed, and 18 more.
 
-558           <h1 id="badgingOutTitle">{this.props.message}</h1>
+513         editedEvents.push(editedEvent)
+                              ~~~~~~~~~~~
+
+pages/index.tsx:514:26 - error TS2345: Argument of type 'ObjectId | null' is not assignable to parameter of type 'ObjectId'.
+  Type 'null' is not assignable to type 'ObjectId'.
+
+514         eventIDList.push(singleEvent._id)
+                             ~~~~~~~~~~~~~~~
+
+pages/index.tsx:517:33 - error TS2345: Argument of type 'ObjectId | null' is not assignable to parameter of type 'ObjectId'.
+  Type 'null' is not assignable to type 'ObjectId'.
+
+517           eventIDsToDelete.push(singleEvent._id)
+                                    ~~~~~~~~~~~~~~~
+
+pages/index.tsx:559:21 - error TS2339: Property 'noId' does not exist on type 'Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; }> & Readonly<{ children?: ReactNode; }>'.
+
+559       if(this.props.noId && this.props.noId == true){ trashButtonCSS = {"display": "none"} }
+                        ~~~~
+
+pages/index.tsx:559:40 - error TS2339: Property 'noId' does not exist on type 'Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; }> & Readonly<{ children?: ReactNode; }>'.
+
+559       if(this.props.noId && this.props.noId == true){ trashButtonCSS = {"display": "none"} }
+                                           ~~~~
+
+pages/index.tsx:563:48 - error TS2339: Property 'message' does not exist on type 'Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; }> & Readonly<{ children?: ReactNode; }>'.
+
+563           <h1 id="badgingOutTitle">{this.props.message}</h1>
                                                    ~~~~~~~
 
-pages/index.tsx:559:32 - error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+pages/index.tsx:564:32 - error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
 
-559           <Form onSubmit={eval(state.submitType)}>
+564           <Form onSubmit={eval(state.submitType)}>
                                    ~~~~~~~~~~~~~~~~
 
-pages/index.tsx:560:24 - error TS2322: Type '{ onChange: (value: any) => void; selectValue: string; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<VisitType> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-  Property 'onChange' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<VisitType> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:565:24 - error TS2322: Type '(value: any) => void' is not assignable to type 'ChangeEvent<HTMLOptionElement>'.
 
-560             <VisitType onChange={this.handleVisitType.bind(this)} selectValue={state.activityEvent.event}/>
+565             <VisitType onChange={this.handleVisitType.bind(this)} selectValue={state.activityEvent.event}/>
                            ~~~~~~~~
 
-pages/index.tsx:563:143 - error TS2339: Property 'badgeInDate' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+  pages/index.tsx:345:65
+    345   class VisitType extends React.Component<{selectValue: string, onChange: React.ChangeEvent<HTMLOptionElement>}, {selectValue: string}>{
+                                                                        ~~~~~~~~
+    The expected type comes from property 'onChange' which is declared here on type 'IntrinsicAttributes & IntrinsicClassAttributes<VisitType> & Readonly<{ selectValue: string; onChange: ChangeEvent<HTMLOptionElement>; }> & Readonly<...>'
 
-563               <input onChange={value => this.updateBadgeInDate(value)} id="badgeInDate" type="date" className="date" defaultValue={this.props.badgeInDate}></input>
-                                                                                                                                                  ~~~~~~~~~~~
-
-pages/index.tsx:564:143 - error TS2339: Property 'badgeInTime' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-
-564               <input onChange={value => this.updateBadgeInTime(value)} id="badgeInTime" type="time" className="time" defaultValue={this.props.badgeInTime}></input>
-                                                                                                                                                  ~~~~~~~~~~~
-
-pages/index.tsx:568:145 - error TS2339: Property 'badgeOutDate' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-
-568               <input onChange={value => this.updateBadgeOutDate(value)} id="badgeOutDate" type="date" className="date" defaultValue={this.props.badgeOutDate}></input>
-                                                                                                                                                    ~~~~~~~~~~~~
-
-pages/index.tsx:569:145 - error TS2339: Property 'badgeOutTime' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-
-569               <input onChange={value => this.updateBadgeOutTime(value)} id="badgeOutTime" type="time" className="time" defaultValue={this.props.badgeOutTime}></input>
-                                                                                                                                                    ~~~~~~~~~~~~
-
-pages/index.tsx:573:33 - error TS2322: Type '{ onChange: (value: string[]) => void; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<MachinesUtilized> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:578:33 - error TS2322: Type '{ onChange: (value: string[]) => void; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<MachinesUtilized> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
   Property 'onChange' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<MachinesUtilized> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-573               <MachinesUtilized onChange={this.handleMachineUtilized.bind(this)}/>
+578               <MachinesUtilized onChange={this.handleMachineUtilized.bind(this)}/>
                                     ~~~~~~~~
 
-pages/index.tsx:574:35 - error TS2322: Type '{ onChange: (value: string[]) => void; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<OtherToolsUtilized> & Readonly<{}> & Readonly<{ ...; }>'.
+pages/index.tsx:579:35 - error TS2322: Type '{ onChange: (value: string[]) => void; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<OtherToolsUtilized> & Readonly<{}> & Readonly<{ ...; }>'.
   Property 'onChange' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<OtherToolsUtilized> & Readonly<{}> & Readonly<{ ...; }>'.
 
-574               <OtherToolsUtilized onChange={this.handleOtherToolsUtilized.bind(this)}/>
+579               <OtherToolsUtilized onChange={this.handleOtherToolsUtilized.bind(this)}/>
                                       ~~~~~~~~
 
-pages/index.tsx:580:209 - error TS2551: Property 'member' does not exist on type '{ badgeInTime: string; badgeOutTime: string; machineUtilized: never[]; otherToolsUtilized: never[]; event: string; sessionLengthMinutes: null; MemberID: null; _id: null; flags: never[]; }'. Did you mean 'MemberID'?
+pages/index.tsx:585:209 - error TS2551: Property 'member' does not exist on type '{ badgeInTime: string; badgeOutTime: string; machineUtilized: never[]; otherToolsUtilized: never[]; event: string; sessionLengthMinutes: null; MemberID: null; _id: null; flags: never[]; }'. Did you mean 'MemberID'?
 
-580             <Button type='button' name={state.activityEvent._id} id="deleteActivityButton" onClick={(e) => deleteActivity([state.activitiesCollection, this.state, state.activityEvent._id, state.activityEvent.member])} style={trashButtonCSS}></Button>
+585             <Button type='button' name={state.activityEvent._id} id="deleteActivityButton" onClick={(e) => deleteActivity([state.activitiesCollection, this.state, state.activityEvent._id, state.activityEvent.member])} style={trashButtonCSS}></Button>
                                                                                                                                                                                                                     ~~~~~~
 
   pages/index.tsx:160:46
@@ -246,194 +139,189 @@ pages/index.tsx:580:209 - error TS2551: Property 'member' does not exist on type
                                                      ~~~~~~~~~~~~~~
     'MemberID' is declared here.
 
-pages/index.tsx:581:80 - error TS2339: Property 'submitting' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:586:80 - error TS2339: Property 'submitting' does not exist on type 'Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; }> & Readonly<{ children?: ReactNode; }>'.
 
-581             <Button type='submit' id="submitBadgeOutPopup" onClick={this.props.submitting}>{state.displayProps.submitButtonText}</Button>
+586             <Button type='submit' id="submitBadgeOutPopup" onClick={this.props.submitting}>{state.displayProps.submitButtonText}</Button>
                                                                                    ~~~~~~~~~~
 
-pages/index.tsx:581:112 - error TS2339: Property 'submitButtonText' does not exist on type '{}'.
-
-581             <Button type='submit' id="submitBadgeOutPopup" onClick={this.props.submitting}>{state.displayProps.submitButtonText}</Button>
-                                                                                                                   ~~~~~~~~~~~~~~~~
-
-pages/index.tsx:595:9 - error TS2322: Type '{ badgeInTime: string; badgeOutTime: string; Name: any; MemberID: any; member: any; flags: never[]; }' is not assignable to type '{ badgeInTime: string; badgeOutTime: string; machineUtilized: never[]; otherToolsUtilized: never[]; event: string; sessionLengthMinutes: null; MemberID: null; _id: null; flags: never[]; }'.
+pages/index.tsx:600:9 - error TS2322: Type '{ badgeInTime: string; badgeOutTime: string; Name: any; MemberID: any; member: any; flags: never[]; }' is not assignable to type '{ badgeInTime: string; badgeOutTime: string; machineUtilized: never[]; otherToolsUtilized: never[]; event: string; sessionLengthMinutes: null; MemberID: null; _id: null; flags: never[]; }'.
   Object literal may only specify known properties, and 'Name' does not exist in type '{ badgeInTime: string; badgeOutTime: string; machineUtilized: never[]; otherToolsUtilized: never[]; event: string; sessionLengthMinutes: null; MemberID: null; _id: null; flags: never[]; }'.
 
-595         Name: member.Name,
+600         Name: member.Name,
             ~~~~~~~~~~~~~~~~~
 
-pages/index.tsx:641:18 - error TS2339: Property 'onChange' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:646:18 - error TS2339: Property 'onChange' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-641       this.props.onChange(this.state.machines)
+646       this.props.onChange(this.state.machines)
                      ~~~~~~~~
 
-pages/index.tsx:641:38 - error TS2339: Property 'machines' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:646:38 - error TS2339: Property 'machines' does not exist on type 'Readonly<{}>'.
 
-641       this.props.onChange(this.state.machines)
+646       this.props.onChange(this.state.machines)
                                          ~~~~~~~~
 
-pages/index.tsx:645:38 - error TS2339: Property 'machines' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:650:38 - error TS2339: Property 'machines' does not exist on type 'Readonly<{}>'.
 
-645       let machinesInUse = this.state.machines
+650       let machinesInUse = this.state.machines
                                          ~~~~~~~~
 
-pages/index.tsx:662:99 - error TS2339: Property 'machines' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:667:99 - error TS2339: Property 'machines' does not exist on type 'Readonly<{}>'.
 
-662                   <input type="checkbox" id={CertName} name={CertName} defaultChecked={this.state.machines.includes(CertName)}></input>
+667                   <input type="checkbox" id={CertName} name={CertName} defaultChecked={this.state.machines.includes(CertName)}></input>
                                                                                                       ~~~~~~~~
 
-pages/index.tsx:683:45 - error TS2339: Property 'onChange' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:688:45 - error TS2339: Property 'onChange' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-683     OtherToolsUtilizedChange(e){ this.props.onChange(this.state.otherTools) }
+688     OtherToolsUtilizedChange(e){ this.props.onChange(this.state.otherTools) }
                                                 ~~~~~~~~
 
-pages/index.tsx:683:65 - error TS2339: Property 'otherTools' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:688:65 - error TS2339: Property 'otherTools' does not exist on type 'Readonly<{}>'.
 
-683     OtherToolsUtilizedChange(e){ this.props.onChange(this.state.otherTools) }
+688     OtherToolsUtilizedChange(e){ this.props.onChange(this.state.otherTools) }
                                                                     ~~~~~~~~~~
 
-pages/index.tsx:686:35 - error TS2339: Property 'otherTools' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:691:35 - error TS2339: Property 'otherTools' does not exist on type 'Readonly<{}>'.
 
-686       let otherTools = this.state.otherTools
+691       let otherTools = this.state.otherTools
                                       ~~~~~~~~~~
 
-pages/index.tsx:703:99 - error TS2339: Property 'otherTools' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:708:99 - error TS2339: Property 'otherTools' does not exist on type 'Readonly<{}>'.
 
-703                   <input type="checkbox" id={ToolName} name={ToolName} defaultChecked={this.state.otherTools.includes(ToolName)}></input>
+708                   <input type="checkbox" id={ToolName} name={ToolName} defaultChecked={this.state.otherTools.includes(ToolName)}></input>
                                                                                                       ~~~~~~~~~~
 
-pages/index.tsx:733:15 - error TS2322: Type '{ badgeInDate: string; badgeInTime: string; badgeOutDate: string; badgeOutTime: string; message: string; submitButtonText: string; existsInDB: boolean; noId: boolean; submitting: any; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<Popup> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-  Property 'badgeInDate' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<Popup> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:742:15 - error TS2322: Type '{ badgeInDate: string; badgeInTime: string; badgeOutDate: string; badgeOutTime: string; message: string; submitButtonText: string; existsInDB: boolean; noId: boolean; submitting: any; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<Popup> & Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; }> & Readonly<...>'.
+  Property 'message' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<Popup> & Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; }> & Readonly<...>'.
 
-733               badgeInDate={new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
-                  ~~~~~~~~~~~
+742               message={"Creating anonymous activity..."}
+                  ~~~~~~~
 
-pages/index.tsx:741:38 - error TS2339: Property 'toggle' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:746:38 - error TS2339: Property 'toggle' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-741               submitting={this.props.toggle}
+746               submitting={this.props.toggle}
                                          ~~~~~~
 
-pages/index.tsx:750:28 - error TS2339: Property 'members' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:755:28 - error TS2339: Property 'members' does not exist on type 'Readonly<{}>'.
 
-750               { this.state.members.map((member,i) =>
+755               { this.state.members.map((member,i) =>
                                ~~~~~~~
 
-pages/index.tsx:811:58 - error TS2339: Property 'members' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:816:58 - error TS2339: Property 'members' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-811       let searchResults = BadgeInMemberSearch(this.props.members)
+816       let searchResults = BadgeInMemberSearch(this.props.members)
                                                              ~~~~~~~
 
-pages/index.tsx:832:50 - error TS2339: Property 'selection' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:837:50 - error TS2339: Property 'selection' does not exist on type 'Readonly<{}>'.
 
-832       console.log("Badging in Member",this.state.selection[0],"w/ RFID UID:",this.state.selection[1])
+837       console.log("Badging in Member",this.state.selection[0],"w/ RFID UID:",this.state.selection[1])
                                                      ~~~~~~~~~
 
-pages/index.tsx:832:89 - error TS2339: Property 'selection' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:837:89 - error TS2339: Property 'selection' does not exist on type 'Readonly<{}>'.
 
-832       console.log("Badging in Member",this.state.selection[0],"w/ RFID UID:",this.state.selection[1])
+837       console.log("Badging in Member",this.state.selection[0],"w/ RFID UID:",this.state.selection[1])
                                                                                             ~~~~~~~~~
 
-pages/index.tsx:833:32 - error TS2339: Property 'selection' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:838:32 - error TS2339: Property 'selection' does not exist on type 'Readonly<{}>'.
 
-833       badgeInByRFID(this.state.selection[1])
+838       badgeInByRFID(this.state.selection[1])
                                    ~~~~~~~~~
 
-pages/index.tsx:839:21 - error TS2339: Property 'showEditMemberPopup' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:844:21 - error TS2339: Property 'showEditMemberPopup' does not exist on type 'Readonly<{}>'.
 
-839         {this.state.showEditMemberPopup ?
+844         {this.state.showEditMemberPopup ?
                         ~~~~~~~~~~~~~~~~~~~
 
-pages/index.tsx:840:28 - error TS2322: Type '{ rfid: any; cancel: () => void; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<EditMemberPopup> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:845:28 - error TS2322: Type '{ rfid: any; cancel: () => void; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<EditMemberPopup> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
   Property 'rfid' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<EditMemberPopup> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-840           <EditMemberPopup rfid={this.state.selection[1]} cancel={() => this.setState({showEditMemberPopup: false})}/>
+845           <EditMemberPopup rfid={this.state.selection[1]} cancel={() => this.setState({showEditMemberPopup: false})}/>
                                ~~~~
 
-pages/index.tsx:840:45 - error TS2339: Property 'selection' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:845:45 - error TS2339: Property 'selection' does not exist on type 'Readonly<{}>'.
 
-840           <EditMemberPopup rfid={this.state.selection[1]} cancel={() => this.setState({showEditMemberPopup: false})}/>
+845           <EditMemberPopup rfid={this.state.selection[1]} cancel={() => this.setState({showEditMemberPopup: false})}/>
                                                 ~~~~~~~~~
 
-pages/index.tsx:848:21 - error TS2339: Property 'showResults' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:853:21 - error TS2339: Property 'showResults' does not exist on type 'Readonly<{}>'.
 
-848         {this.state.showResults && this.state.results.length > 0 ?
+853         {this.state.showResults && this.state.results.length > 0 ?
                         ~~~~~~~~~~~
 
-pages/index.tsx:848:47 - error TS2339: Property 'results' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:853:47 - error TS2339: Property 'results' does not exist on type 'Readonly<{}>'.
 
-848         {this.state.showResults && this.state.results.length > 0 ?
+853         {this.state.showResults && this.state.results.length > 0 ?
                                                   ~~~~~~~
 
-pages/index.tsx:849:26 - error TS2322: Type '{ handleSelect: (e: any) => void; results: any; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<SearchResults> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:854:26 - error TS2322: Type '{ handleSelect: (e: any) => void; results: any; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<SearchResults> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
   Property 'handleSelect' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<SearchResults> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-849           <SearchResults handleSelect={this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
+854           <SearchResults handleSelect={this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
                              ~~~~~~~~~~~~
 
-pages/index.tsx:849:90 - error TS2339: Property 'results' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:854:90 - error TS2339: Property 'results' does not exist on type 'Readonly<{}>'.
 
-849           <SearchResults handleSelect={this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
+854           <SearchResults handleSelect={this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
                                                                                              ~~~~~~~
 
-pages/index.tsx:851:21 - error TS2339: Property 'selectionMade' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:856:21 - error TS2339: Property 'selectionMade' does not exist on type 'Readonly<{}>'.
 
-851         {this.state.selectionMade ?
+856         {this.state.selectionMade ?
                         ~~~~~~~~~~~~~
 
-pages/index.tsx:853:30 - error TS2322: Type '{ result: any; handleSubmit: (e: any) => void; selectionMade: any; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<SubmitSelection> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:858:30 - error TS2322: Type '{ result: any; handleSubmit: (e: any) => void; selectionMade: any; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<SubmitSelection> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
   Property 'result' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<SubmitSelection> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-853             <SubmitSelection result={this.state.selection} handleSubmit={this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
+858             <SubmitSelection result={this.state.selection} handleSubmit={this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
                                  ~~~~~~
 
-pages/index.tsx:853:49 - error TS2339: Property 'selection' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:858:49 - error TS2339: Property 'selection' does not exist on type 'Readonly<{}>'.
 
-853             <SubmitSelection result={this.state.selection} handleSubmit={this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
+858             <SubmitSelection result={this.state.selection} handleSubmit={this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
                                                     ~~~~~~~~~
 
-pages/index.tsx:853:130 - error TS2339: Property 'selection' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:858:130 - error TS2339: Property 'selection' does not exist on type 'Readonly<{}>'.
 
-853             <SubmitSelection result={this.state.selection} handleSubmit={this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
+858             <SubmitSelection result={this.state.selection} handleSubmit={this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
                                                                                                                                      ~~~~~~~~~
 
-pages/index.tsx:871:23 - error TS2339: Property 'results' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:876:23 - error TS2339: Property 'results' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-871           {this.props.results?.map((result,i) => (
+876           {this.props.results?.map((result,i) => (
                           ~~~~~~~
 
-pages/index.tsx:872:53 - error TS2339: Property 'handleSelect' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:877:53 - error TS2339: Property 'handleSelect' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-872             <div id={result[2]} onClick={this.props.handleSelect} key={"searchResult"+i}>{result[0]}</div>
+877             <div id={result[2]} onClick={this.props.handleSelect} key={"searchResult"+i}>{result[0]}</div>
                                                         ~~~~~~~~~~~~
 
-pages/index.tsx:887:37 - error TS2339: Property 'handleSubmit' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:892:37 - error TS2339: Property 'handleSubmit' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-887         <button onClick={this.props.handleSubmit}>Badge In {this.props.selectionMade}</button>
+892         <button onClick={this.props.handleSubmit}>Badge In {this.props.selectionMade}</button>
                                         ~~~~~~~~~~~~
 
-pages/index.tsx:887:72 - error TS2339: Property 'selectionMade' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:892:72 - error TS2339: Property 'selectionMade' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-887         <button onClick={this.props.handleSubmit}>Badge In {this.props.selectionMade}</button>
+892         <button onClick={this.props.handleSubmit}>Badge In {this.props.selectionMade}</button>
                                                                            ~~~~~~~~~~~~~
 
-pages/index.tsx:898:81 - error TS2339: Property 'rfid' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:903:81 - error TS2339: Property 'rfid' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-898       let member = state.membersCollection.filter(mem => mem.rfid == this.props.rfid)[0]
+903       let member = state.membersCollection.filter(mem => mem.rfid == this.props.rfid)[0]
                                                                                     ~~~~
 
-pages/index.tsx:909:57 - error TS2339: Property 'rfid' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:914:57 - error TS2339: Property 'rfid' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-909             <input type="text" defaultValue={this.props.rfid}></input>
+914             <input type="text" defaultValue={this.props.rfid}></input>
                                                             ~~~~
 
-pages/index.tsx:935:55 - error TS2339: Property 'cancel' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:940:55 - error TS2339: Property 'cancel' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-935             <button type="button" onClick={this.props.cancel}>Cancel</button>
+940             <button type="button" onClick={this.props.cancel}>Cancel</button>
                                                           ~~~~~~
 
-pages/index.tsx:936:35 - error TS2322: Type 'void' is not assignable to type 'MouseEventHandler<HTMLButtonElement> | undefined'.
+pages/index.tsx:941:35 - error TS2322: Type 'void' is not assignable to type 'MouseEventHandler<HTMLButtonElement> | undefined'.
 
-936             <button type="button" onClick={console.log("TODO: Fix this button")}>Update</button>
+941             <button type="button" onClick={console.log("TODO: Fix this button")}>Update</button>
                                       ~~~~~~~
 
   node_modules/@types/react/index.d.ts:1463:9
@@ -441,9 +329,9 @@ pages/index.tsx:936:35 - error TS2322: Type 'void' is not assignable to type 'Mo
                  ~~~~~~~
     The expected type comes from property 'onClick' which is declared here on type 'DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>'
 
-pages/index.tsx:937:35 - error TS2322: Type 'void' is not assignable to type 'MouseEventHandler<HTMLButtonElement> | undefined'.
+pages/index.tsx:942:35 - error TS2322: Type 'void' is not assignable to type 'MouseEventHandler<HTMLButtonElement> | undefined'.
 
-937             <button type="button" onClick={console.log("TODO: Fix this button")}>Delete</button>
+942             <button type="button" onClick={console.log("TODO: Fix this button")}>Delete</button>
                                       ~~~~~~~
 
   node_modules/@types/react/index.d.ts:1463:9
@@ -451,14 +339,14 @@ pages/index.tsx:937:35 - error TS2322: Type 'void' is not assignable to type 'Mo
                  ~~~~~~~
     The expected type comes from property 'onClick' which is declared here on type 'DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>'
 
-pages/index.tsx:978:55 - error TS2339: Property 'cancel' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:983:55 - error TS2339: Property 'cancel' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-978             <button type="button" onClick={this.props.cancel}>Cancel</button>
+983             <button type="button" onClick={this.props.cancel}>Cancel</button>
                                                           ~~~~~~
 
-pages/index.tsx:979:35 - error TS2322: Type 'void' is not assignable to type 'MouseEventHandler<HTMLButtonElement> | undefined'.
+pages/index.tsx:984:35 - error TS2322: Type 'void' is not assignable to type 'MouseEventHandler<HTMLButtonElement> | undefined'.
 
-979             <button type="button" onClick={console.log("update config collection (TODO)")}>Update</button>
+984             <button type="button" onClick={console.log("update config collection (TODO)")}>Update</button>
                                       ~~~~~~~
 
   node_modules/@types/react/index.d.ts:1463:9
@@ -466,89 +354,89 @@ pages/index.tsx:979:35 - error TS2322: Type 'void' is not assignable to type 'Mo
                  ~~~~~~~
     The expected type comes from property 'onClick' which is declared here on type 'DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>'
 
-pages/index.tsx:997:22 - error TS2339: Property 'showCheckbox' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:1002:22 - error TS2339: Property 'showCheckbox' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-997         {!this.props.showCheckbox && this.props.activity.event !== "Undefined" ? (
-                         ~~~~~~~~~~~~
+1002         {!this.props.showCheckbox && this.props.activity.event !== "Undefined" ? (
+                          ~~~~~~~~~~~~
 
-pages/index.tsx:997:49 - error TS2339: Property 'activity' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:1002:49 - error TS2339: Property 'activity' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-997         {!this.props.showCheckbox && this.props.activity.event !== "Undefined" ? (
-                                                    ~~~~~~~~
+1002         {!this.props.showCheckbox && this.props.activity.event !== "Undefined" ? (
+                                                     ~~~~~~~~
 
-pages/index.tsx:998:39 - error TS2339: Property 'clickedAddInfo' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:1003:39 - error TS2339: Property 'clickedAddInfo' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-998           <button onClick={this.props.clickedAddInfo} className="addInfo" style={{display:"flex",margin:"auto","height":"1.8em"}}>Add Info</button>
-                                          ~~~~~~~~~~~~~~
+1003           <button onClick={this.props.clickedAddInfo} className="addInfo" style={{display:"flex",margin:"auto","height":"1.8em"}}>Add Info</button>
+                                           ~~~~~~~~~~~~~~
 
-pages/index.tsx:1000:24 - error TS2339: Property 'showCheckbox' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:1005:24 - error TS2339: Property 'showCheckbox' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-1000           (!this.props.showCheckbox && this.props.activity.event == "Undefined") ? (
+1005           (!this.props.showCheckbox && this.props.activity.event == "Undefined") ? (
                             ~~~~~~~~~~~~
 
-pages/index.tsx:1000:51 - error TS2339: Property 'activity' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:1005:51 - error TS2339: Property 'activity' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-1000           (!this.props.showCheckbox && this.props.activity.event == "Undefined") ? (
+1005           (!this.props.showCheckbox && this.props.activity.event == "Undefined") ? (
                                                        ~~~~~~~~
 
-pages/index.tsx:1001:41 - error TS2339: Property 'clickedAddInfo' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:1006:41 - error TS2339: Property 'clickedAddInfo' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-1001             <button onClick={this.props.clickedAddInfo} className="addInfoAttn" style={{display:"flex",margin:"auto","height":"1.8em"}}>Add Info</button>
+1006             <button onClick={this.props.clickedAddInfo} className="addInfoAttn" style={{display:"flex",margin:"auto","height":"1.8em"}}>Add Info</button>
                                              ~~~~~~~~~~~~~~
 
-pages/index.tsx:1003:63 - error TS2339: Property 'index' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:1008:63 - error TS2339: Property 'index' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-1003             <input className="addInfoCheckbox" id={this.props.index} onClick={this.props.clickedCheckbox} type="checkbox" style={{display:"flex",margin:"auto","height":"1.8em"}}></input>
+1008             <input className="addInfoCheckbox" id={this.props.index} onClick={this.props.clickedCheckbox} type="checkbox" style={{display:"flex",margin:"auto","height":"1.8em"}}></input>
                                                                    ~~~~~
 
-pages/index.tsx:1003:90 - error TS2339: Property 'clickedCheckbox' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:1008:90 - error TS2339: Property 'clickedCheckbox' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-1003             <input className="addInfoCheckbox" id={this.props.index} onClick={this.props.clickedCheckbox} type="checkbox" style={{display:"flex",margin:"auto","height":"1.8em"}}></input>
+1008             <input className="addInfoCheckbox" id={this.props.index} onClick={this.props.clickedCheckbox} type="checkbox" style={{display:"flex",margin:"auto","height":"1.8em"}}></input>
                                                                                               ~~~~~~~~~~~~~~~
 
-pages/index.tsx:1061:22 - error TS2339: Property 'toggle' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:1066:22 - error TS2339: Property 'toggle' does not exist on type 'Readonly<{}>'.
 
-1061       if (this.state.toggle){
+1066       if (this.state.toggle){
                           ~~~~~~
 
-pages/index.tsx:1062:40 - error TS2339: Property 'firstCheckboxSelected' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:1067:40 - error TS2339: Property 'firstCheckboxSelected' does not exist on type 'Readonly<{}>'.
 
-1062           if (e.shiftKey && this.state.firstCheckboxSelected) {
+1067           if (e.shiftKey && this.state.firstCheckboxSelected) {
                                             ~~~~~~~~~~~~~~~~~~~~~
 
-pages/index.tsx:1063:36 - error TS2339: Property 'firstCheckboxSelected' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:1068:36 - error TS2339: Property 'firstCheckboxSelected' does not exist on type 'Readonly<{}>'.
 
-1063           let firstId = this.state.firstCheckboxSelected.id
+1068           let firstId = this.state.firstCheckboxSelected.id
                                         ~~~~~~~~~~~~~~~~~~~~~
 
-pages/index.tsx:1066:55 - error TS2339: Property 'checked' does not exist on type 'Element'.
+pages/index.tsx:1071:55 - error TS2339: Property 'checked' does not exist on type 'Element'.
 
-1066           let changeToState = checkboxElems[secondId].checked //
+1071           let changeToState = checkboxElems[secondId].checked //
                                                            ~~~~~~~
 
-pages/index.tsx:1068:30 - error TS2339: Property 'checked' does not exist on type 'Element'.
+pages/index.tsx:1073:30 - error TS2339: Property 'checked' does not exist on type 'Element'.
 
-1068             checkboxElems[i].checked = changeToState;
+1073             checkboxElems[i].checked = changeToState;
                                   ~~~~~~~
 
-pages/index.tsx:1092:102 - error TS2339: Property 'toggle' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:1097:102 - error TS2339: Property 'toggle' does not exist on type 'Readonly<{}>'.
 
-1092                 <th style={{"textAlign": "center"}} onClick={() => this.setState({toggle:!this.state.toggle})}>Edit Activity</th>
+1097                 <th style={{"textAlign": "center"}} onClick={() => this.setState({toggle:!this.state.toggle})}>Edit Activity</th>
                                                                                                           ~~~~~~
 
-pages/index.tsx:1096:26 - error TS2339: Property 'displayingActivities' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:1101:26 - error TS2339: Property 'displayingActivities' does not exist on type 'Readonly<{}>'.
 
-1096             { this.state.displayingActivities == undefined || this.state.displayingActivities.Events.length == 0 ? (
+1101             { this.state.displayingActivities == undefined || this.state.displayingActivities.Events.length == 0 ? (
                               ~~~~~~~~~~~~~~~~~~~~
 
-pages/index.tsx:1096:74 - error TS2339: Property 'displayingActivities' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:1101:74 - error TS2339: Property 'displayingActivities' does not exist on type 'Readonly<{}>'.
 
-1096             { this.state.displayingActivities == undefined || this.state.displayingActivities.Events.length == 0 ? (
+1101             { this.state.displayingActivities == undefined || this.state.displayingActivities.Events.length == 0 ? (
                                                                               ~~~~~~~~~~~~~~~~~~~~
 
-pages/index.tsx:1098:21 - error TS2322: Type 'string' is not assignable to type 'number'.
+pages/index.tsx:1103:21 - error TS2322: Type 'string' is not assignable to type 'number'.
 
-1098                 <td colSpan="3" id="noEvents">No events today.</td>
+1103                 <td colSpan="3" id="noEvents">No events today.</td>
                          ~~~~~~~
 
   node_modules/@types/react/index.d.ts:2438:9
@@ -556,74 +444,60 @@ pages/index.tsx:1098:21 - error TS2322: Type 'string' is not assignable to type 
                  ~~~~~~~
     The expected type comes from property 'colSpan' which is declared here on type 'DetailedHTMLProps<TdHTMLAttributes<HTMLTableDataCellElement>, HTMLTableDataCellElement>'
 
-pages/index.tsx:1101:26 - error TS2339: Property 'displayingActivities' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:1106:26 - error TS2339: Property 'displayingActivities' does not exist on type 'Readonly<{}>'.
 
-1101               this.state.displayingActivities.Events.map((actEvent,i) => (
+1106               this.state.displayingActivities.Events.map((actEvent,i) => (
                               ~~~~~~~~~~~~~~~~~~~~
 
-pages/index.tsx:1128:38 - error TS2322: Type '{ activity: any; clickedCheckbox: (e: any) => void; clickedAddInfo: () => Promise<void>; showCheckbox: any; index: any; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<AddInfoButton> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:1133:38 - error TS2322: Type '{ activity: any; clickedCheckbox: (e: any) => void; clickedAddInfo: () => Promise<void>; showCheckbox: any; index: any; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<AddInfoButton> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
   Property 'activity' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<AddInfoButton> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-1128                   <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: state.displayingDay, submitButtonText: "Add Info", "message":"Editing "+actEvent.Name+"'s event..."}, "(e) => handleSubmitPopUp(true,e)")} showCheckbox={this.state.toggle} index={i}/></td>
+1133                   <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: state.displayingDay, submitButtonText: "Add Info", "message":"Editing "+actEvent.Name+"'s event..."}, "(e) => handleSubmitPopUp(true,e)")} showCheckbox={this.state.toggle} index={i}/></td>
                                           ~~~~~~~~
 
-pages/index.tsx:1128:326 - error TS2339: Property 'toggle' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:1133:326 - error TS2339: Property 'toggle' does not exist on type 'Readonly<{}>'.
 
-1128                   <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: state.displayingDay, submitButtonText: "Add Info", "message":"Editing "+actEvent.Name+"'s event..."}, "(e) => handleSubmitPopUp(true,e)")} showCheckbox={this.state.toggle} index={i}/></td>
+1133                   <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: state.displayingDay, submitButtonText: "Add Info", "message":"Editing "+actEvent.Name+"'s event..."}, "(e) => handleSubmitPopUp(true,e)")} showCheckbox={this.state.toggle} index={i}/></td>
                                                                                                                                                                                                                                                                                                                                           ~~~~~~
 
-pages/index.tsx:1133:24 - error TS2339: Property 'firstCheckboxSelected' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:1138:24 - error TS2339: Property 'firstCheckboxSelected' does not exist on type 'Readonly<{}>'.
 
-1133           { this.state.firstCheckboxSelected && this.state.selected.length > 0 ? (
+1138           { this.state.firstCheckboxSelected && this.state.selected.length > 0 ? (
                             ~~~~~~~~~~~~~~~~~~~~~
 
-pages/index.tsx:1133:60 - error TS2339: Property 'selected' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:1138:60 - error TS2339: Property 'selected' does not exist on type 'Readonly<{}>'.
 
-1133           { this.state.firstCheckboxSelected && this.state.selected.length > 0 ? (
+1138           { this.state.firstCheckboxSelected && this.state.selected.length > 0 ? (
                                                                 ~~~~~~~~
 
-pages/index.tsx:1136:57 - error TS2339: Property 'selected' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:1141:57 - error TS2339: Property 'selected' does not exist on type 'Readonly<{}>'.
 
-1136                 <p style={{margin: ".5em"}}>{this.state.selected.length} Activities selected</p>
+1141                 <p style={{margin: ".5em"}}>{this.state.selected.length} Activities selected</p>
                                                              ~~~~~~~~
 
-pages/index.tsx:1137:103 - error TS2339: Property 'selected' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:1142:103 - error TS2339: Property 'selected' does not exist on type 'Readonly<{}>'.
 
-1137                 <button type="button" style={{margin:".25em"}} onClick={(e) => batchEdit(e,this.state.selected)}>Edit</button>
+1142                 <button type="button" style={{margin:".25em"}} onClick={(e) => batchEdit(e,this.state.selected)}>Edit</button>
                                                                                                            ~~~~~~~~
 
-pages/index.tsx:1138:105 - error TS2339: Property 'selected' does not exist on type 'Readonly<{}>'.
+pages/index.tsx:1143:105 - error TS2339: Property 'selected' does not exist on type 'Readonly<{}>'.
 
-1138                 <button type="button" style={{margin:".25em"}} onClick={(e) => batchDelete(e,this.state.selected)}>Delete</button>
+1143                 <button type="button" style={{margin:".25em"}} onClick={(e) => batchDelete(e,this.state.selected)}>Delete</button>
                                                                                                              ~~~~~~~~
 
-pages/index.tsx:1198:34 - error TS2322: Type '{ members: any; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<SearchMemberBadgeIn> & Readonly<{}> & Readonly<...>'.
+pages/index.tsx:1203:34 - error TS2322: Type '{ members: any; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<SearchMemberBadgeIn> & Readonly<{}> & Readonly<...>'.
   Property 'members' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<SearchMemberBadgeIn> & Readonly<{}> & Readonly<...>'.
 
-1198             <SearchMemberBadgeIn members={members}></SearchMemberBadgeIn>
+1203             <SearchMemberBadgeIn members={members}></SearchMemberBadgeIn>
                                       ~~~~~~~
 
-pages/index.tsx:1223:15 - error TS2322: Type '{ badgeInDate: string; badgeInTime: string; badgeOutDate: string; badgeOutTime: string; message: any; submitButtonText: any; existsInDB: boolean; noId: boolean; event: string; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<Popup> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-  Property 'badgeInDate' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<Popup> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:1232:15 - error TS2322: Type '{ badgeInDate: string; badgeInTime: string; badgeOutDate: string; badgeOutTime: string; message: string; submitButtonText: string; existsInDB: boolean; noId: boolean; event: string; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<Popup> & Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; }> & Readonly<...>'.
+  Property 'message' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<Popup> & Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; }> & Readonly<...>'.
 
-1223               badgeInDate={new Date(state.activityEvent.badgeInTime).toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
-                   ~~~~~~~~~~~
+1232               message={state.displayProps.message}
+                   ~~~~~~~
 
-pages/index.tsx:1227:43 - error TS2339: Property 'message' does not exist on type '{}'.
-
-1227               message={state.displayProps.message}
-                                               ~~~~~~~
-
-pages/index.tsx:1228:52 - error TS2339: Property 'submitButtonText' does not exist on type '{}'.
-
-1228               submitButtonText={state.displayProps.submitButtonText}
-                                                        ~~~~~~~~~~~~~~~~
-
-pages/index.tsx:1240:22 - error TS2322: Type '{ cancel: () => void; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<ConfigPopup> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:1245:22 - error TS2322: Type '{ cancel: () => void; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<ConfigPopup> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
   Property 'cancel' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<ConfigPopup> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-1240         <ConfigPopup cancel={toggleConfigPopup}/>
-                          ~~~~~~
-
-
-Found 115 errors in the same file, starting at: pages/index.tsx:170
+1245         <ConfigPopup cancel={toggleConfigPopup}/>

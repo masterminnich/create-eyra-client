@@ -329,7 +329,7 @@ export default function Home({ members, activities, config }){
   }
 
 
-  class QuestionTooltip extends React.Component{
+  class QuestionTooltip extends React.Component<{id: string},{}>{
     render(){
       return(
         <>
@@ -406,12 +406,14 @@ export default function Home({ members, activities, config }){
   const handleSubmitPopUp = (existingInDB, e) => { //handleSubmitBadgeOut
     //console.log("existingInDB",existingInDB,"e",e)
     let newActivity: event = state.activityEvent
-    newActivity.badgeInTime = new Date(e.target.badgeInDate.value+" "+e.target.badgeInTime.value+" EDT").toISOString()
-    newActivity.badgeOutTime = new Date(e.target.badgeOutDate.value+" "+e.target.badgeOutTime.value+" EDT").toISOString()
+    let badgeInTime = new Date(e.target.badgeInDate.value+" "+e.target.badgeInTime.value+" EDT")
+    let badgeOutTime = new Date(e.target.badgeOutDate.value+" "+e.target.badgeOutTime.value+" EDT")
+    newActivity.badgeInTime = badgeInTime.toISOString()
+    newActivity.badgeOutTime = badgeOutTime.toISOString()
     newActivity.machineUtilized = getMachinesUtilized()
     newActivity.otherToolsUtilized = getotherToolsUtilized()
     newActivity.event = e.target[0].value
-    newActivity.sessionLengthMinutes = Math.round(new Date(state.activityEvent.badgeOutTime) - new Date(state.activityEvent.badgeInTime))/60000
+    newActivity.sessionLengthMinutes = Math.round((badgeOutTime.getTime() - badgeInTime.getTime())/60000)
     newActivity.MemberID = state.activityEvent.MemberID
     newActivity._id = state.activityEvent._id
     newActivity.flags = state.activityEvent.flags
@@ -545,7 +547,7 @@ export default function Home({ members, activities, config }){
         machineUtilized: getMachinesUtilized(),
         otherToolsUtilized: getotherToolsUtilized(),
         //_id:
-        sessionLengthMinutes: Math.round(badgeOutTime - badgeInTime)/60000
+        sessionLengthMinutes: Math.round(badgeOutTime.getTime() - badgeInTime.getTime())/60000
       }
       //console.log("this.getInfo()| this.props",this.props,"activityInfo",activityInfo)
       return activityInfo
@@ -788,7 +790,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class SearchMemberBadgeIn extends React.Component{
+  class SearchMemberBadgeIn extends React.Component<{},{results: Array<any>, showResults:boolean, selectionMade: boolean, showEditMemberPopup: boolean, selection: string}>{
     constructor(props){
       super(props);
       this.state = {
@@ -1011,7 +1013,7 @@ export default function Home({ members, activities, config }){
     }
   }
   
-  class RecentActivity extends React.Component {
+  class RecentActivity extends React.Component<{},{displayingActivities: Array<Object>, toggle: boolean, firstCheckboxSelected: undefined | HTMLInputElement, selected: Array<HTMLInputElement>}> {
     constructor(props) {
       super(props);     
 
@@ -1029,7 +1031,7 @@ export default function Home({ members, activities, config }){
       }
 
       this.state = {
-        activity: state.activitiesCollection,
+        //activity: state.activitiesCollection,
         displayingActivities: displayingActivities,
         toggle: false, //toggle batch selections on and off. If true, batch selections are on. 
         firstCheckboxSelected: undefined,
@@ -1066,9 +1068,10 @@ export default function Home({ members, activities, config }){
           let firstId = this.state.firstCheckboxSelected.id
           let secondId = e.target.id
           let checkboxElems = document.getElementsByClassName("addInfoCheckbox");
-          let changeToState = checkboxElems[secondId].checked //
+          let checkbox = checkboxElems[secondId] as HTMLInputElement
+          let changeToState = checkbox.checked //
           for (let i=Math.min(firstId,secondId); i<Math.max(firstId,secondId); i++){
-            checkboxElems[i].checked = changeToState;
+            checkbox[i].checked = changeToState;
           }
           let selected = getSelectedActivites()
           this.setState({firstCheckboxSelected: checkboxElems[secondId], selected: selected})
