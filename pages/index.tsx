@@ -3,15 +3,39 @@ import clientPromise from '../lib/mongodb'
 import React, { Component, useState, useEffect } from 'react';
 import { Button, Form } from 'semantic-ui-react';
 import io from 'Socket.IO-client'
+import { Schema } from 'mongoose';
+
 
 let socket;
 let hoverTimerId;
 let isHovering = false; //Whether the user is currently hovering over an element of interest
-const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
+const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"} as const
 const headers = {"Accept": "application/json", "Content-Type": "application/json"}
 
 //TS Type Decs
-type date = { string }
+type date = string
+type event = {
+  badgeInTime: string;
+  badgeOutTime: string;
+  machineUtilized: string[];
+  otherToolsUtilized: string[];
+  event: string;
+  sessionLengthMinutes: number | null;
+  MemberID: Schema.Types.ObjectId | null;
+  _id: Schema.Types.ObjectId | null;
+  flags: string[];
+}
+type PopupProps = {
+  badgeInDate: string;
+  badgeInTime: string;
+  badgeOutDate: string;
+  badgeOutTime: string;
+  message: string;
+  submitButtonText: string;
+  existsInDB: boolean;
+  noId: boolean;}
+  //submitting={this.props.toggle}
+type listOfEvents = Array<event>
 
 function getMachinesUtilized(){ //Get list of machinesUtilized from an on-screen PopUp
   let machinesUtilized: string[] = []
@@ -131,7 +155,10 @@ export default function Home({ members, activities, config }){
     activitiesCollection: activities,
     displayingDay: new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10),
     isOpen: false,
-    activityEvent: "",
+    activityEvent: {
+      badgeInTime: "", badgeOutTime: "", machineUtilized: [], otherToolsUtilized: [],
+      event: "", sessionLengthMinutes: null, MemberID: null, _id: null, flags: [],
+    },
     displayProps: {},
     batchEvents: [],
     submitType: {},
@@ -193,7 +220,7 @@ export default function Home({ members, activities, config }){
     } catch (error) { console.log("ERROR in updateMember() ",error); }
   }
 
-  const updateActivityByDate = async (date: date, events) => {
+  const updateActivityByDate = async (date: date, events, originFn: string) => {
     try {
       const res = await fetch(`/api/activity`, {
         method: 'PUT',
@@ -210,7 +237,7 @@ export default function Home({ members, activities, config }){
     } catch (error) { console.log("ERROR :",error); }
   }
   
-  const createNewActivity = async (date: date, events, originFn) => {
+  const createNewActivity = async (date: date, events, originFn: string) => {
     try {
       const res = await fetch(`/api/activity`, {
           method: 'POST',
@@ -241,7 +268,7 @@ export default function Home({ members, activities, config }){
       if (prevBadgeOutDate !== newBadgeOutDate){ //Check if the activity is being moved to another date.
         //Date of the activity has changed. Delete the event from the old activity.
         let prevActivityEvents = prevActivityDay.Events.filter(a => a._id !== newActivity._id)
-        updateActivityByDate(prevBadgeOutDate, prevActivityEvents); //Delete activity from old date
+        updateActivityByDate(prevBadgeOutDate, prevActivityEvents, "updateActivityLog()|  editExisting: true, movingDays: true"); //Delete activity from old date
         
         if (newActivityDay){ //If activities exist for this day, update the list. 
           newActivities = newActivityDay.Events.concat(newActivity)
@@ -261,9 +288,9 @@ export default function Home({ members, activities, config }){
   
     //Add events to the DB
     if (newActivityDay){
-      updateActivityByDate(newBadgeOutDate,newActivities)
+      updateActivityByDate(newBadgeOutDate,newActivities, "updateActivityLog()|  editExisting: true, movingDays: false")
     } else { 
-      createNewActivity(newBadgeOutDate,newActivity)
+      createNewActivity(newBadgeOutDate,newActivity, "updateActivityLog()|  editExisting: false, movingDays: false")
     }
   }
 
@@ -346,9 +373,9 @@ export default function Home({ members, activities, config }){
   }
 
   const batchEdit = (e,selected) => {
-    let date = document.getElementById("date").innerText
+    let date = document.getElementById("date")?.innerText
     let editDate = state.activitiesCollection.filter(a => a.Date== date)[0]
-    let eventIdsToEdit = []; //list of event ids to delete
+    let eventIdsToEdit: Array<Schema.Types.ObjectId> = []; //list of event ids to delete
     selected.forEach(item => eventIdsToEdit.push(item.parentNode.parentNode.id)) //Get a list of event ids to delete
     let eventsToEdit = editDate.Events.filter(e => eventIdsToEdit.includes(e._id))
     let eventInfo = eventsToEdit[0];
@@ -364,9 +391,9 @@ export default function Home({ members, activities, config }){
   }
 
   const batchDelete = (e,selected) => {
-    let date = document.getElementById("date").innerText
+    let date = document.getElementById("date")!.innerText
     let deleteDate = state.activitiesCollection.filter(a => a.Date== date)[0]
-    let eventIdsToDelete = []; //list of event ids to delete
+    let eventIdsToDelete: Array<Schema.Types.ObjectId> = []; //list of event ids to delete
     selected.forEach(item => eventIdsToDelete.push(item.parentNode.parentNode.id)) //Get a list of event ids to delete
     let eventsToKeep = deleteDate.Events.filter(e => !eventIdsToDelete.includes(e._id))
     //console.log("e",e,"selected",selected,"eventsToKeep",eventsToKeep,"toDelete",eventsToDelete)
@@ -375,7 +402,7 @@ export default function Home({ members, activities, config }){
 
   const handleSubmitPopUp = (existingInDB, e) => { //handleSubmitBadgeOut
     //console.log("existingInDB",existingInDB,"e",e)
-    let newActivity = state.activityEvent
+    let newActivity: event = state.activityEvent
     newActivity.badgeInTime = new Date(e.target.badgeInDate.value+" "+e.target.badgeInTime.value+" EDT").toISOString()
     newActivity.badgeOutTime = new Date(e.target.badgeOutDate.value+" "+e.target.badgeOutTime.value+" EDT").toISOString()
     newActivity.machineUtilized = getMachinesUtilized()
@@ -397,7 +424,7 @@ export default function Home({ members, activities, config }){
     }
     //if memberToUpdate is undefinded it could be because its a ghost activity. No need to update the member.
     //How can we detect if this is a noID activity.
-    if(newActivity.flags.includes("noID")){ console.log("no need to update member...") }
+    if(newActivity.flags?.includes("noID")){ console.log("no need to update member...") }
     console.log("memberToUpdate",memberToUpdate.Name)
     updateMemberThenActivities({member: memberToUpdate, activityProps: [state.activitiesCollection, newActivity, e, existingInDB]})
   }
@@ -407,17 +434,20 @@ export default function Home({ members, activities, config }){
     //let displayProps = JSON.parse(e.target[24].innerText);
     //let hiddenProps = JSON.parse(e.target[25].innerText);
     let numOfMembers = e.target.parentNode.children[2].children[1].value
-    let newActivities = []
+    let newActivities: listOfEvents = []
     for (let i=0; i<numOfMembers; i++){
+      let inputElem = document.getElementById("member"+i) as HTMLInputElement
+      let out: number = new Date(props.badgeOutTime).getTime(); //ms since
+      let inn: number = new Date(props.badgeInTime).getTime(); //ms since
       let newActivity = {
-        Name: document.getElementById("member"+i).value,
+        Name: inputElem.value,
         flags: ["noID"],
         badgeInTime: props.badgeInTime,
         badgeOutTime: props.badgeOutTime,
         event: props.event,
         machineUtilized: getMachinesUtilized(),
         otherToolsUtilized: getotherToolsUtilized(),
-        sessionLengthMinutes: Math.round(new Date(props.badgeOutTime) - new Date(props.badgeInTime))/60000   
+        sessionLengthMinutes: Math.round((out - inn)/60000)  
       }
       newActivities.push(newActivity)
     }
@@ -435,7 +465,7 @@ export default function Home({ members, activities, config }){
   class Popup extends React.Component{
     constructor(props) {
       super(props);
-      let visitType;
+      let visitType: string;
       if(state.activityEvent.event){ visitType = state.activityEvent.event } else { visitType = "Undefined" }
       this.state = {
         badgeInDate: this.props.badgeInDate,
@@ -450,20 +480,21 @@ export default function Home({ members, activities, config }){
     updateBadgeInTime(item){ this.setState({"badgeInTime": item.target.value}) }
     updateBadgeOutDate(item){ this.setState({"badgeOutDate": item.target.value}) }
     updateBadgeOutTime(item){ this.setState({"badgeOutTime": item.target.value}) }
-    handleMachineUtilized(value){ this.setState({"machineUtilized": value}) }
-    handleOtherToolsUtilized(value){ this.setState({"otherToolsUtilized": value}) }
+    handleMachineUtilized(value: string[]){ this.setState({"machineUtilized": value}) }
+    handleOtherToolsUtilized(value: string[]){ this.setState({"otherToolsUtilized": value}) }
     handleVisitType(value){ this.setState({"visitType": value}) }
 
     batchEdit(){
       let activityInfo = this.getInfo()
       let date = activityInfo.badgeOutTime.substring(0,10)
-      let editedEvents = [];
-      let eventIDList = []; //List of _id of each edited event
-      let eventIDsToDelete = [];
-      let dayMovingFromL = [];
+      let editedEvents: Array<Event> = [];
+      let eventIDList: Array<Schema.Types.ObjectId> = []; //List of _id of each edited event
+      let eventIDsToDelete: Array<Schema.Types.ObjectId> = [];
+      let dayMovingFromL: string[] = [];
       //console.log("state",state,"activityInfo",activityInfo)
       for (let i=0; i<state.batchEvents.length; i++){
-        let editedEvent = {};
+        let singleEvent: event = state.batchEvents[i]
+        let editedEvent: event = { badgeInTime: "", badgeOutTime: "", machineUtilized: [], otherToolsUtilized: [], event: "", sessionLengthMinutes: null, MemberID: null, _id: null, flags: [] };
         editedEvent.sessionLengthMinutes = activityInfo.sessionLengthMinutes;
         editedEvent.badgeInTime = activityInfo.badgeInTime
         editedEvent.badgeOutTime = activityInfo.badgeOutTime
@@ -476,9 +507,9 @@ export default function Home({ members, activities, config }){
         editedEvent.flags = state.batchEvents[i].flags
         editedEvents.push(editedEvent)
         eventIDList.push(state.batchEvents[i]._id)
-        let dayMovingFrom = state.batchEvents[i].badgeOutTime.substring(0,10)
+        let dayMovingFrom: string = state.batchEvents[i].badgeOutTime.substring(0,10)
         if (dayMovingFrom !== activityInfo.badgeOutTime.substring(0,10)){ 
-          eventIDsToDelete.push(state.batchEvents[i]._id) 
+          eventIDsToDelete.push(singleEvent._id) 
           dayMovingFromL.push(dayMovingFrom)
         }
       };
@@ -689,7 +720,7 @@ export default function Home({ members, activities, config }){
     }
 
     numOfMembersChanged(){
-      let numMembersInput = document.getElementById("numMembersToBadgeIn")
+      let numMembersInput = document.getElementById("numMembersToBadgeIn") as HTMLInputElement
       let arr = Array.from(Array(parseInt(numMembersInput.value)).keys())
       this.setState({members:arr});
     }
@@ -792,7 +823,8 @@ export default function Home({ members, activities, config }){
     handleSelect(e){
       setTimeout(() => { 
         this.setState({selection:[e.target.innerText,e.target.id], selectionMade:true})
-        document.getElementById("searchMemberBadgeIn").value = e.target.innerText
+        let searchInput = document.getElementById("searchMemberBadgeIn") as HTMLInputElement
+        searchInput.value = e.target.innerText
       }, 200);
     }
 
@@ -1017,11 +1049,10 @@ export default function Home({ members, activities, config }){
     checkboxClicked(e){
       function getSelectedActivites(){
         let checkboxElems = document.getElementsByClassName("addInfoCheckbox");
-        let selected = []
+        let selected: Array<HTMLInputElement> = []
         for(let i=0; i<checkboxElems.length; i++){
-          if(checkboxElems[i].checked){
-            selected.push(checkboxElems[i])
-          }
+          let checkbox = checkboxElems[i] as HTMLInputElement
+          checkbox.checked ? selected.push(checkbox) : undefined ;
         }
         return selected
       }
