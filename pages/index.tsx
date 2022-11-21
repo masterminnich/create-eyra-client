@@ -34,8 +34,9 @@ type PopupProps = {
   message: string;
   submitButtonText: string;
   existsInDB: boolean;
-  noId: boolean;}
-  //submitting={this.props.toggle}
+  noId: boolean;
+  //submitting = {this.props.toggle}
+}
 type listOfEvents = Array<event>
 type Member = {
   Name: string;
@@ -358,7 +359,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class VisitType extends React.Component<{selectValue: string, onChange: React.ChangeEvent<HTMLOptionElement>}, {selectValue: string}>{
+  class VisitType extends React.Component<{selectValue: string}, {selectValue: string}>{
     constructor(props){
       super(props);
       //this.selectedValue = this.props.selectValue;
