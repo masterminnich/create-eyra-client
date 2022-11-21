@@ -37,6 +37,21 @@ type PopupProps = {
   noId: boolean;}
   //submitting={this.props.toggle}
 type listOfEvents = Array<event>
+type Member = {
+  Name: string;
+  Major: string;
+  PatronType: string;
+  GraduationYear: string;
+  badgedIn: boolean;
+  lastBadgeIn: Date;
+  joinedDate: Date;
+  rfid: string;
+  Certifications: string[];
+}
+type ActivityDay = {
+  Date: string,
+  Events: event,
+}
 
 function getMachinesUtilized(){ //Get list of machinesUtilized from an on-screen PopUp
   let machinesUtilized: string[] = []
@@ -635,7 +650,7 @@ export default function Home({ members, activities, config }){
     })
   }
 
-  class MachinesUtilized extends React.Component{
+  class MachinesUtilized extends React.Component<{},{machines: string[]}>{
     constructor(props){
       super(props);
       if(typeof(state.activityEvent.machineUtilized)!=="undefined"){
@@ -678,7 +693,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class OtherToolsUtilized extends React.Component{
+  class OtherToolsUtilized extends React.Component<{},{otherTools: string[]}>{
     constructor(props){
       super(props);
       if(typeof(state.activityEvent.otherToolsUtilized)!=="undefined"){
@@ -793,7 +808,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class SearchMemberBadgeIn extends React.Component<{},{results: Array<any>, showResults:boolean, selectionMade: boolean, showEditMemberPopup: boolean, selection: string[]}>{
+  class SearchMemberBadgeIn extends React.Component<{members: Array<Member>},{results: Array<any>, showResults:boolean, selectionMade: boolean, showEditMemberPopup: boolean, selection: string[]}>{
     constructor(props){
       super(props);
       this.state = {
@@ -1016,7 +1031,7 @@ export default function Home({ members, activities, config }){
     }
   }
   
-  class RecentActivity extends React.Component<{},{displayingActivities: Array<Object>, toggle: boolean, firstCheckboxSelected: undefined | HTMLInputElement, selected: Array<HTMLInputElement>}> {
+  class RecentActivity extends React.Component<{},{displayingActivities: ActivityDay, toggle: boolean, firstCheckboxSelected: undefined | HTMLInputElement, selected: Array<HTMLInputElement>}> {
     constructor(props) {
       super(props);     
 
@@ -1068,7 +1083,7 @@ export default function Home({ members, activities, config }){
       //Detect multiple selection shift-clicks
       if (this.state.toggle){
           if (e.shiftKey && this.state.firstCheckboxSelected) { 
-          let firstId = this.state.firstCheckboxSelected.id
+          let firstId = parseInt(this.state.firstCheckboxSelected.id)
           let secondId = e.target.id
           let checkboxElems = document.getElementsByClassName("addInfoCheckbox");
           let checkbox = checkboxElems[secondId] as HTMLInputElement
