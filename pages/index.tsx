@@ -159,7 +159,7 @@ export default function Home({ members, activities, config }){
       badgeInTime: "", badgeOutTime: "", machineUtilized: [], otherToolsUtilized: [],
       event: "", sessionLengthMinutes: null, MemberID: null, _id: null, flags: [],
     },
-    displayProps: {},
+    displayProps: { submitButtonText:"", message:"" },
     batchEvents: [],
     submitType: {},
     showConfigPopup: false,
@@ -342,10 +342,13 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class VisitType extends React.Component{
+  class VisitType extends React.Component<{selectValue: string, onChange: React.ChangeEvent<HTMLOptionElement>}, {selectValue: string}>{
     constructor(props){
       super(props);
-      this.selectValue = this.props.selectValue;
+      //this.selectedValue = this.props.selectValue;
+      this.state = {
+        selectValue: this.props.selectValue
+      }
     }
 
     VisitTypeChange(e){ this.props.onChange(e.target.value) }
@@ -355,7 +358,7 @@ export default function Home({ members, activities, config }){
         <>
           <div id="visitType" style={{"display":"flex"}}>
             <label htmlFor="event">Visit Type: </label>
-            <select onChange={(e) => this.VisitTypeChange(e)} defaultValue={this.selectValue} name="event">
+            <select onChange={(e) => this.VisitTypeChange(e)} defaultValue={this.state.selectValue} name="event">
               <option value="Undefined">Undefined</option>
               <option value="Individual">Personal Project</option>
               <option value="Certification">Certification</option>
@@ -462,7 +465,7 @@ export default function Home({ members, activities, config }){
     } else { createNewActivity(date, newActivities, "handleSubmitForgotID") }
   }
 
-  class Popup extends React.Component{
+  class Popup extends React.Component<{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, visitType: string},{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, visitType: string}>{
     constructor(props) {
       super(props);
       let visitType: string;
@@ -501,13 +504,13 @@ export default function Home({ members, activities, config }){
         editedEvent.machineUtilized = this.state.machineUtilized
         editedEvent.otherToolsUtilized = this.state.otherToolsUtilized
         editedEvent.event = this.state.visitType
-        editedEvent.Name = state.batchEvents[i].Name
-        editedEvent.MemberID = state.batchEvents[i].MemberID
-        editedEvent._id = state.batchEvents[i]._id
-        editedEvent.flags = state.batchEvents[i].flags
+        editedEvent.Name = singleEvent.Name
+        editedEvent.MemberID = singleEvent.MemberID
+        editedEvent._id = singleEvent._id
+        editedEvent.flags = singleEvent.flags
         editedEvents.push(editedEvent)
-        eventIDList.push(state.batchEvents[i]._id)
-        let dayMovingFrom: string = state.batchEvents[i].badgeOutTime.substring(0,10)
+        eventIDList.push(singleEvent._id)
+        let dayMovingFrom: string = singleEvent.badgeOutTime.substring(0,10)
         if (dayMovingFrom !== activityInfo.badgeOutTime.substring(0,10)){ 
           eventIDsToDelete.push(singleEvent._id) 
           dayMovingFromL.push(dayMovingFrom)
