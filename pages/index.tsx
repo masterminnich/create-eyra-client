@@ -10,23 +10,28 @@ let isHovering = false; //Whether the user is currently hovering over an element
 const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
 const headers = {"Accept": "application/json", "Content-Type": "application/json"}
 
+//TS Type Decs
+type date = { string }
+
 function getMachinesUtilized(){ //Get list of machinesUtilized from an on-screen PopUp
-  let machinesUtilized = []
+  let machinesUtilized: string[] = []
   let machinesFieldset = document.getElementById("machinesUtilized")
-  for(let i=0; i < machinesFieldset.children.length; i++){
-    if (machinesFieldset.children[i].children[0].checked){
-      machinesUtilized.push(machinesFieldset.children[i].children[0].name)
+  for(let i=0; i < machinesFieldset!.children.length; i++){
+    let machines = machinesFieldset?.children[i].children[0] as HTMLInputElement
+    if (machines.checked){
+      machinesUtilized.push(machines.name)
     }
   }
   return machinesUtilized
 }
 
 function getotherToolsUtilized(){ //Get list of otherToolsUtilized from an on-screen PopUp
-  let otherToolsUtilized = []
+  let otherToolsUtilized: string[] = []
   let otherToolsFieldset = document.getElementById("otherToolsUtilized")
-  for(let i=0; i < otherToolsFieldset.children.length; i++){
-    if (otherToolsFieldset.children[i].children[0].checked){
-      otherToolsUtilized.push(otherToolsFieldset.children[i].children[0].name)
+  for(let i=0; i < otherToolsFieldset!.children.length; i++){
+    let tools = otherToolsFieldset?.children[i].children[0] as HTMLInputElement
+    if (tools.checked){
+      otherToolsUtilized.push(tools.name)
     }
   }
   return otherToolsUtilized
@@ -188,7 +193,7 @@ export default function Home({ members, activities, config }){
     } catch (error) { console.log("ERROR in updateMember() ",error); }
   }
 
-  const updateActivityByDate = async (date, events) => {
+  const updateActivityByDate = async (date: date, events) => {
     try {
       const res = await fetch(`/api/activity`, {
         method: 'PUT',
@@ -205,7 +210,7 @@ export default function Home({ members, activities, config }){
     } catch (error) { console.log("ERROR :",error); }
   }
   
-  const createNewActivity = async (date, events, originFn) => {
+  const createNewActivity = async (date: date, events, originFn) => {
     try {
       const res = await fetch(`/api/activity`, {
           method: 'POST',
