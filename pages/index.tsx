@@ -4,6 +4,7 @@ import React, { Component, useState, useEffect } from 'react';
 import { Button, Form } from 'semantic-ui-react';
 import io from 'Socket.IO-client'
 import { Schema } from 'mongoose';
+import { Expression } from 'typescript';
 
 
 let socket;
@@ -467,7 +468,7 @@ export default function Home({ members, activities, config }){
     } else { createNewActivity(date, newActivities, "handleSubmitForgotID") }
   }
 
-  class Popup extends React.Component<{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, visitType: string},{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, visitType: string}>{
+  class Popup extends React.Component<{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, visitType: string, noId: boolean, message: string},{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, visitType: string, machineUtilized: string[], otherToolsUtilized: string[]}>{
     constructor(props) {
       super(props);
       let visitType: string;
@@ -478,6 +479,8 @@ export default function Home({ members, activities, config }){
         badgeOutDate: this.props.badgeOutDate,
         badgeOutTime: this.props.badgeOutTime,
         visitType: visitType,
+        machineUtilized: [],
+        otherToolsUtilized: [],
       }
     }
 
@@ -790,14 +793,14 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class SearchMemberBadgeIn extends React.Component<{},{results: Array<any>, showResults:boolean, selectionMade: boolean, showEditMemberPopup: boolean, selection: string}>{
+  class SearchMemberBadgeIn extends React.Component<{},{results: Array<any>, showResults:boolean, selectionMade: boolean, showEditMemberPopup: boolean, selection: string[]}>{
     constructor(props){
       super(props);
       this.state = {
         results: [],
         showResults: false,
         selectionMade: false,
-        selection: "",
+        selection: [],
         showEditMemberPopup: false,
       }
     }
@@ -865,7 +868,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class SearchResults extends React.Component{
+  class SearchResults extends React.Component<{results: Array},{}>{
     constructor(props){
       super(props);
     }
@@ -881,7 +884,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class SubmitSelection extends React.Component{
+  class SubmitSelection extends React.Component<{selectionMade: string},{}>{
     constructor(props){
       super(props);
       this.state = {}
@@ -894,7 +897,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class EditMemberPopup extends React.Component{
+  class EditMemberPopup extends React.Component<{rfid: string},{}>{
     constructor(props){
       super(props);
     }
@@ -988,7 +991,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class AddInfoButton extends React.Component{
+  class AddInfoButton extends React.Component<{showCheckbox: boolean, clickedAddInfo: Expression, clickedCheckbox: Expression},{}>{
     constructor(props){
       super(props);
       this.state = { 
