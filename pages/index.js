@@ -1241,10 +1241,11 @@ export default function Home({ members, activities, config }){
         <h3>Before v1 Release:</h3>
         <ul>
           <li>ReadMe / Documentation</li>
-          <li>Easy setup (config file)... List of majors, List of GraduationYears</li>
-          <li>Bun!</li>
           <li>Look into railways.app / npm  / Vercel deployment</li>
           <li>Timezone variable</li>
+          <li>Typescript!</li>
+          <li>Badgr Integration! (public certs)</li>
+          <li>Machine Restrictions (relay integration)</li>
         </ul>
         <p>Random dev note: Isomorphic-unfetch allows us to make HTTP requests inside out NextJS app</p>
       </details>
