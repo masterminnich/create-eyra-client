@@ -1,6 +1,6 @@
-pages/index.tsx:182:19 - error TS2322: Type 'Promise<void>' is not assignable to type 'void | Destructor'.
+pages/index.tsx:191:19 - error TS2322: Type 'Promise<void>' is not assignable to type 'void | Destructor'.
 
-182   useEffect(() => socketInitializer(), [])
+191   useEffect(() => socketInitializer(), [])
                       ~~~~~~~~~~~~~~~~~~~
 
   node_modules/@types/react/index.d.ts:907:27
@@ -8,191 +8,108 @@ pages/index.tsx:182:19 - error TS2322: Type 'Promise<void>' is not assignable to
                                   ~~~~~~~~~~~~~~~~~~~~~~~~~
     The expected type comes from the return type of this signature.
 
-pages/index.tsx:366:36 - error TS2349: This expression is not callable.
-  Type 'ChangeEvent<HTMLOptionElement>' has no call signatures.
+pages/index.tsx:392:30 - error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { id: number; } | Readonly<{ id: number; }>): QuestionTooltip', gave the following error.
+    Type 'string' is not assignable to type 'number'.
+  Overload 2 of 2, '(props: { id: number; }, context: any): QuestionTooltip', gave the following error.
+    Type 'string' is not assignable to type 'number'.
 
-366     VisitTypeChange(e){ this.props.onChange(e.target.value) }
-                                       ~~~~~~~~
+392             <QuestionTooltip id="VisitTypeQuestion"/>
+                                 ~~
 
-pages/index.tsx:469:26 - error TS2345: Argument of type '{ Name: string; flags: string[]; badgeInTime: any; badgeOutTime: any; event: any; machineUtilized: string[]; otherToolsUtilized: string[]; sessionLengthMinutes: number; }' is not assignable to parameter of type 'event'.
-  Type '{ Name: string; flags: string[]; badgeInTime: any; badgeOutTime: any; event: any; machineUtilized: string[]; otherToolsUtilized: string[]; sessionLengthMinutes: number; }' is missing the following properties from type 'event': MemberID, _id
+  pages/index.tsx:353:50
+    353   class QuestionTooltip extends React.Component<{id: number},{}>{
+                                                         ~~
+    The expected type comes from property 'id' which is declared here on type 'IntrinsicAttributes & IntrinsicClassAttributes<QuestionTooltip> & Readonly<{ id: number; }> & Readonly<...>'
+  pages/index.tsx:353:50
+    353   class QuestionTooltip extends React.Component<{id: number},{}>{
+                                                         ~~
+    The expected type comes from property 'id' which is declared here on type 'IntrinsicAttributes & IntrinsicClassAttributes<QuestionTooltip> & Readonly<{ id: number; }> & Readonly<...>'
 
-469       newActivities.push(newActivity)
-                             ~~~~~~~~~~~
+pages/index.tsx:537:26 - error TS2345: Argument of type 'ObjectId | null | undefined' is not assignable to parameter of type 'ObjectId'.
+  Type 'undefined' is not assignable to type 'ObjectId'.
 
-pages/index.tsx:523:21 - error TS2339: Property 'Name' does not exist on type 'event'.
-
-523         editedEvent.Name = singleEvent.Name
-                        ~~~~
-
-pages/index.tsx:523:40 - error TS2339: Property 'Name' does not exist on type 'event'.
-
-523         editedEvent.Name = singleEvent.Name
-                                           ~~~~
-
-pages/index.tsx:527:27 - error TS2345: Argument of type 'event' is not assignable to parameter of type 'Event'.
-  Type 'event' is missing the following properties from type 'Event': bubbles, cancelBubble, cancelable, composed, and 18 more.
-
-527         editedEvents.push(editedEvent)
-                              ~~~~~~~~~~~
-
-pages/index.tsx:528:26 - error TS2345: Argument of type 'ObjectId | null' is not assignable to parameter of type 'ObjectId'.
-  Type 'null' is not assignable to type 'ObjectId'.
-
-528         eventIDList.push(singleEvent._id)
+537         eventIDList.push(singleEvent._id)
                              ~~~~~~~~~~~~~~~
 
-pages/index.tsx:531:33 - error TS2345: Argument of type 'ObjectId | null' is not assignable to parameter of type 'ObjectId'.
-  Type 'null' is not assignable to type 'ObjectId'.
+pages/index.tsx:540:33 - error TS2345: Argument of type 'ObjectId | null | undefined' is not assignable to parameter of type 'ObjectId'.
+  Type 'undefined' is not assignable to type 'ObjectId'.
 
-531           eventIDsToDelete.push(singleEvent._id)
+540           eventIDsToDelete.push(singleEvent._id)
                                     ~~~~~~~~~~~~~~~
 
-pages/index.tsx:578:32 - error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+pages/index.tsx:608:209 - error TS2551: Property 'member' does not exist on type '{ badgeInTime: string; badgeOutTime: string; machineUtilized: never[]; otherToolsUtilized: never[]; event: string; sessionLengthMinutes: null; MemberID: null; _id: null; flags: never[]; }'. Did you mean 'MemberID'?
 
-578           <Form onSubmit={eval(state.submitType)}>
-                                   ~~~~~~~~~~~~~~~~
-
-pages/index.tsx:579:24 - error TS2322: Type '(value: any) => void' is not assignable to type 'ChangeEvent<HTMLOptionElement>'.
-
-579             <VisitType onChange={this.handleVisitType.bind(this)} selectValue={state.activityEvent.event}/>
-                           ~~~~~~~~
-
-  pages/index.tsx:357:65
-    357   class VisitType extends React.Component<{selectValue: string, onChange: React.ChangeEvent<HTMLOptionElement>}, {selectValue: string}>{
-                                                                        ~~~~~~~~
-    The expected type comes from property 'onChange' which is declared here on type 'IntrinsicAttributes & IntrinsicClassAttributes<VisitType> & Readonly<{ selectValue: string; onChange: ChangeEvent<HTMLOptionElement>; }> & Readonly<...>'
-
-pages/index.tsx:592:33 - error TS2322: Type '{ onChange: (value: string[]) => void; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<MachinesUtilized> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-  Property 'onChange' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<MachinesUtilized> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-
-592               <MachinesUtilized onChange={this.handleMachineUtilized.bind(this)}/>
-                                    ~~~~~~~~
-
-pages/index.tsx:593:35 - error TS2322: Type '{ onChange: (value: string[]) => void; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<OtherToolsUtilized> & Readonly<{}> & Readonly<{ ...; }>'.
-  Property 'onChange' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<OtherToolsUtilized> & Readonly<{}> & Readonly<{ ...; }>'.
-
-593               <OtherToolsUtilized onChange={this.handleOtherToolsUtilized.bind(this)}/>
-                                      ~~~~~~~~
-
-pages/index.tsx:599:209 - error TS2551: Property 'member' does not exist on type '{ badgeInTime: string; badgeOutTime: string; machineUtilized: never[]; otherToolsUtilized: never[]; event: string; sessionLengthMinutes: null; MemberID: null; _id: null; flags: never[]; }'. Did you mean 'MemberID'?
-
-599             <Button type='button' name={state.activityEvent._id} id="deleteActivityButton" onClick={(e) => deleteActivity([state.activitiesCollection, this.state, state.activityEvent._id, state.activityEvent.member])} style={trashButtonCSS}></Button>
+608             <Button type='button' name={state.activityEvent._id} id="deleteActivityButton" onClick={(e) => deleteActivity([state.activitiesCollection, this.state, state.activityEvent._id, state.activityEvent.member])} style={trashButtonCSS}></Button>
                                                                                                                                                                                                                     ~~~~~~
 
-  pages/index.tsx:172:46
-    172       event: "", sessionLengthMinutes: null, MemberID: null, _id: null, flags: [],
+  pages/index.tsx:181:46
+    181       event: "", sessionLengthMinutes: null, MemberID: null, _id: null, flags: [],
                                                      ~~~~~~~~~~~~~~
     'MemberID' is declared here.
 
-pages/index.tsx:600:80 - error TS2339: Property 'submitting' does not exist on type 'Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; noId: boolean; message: string; }> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:609:80 - error TS2339: Property 'submitting' does not exist on type 'Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; noId: boolean; message: string; submitButtonText: string; existsInDB: boolean; event: string; }> & Readonly<...>'.
 
-600             <Button type='submit' id="submitBadgeOutPopup" onClick={this.props.submitting}>{state.displayProps.submitButtonText}</Button>
+609             <Button type='submit' id="submitBadgeOutPopup" onClick={this.props.submitting}>{state.displayProps.submitButtonText}</Button>
                                                                                    ~~~~~~~~~~
 
-pages/index.tsx:614:9 - error TS2322: Type '{ badgeInTime: string; badgeOutTime: string; Name: any; MemberID: any; member: any; flags: never[]; }' is not assignable to type '{ badgeInTime: string; badgeOutTime: string; machineUtilized: never[]; otherToolsUtilized: never[]; event: string; sessionLengthMinutes: null; MemberID: null; _id: null; flags: never[]; }'.
-  Object literal may only specify known properties, and 'Name' does not exist in type '{ badgeInTime: string; badgeOutTime: string; machineUtilized: never[]; otherToolsUtilized: never[]; event: string; sessionLengthMinutes: null; MemberID: null; _id: null; flags: never[]; }'.
+pages/index.tsx:624:9 - error TS2322: Type 'ObjectId | null | undefined' is not assignable to type 'null'.
+  Type 'undefined' is not assignable to type 'null'.
 
-614         Name: member.Name,
-            ~~~~~~~~~~~~~~~~~
+624         MemberID: member._id,
+            ~~~~~~~~
 
-pages/index.tsx:660:18 - error TS2339: Property 'onChange' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
+  pages/index.tsx:181:46
+    181       event: "", sessionLengthMinutes: null, MemberID: null, _id: null, flags: [],
+                                                     ~~~~~~~~~~~~~~
+    The expected type comes from property 'MemberID' which is declared here on type '{ badgeInTime: string; badgeOutTime: string; machineUtilized: never[]; otherToolsUtilized: never[]; event: string; sessionLengthMinutes: null; MemberID: null; _id: null; flags: never[]; }'
 
-660       this.props.onChange(this.state.machines)
-                     ~~~~~~~~
+pages/index.tsx:769:15 - error TS2322: Type '{ badgeInDate: string; badgeInTime: string; badgeOutDate: string; badgeOutTime: string; message: string; submitButtonText: string; existsInDB: false; noId: true; submitting: any; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<Popup> & Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; ... 5 more ...; event: string; }> & Readonly<...>'.
+  Property 'submitting' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<Popup> & Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; ... 5 more ...; event: string; }> & Readonly<...>'.
 
-pages/index.tsx:660:38 - error TS2339: Property 'machines' does not exist on type 'Readonly<{}>'.
+769               submitting={this.props.toggle}
+                  ~~~~~~~~~~
 
-660       this.props.onChange(this.state.machines)
-                                         ~~~~~~~~
+pages/index.tsx:769:38 - error TS2339: Property 'toggle' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-pages/index.tsx:664:38 - error TS2339: Property 'machines' does not exist on type 'Readonly<{}>'.
-
-664       let machinesInUse = this.state.machines
-                                         ~~~~~~~~
-
-pages/index.tsx:681:99 - error TS2339: Property 'machines' does not exist on type 'Readonly<{}>'.
-
-681                   <input type="checkbox" id={CertName} name={CertName} defaultChecked={this.state.machines.includes(CertName)}></input>
-                                                                                                      ~~~~~~~~
-
-pages/index.tsx:702:45 - error TS2339: Property 'onChange' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-
-702     OtherToolsUtilizedChange(e){ this.props.onChange(this.state.otherTools) }
-                                                ~~~~~~~~
-
-pages/index.tsx:702:65 - error TS2339: Property 'otherTools' does not exist on type 'Readonly<{}>'.
-
-702     OtherToolsUtilizedChange(e){ this.props.onChange(this.state.otherTools) }
-                                                                    ~~~~~~~~~~
-
-pages/index.tsx:705:35 - error TS2339: Property 'otherTools' does not exist on type 'Readonly<{}>'.
-
-705       let otherTools = this.state.otherTools
-                                      ~~~~~~~~~~
-
-pages/index.tsx:722:99 - error TS2339: Property 'otherTools' does not exist on type 'Readonly<{}>'.
-
-722                   <input type="checkbox" id={ToolName} name={ToolName} defaultChecked={this.state.otherTools.includes(ToolName)}></input>
-                                                                                                      ~~~~~~~~~~
-
-pages/index.tsx:757:15 - error TS2322: Type '{ badgeInDate: string; badgeInTime: string; badgeOutDate: string; badgeOutTime: string; message: string; submitButtonText: string; existsInDB: boolean; noId: true; submitting: any; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<Popup> & Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; noId: boolean; message: string; }> & Readonly<...>'.
-  Property 'submitButtonText' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<Popup> & Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; noId: boolean; message: string; }> & Readonly<...>'.
-
-757               submitButtonText="Create"
-                  ~~~~~~~~~~~~~~~~
-
-pages/index.tsx:760:38 - error TS2339: Property 'toggle' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-
-760               submitting={this.props.toggle}
+769               submitting={this.props.toggle}
                                          ~~~~~~
 
-pages/index.tsx:769:28 - error TS2339: Property 'members' does not exist on type 'Readonly<{}>'.
-
-769               { this.state.members.map((member,i) =>
-                               ~~~~~~~
-
-pages/index.tsx:859:59 - error TS2322: Type '{ rfid: string; cancel: () => void; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<EditMemberPopup> & Readonly<{ rfid: string; }> & Readonly<...>'.
+pages/index.tsx:868:59 - error TS2322: Type '{ rfid: string; cancel: () => void; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<EditMemberPopup> & Readonly<{ rfid: string; }> & Readonly<...>'.
   Property 'cancel' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<EditMemberPopup> & Readonly<{ rfid: string; }> & Readonly<...>'.
 
-859           <EditMemberPopup rfid={this.state.selection[1]} cancel={() => this.setState({showEditMemberPopup: false})}/>
+868           <EditMemberPopup rfid={this.state.selection[1]} cancel={() => this.setState({showEditMemberPopup: false})}/>
                                                               ~~~~~~
 
-pages/index.tsx:868:26 - error TS2322: Type '{ handleSelect: (e: any) => void; results: any[]; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<SearchResults> & Readonly<{ results: any; }> & Readonly<...>'.
-  Property 'handleSelect' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<SearchResults> & Readonly<{ results: any; }> & Readonly<...>'.
+pages/index.tsx:877:26 - error TS2322: Type '(e: any) => void' is not assignable to type 'onClick'.
 
-868           <SearchResults handleSelect={this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
+877           <SearchResults handleSelect={this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
                              ~~~~~~~~~~~~
 
-pages/index.tsx:872:30 - error TS2322: Type '{ result: string[]; handleSubmit: (e: any) => void; selectionMade: string; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<SubmitSelection> & Readonly<{ selectionMade: string; }> & Readonly<...>'.
+  pages/index.tsx:891:67
+    891   class SearchResults extends React.Component<{results: string[], handleSelect: onClick},{}>{
+                                                                          ~~~~~~~~~~~~
+    The expected type comes from property 'handleSelect' which is declared here on type 'IntrinsicAttributes & IntrinsicClassAttributes<SearchResults> & Readonly<{ results: string[]; handleSelect: onClick; }> & Readonly<...>'
+
+pages/index.tsx:881:30 - error TS2322: Type '{ result: string[]; handleSubmit: (e: any) => void; selectionMade: string; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<SubmitSelection> & Readonly<{ selectionMade: string; }> & Readonly<...>'.
   Property 'result' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<SubmitSelection> & Readonly<{ selectionMade: string; }> & Readonly<...>'.
 
-872             <SubmitSelection result={this.state.selection} handleSubmit={this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
+881             <SubmitSelection result={this.state.selection} handleSubmit={this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
                                  ~~~~~~
 
-pages/index.tsx:882:57 - error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+pages/index.tsx:915:37 - error TS2339: Property 'handleSubmit' does not exist on type 'Readonly<{ selectionMade: string; }> & Readonly<{ children?: ReactNode; }>'.
 
-882   class SearchResults extends React.Component<{results: Array},{}>{
-                                                            ~~~~~
-
-pages/index.tsx:891:53 - error TS2339: Property 'handleSelect' does not exist on type 'Readonly<{ results: any; }> & Readonly<{ children?: ReactNode; }>'.
-
-891             <div id={result[2]} onClick={this.props.handleSelect} key={"searchResult"+i}>{result[0]}</div>
-                                                        ~~~~~~~~~~~~
-
-pages/index.tsx:906:37 - error TS2339: Property 'handleSubmit' does not exist on type 'Readonly<{ selectionMade: string; }> & Readonly<{ children?: ReactNode; }>'.
-
-906         <button onClick={this.props.handleSubmit}>Badge In {this.props.selectionMade}</button>
+915         <button onClick={this.props.handleSubmit}>Badge In {this.props.selectionMade}</button>
                                         ~~~~~~~~~~~~
 
-pages/index.tsx:954:55 - error TS2339: Property 'cancel' does not exist on type 'Readonly<{ rfid: string; }> & Readonly<{ children?: ReactNode; }>'.
+pages/index.tsx:963:55 - error TS2339: Property 'cancel' does not exist on type 'Readonly<{ rfid: string; }> & Readonly<{ children?: ReactNode; }>'.
 
-954             <button type="button" onClick={this.props.cancel}>Cancel</button>
+963             <button type="button" onClick={this.props.cancel}>Cancel</button>
                                                           ~~~~~~
 
-pages/index.tsx:955:35 - error TS2322: Type 'void' is not assignable to type 'MouseEventHandler<HTMLButtonElement> | undefined'.
+pages/index.tsx:964:35 - error TS2322: Type 'void' is not assignable to type 'MouseEventHandler<HTMLButtonElement> | undefined'.
 
-955             <button type="button" onClick={console.log("TODO: Fix this button")}>Update</button>
+964             <button type="button" onClick={console.log("TODO: Fix this button")}>Update</button>
                                       ~~~~~~~
 
   node_modules/@types/react/index.d.ts:1463:9
@@ -200,9 +117,9 @@ pages/index.tsx:955:35 - error TS2322: Type 'void' is not assignable to type 'Mo
                  ~~~~~~~
     The expected type comes from property 'onClick' which is declared here on type 'DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>'
 
-pages/index.tsx:956:35 - error TS2322: Type 'void' is not assignable to type 'MouseEventHandler<HTMLButtonElement> | undefined'.
+pages/index.tsx:965:35 - error TS2322: Type 'void' is not assignable to type 'MouseEventHandler<HTMLButtonElement> | undefined'.
 
-956             <button type="button" onClick={console.log("TODO: Fix this button")}>Delete</button>
+965             <button type="button" onClick={console.log("TODO: Fix this button")}>Delete</button>
                                       ~~~~~~~
 
   node_modules/@types/react/index.d.ts:1463:9
@@ -210,134 +127,5 @@ pages/index.tsx:956:35 - error TS2322: Type 'void' is not assignable to type 'Mo
                  ~~~~~~~
     The expected type comes from property 'onClick' which is declared here on type 'DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>'
 
-pages/index.tsx:997:55 - error TS2339: Property 'cancel' does not exist on type 'Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
 
-997             <button type="button" onClick={this.props.cancel}>Cancel</button>
-                                                          ~~~~~~
-
-pages/index.tsx:998:35 - error TS2322: Type 'void' is not assignable to type 'MouseEventHandler<HTMLButtonElement> | undefined'.
-
-998             <button type="button" onClick={console.log("update config collection (TODO)")}>Update</button>
-                                      ~~~~~~~
-
-  node_modules/@types/react/index.d.ts:1463:9
-    1463         onClick?: MouseEventHandler<T> | undefined;
-                 ~~~~~~~
-    The expected type comes from property 'onClick' which is declared here on type 'DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>'
-
-pages/index.tsx:1016:49 - error TS2339: Property 'activity' does not exist on type 'Readonly<{ showCheckbox: boolean; clickedAddInfo: Expression; clickedCheckbox: Expression; }> & Readonly<{ children?: ReactNode; }>'.
-
-1016         {!this.props.showCheckbox && this.props.activity.event !== "Undefined" ? (
-                                                     ~~~~~~~~
-
-pages/index.tsx:1017:19 - error TS2322: Type 'Expression' is not assignable to type 'MouseEventHandler<HTMLButtonElement>'.
-  Type 'Expression' provides no match for the signature '(event: MouseEvent<HTMLButtonElement, MouseEvent>): void'.
-
-1017           <button onClick={this.props.clickedAddInfo} className="addInfo" style={{display:"flex",margin:"auto","height":"1.8em"}}>Add Info</button>
-                       ~~~~~~~
-
-  node_modules/@types/react/index.d.ts:1463:9
-    1463         onClick?: MouseEventHandler<T> | undefined;
-                 ~~~~~~~
-    The expected type comes from property 'onClick' which is declared here on type 'DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>'
-
-pages/index.tsx:1019:51 - error TS2339: Property 'activity' does not exist on type 'Readonly<{ showCheckbox: boolean; clickedAddInfo: Expression; clickedCheckbox: Expression; }> & Readonly<{ children?: ReactNode; }>'.
-
-1019           (!this.props.showCheckbox && this.props.activity.event == "Undefined") ? (
-                                                       ~~~~~~~~
-
-pages/index.tsx:1020:21 - error TS2322: Type 'Expression' is not assignable to type 'MouseEventHandler<HTMLButtonElement>'.
-
-1020             <button onClick={this.props.clickedAddInfo} className="addInfoAttn" style={{display:"flex",margin:"auto","height":"1.8em"}}>Add Info</button>
-                         ~~~~~~~
-
-  node_modules/@types/react/index.d.ts:1463:9
-    1463         onClick?: MouseEventHandler<T> | undefined;
-                 ~~~~~~~
-    The expected type comes from property 'onClick' which is declared here on type 'DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>'
-
-pages/index.tsx:1022:63 - error TS2339: Property 'index' does not exist on type 'Readonly<{ showCheckbox: boolean; clickedAddInfo: Expression; clickedCheckbox: Expression; }> & Readonly<{ children?: ReactNode; }>'.
-
-1022             <input className="addInfoCheckbox" id={this.props.index} onClick={this.props.clickedCheckbox} type="checkbox" style={{display:"flex",margin:"auto","height":"1.8em"}}></input>
-                                                                   ~~~~~
-
-pages/index.tsx:1022:70 - error TS2322: Type 'Expression' is not assignable to type 'MouseEventHandler<HTMLInputElement>'.
-  Type 'Expression' provides no match for the signature '(event: MouseEvent<HTMLInputElement, MouseEvent>): void'.
-
-1022             <input className="addInfoCheckbox" id={this.props.index} onClick={this.props.clickedCheckbox} type="checkbox" style={{display:"flex",margin:"auto","height":"1.8em"}}></input>
-                                                                          ~~~~~~~
-
-  node_modules/@types/react/index.d.ts:1463:9
-    1463         onClick?: MouseEventHandler<T> | undefined;
-                 ~~~~~~~
-    The expected type comes from property 'onClick' which is declared here on type 'DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>'
-
-pages/index.tsx:1087:31 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
-
-1087           for (let i=Math.min(firstId,secondId); i<Math.max(firstId,secondId); i++){
-                                   ~~~~~~~
-
-pages/index.tsx:1087:61 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
-
-1087           for (let i=Math.min(firstId,secondId); i<Math.max(firstId,secondId); i++){
-                                                                 ~~~~~~~
-
-pages/index.tsx:1091:26 - error TS2740: Type 'Element' is missing the following properties from type 'HTMLInputElement': accept, align, alt, autocomplete, and 169 more.
-
-1091           this.setState({firstCheckboxSelected: checkboxElems[secondId], selected: selected})
-                              ~~~~~~~~~~~~~~~~~~~~~
-
-pages/index.tsx:1116:95 - error TS2339: Property 'Events' does not exist on type 'Object[]'.
-
-1116             { this.state.displayingActivities == undefined || this.state.displayingActivities.Events.length == 0 ? (
-                                                                                                   ~~~~~~
-
-pages/index.tsx:1118:21 - error TS2322: Type 'string' is not assignable to type 'number'.
-
-1118                 <td colSpan="3" id="noEvents">No events today.</td>
-                         ~~~~~~~
-
-  node_modules/@types/react/index.d.ts:2438:9
-    2438         colSpan?: number | undefined;
-                 ~~~~~~~
-    The expected type comes from property 'colSpan' which is declared here on type 'DetailedHTMLProps<TdHTMLAttributes<HTMLTableDataCellElement>, HTMLTableDataCellElement>'
-
-pages/index.tsx:1121:47 - error TS2339: Property 'Events' does not exist on type 'Object[]'.
-
-1121               this.state.displayingActivities.Events.map((actEvent,i) => (
-                                                   ~~~~~~
-
-pages/index.tsx:1148:58 - error TS2322: Type '(e: any) => void' is not assignable to type 'Expression'.
-
-1148                   <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: state.displayingDay, submitButtonText: "Add Info", "message":"Editing "+actEvent.Name+"'s event..."}, "(e) => handleSubmitPopUp(true,e)")} showCheckbox={this.state.toggle} index={i}/></td>
-                                                              ~~~~~~~~~~~~~~~
-
-  pages/index.tsx:1005:99
-    1005   class AddInfoButton extends React.Component<{showCheckbox: boolean, clickedAddInfo: Expression, clickedCheckbox: Expression},{}>{
-                                                                                                           ~~~~~~~~~~~~~~~
-    The expected type comes from property 'clickedCheckbox' which is declared here on type 'IntrinsicAttributes & IntrinsicClassAttributes<AddInfoButton> & Readonly<{ showCheckbox: boolean; clickedAddInfo: Expression; clickedCheckbox: Expression; }> & Readonly<...>'
-
-pages/index.tsx:1148:107 - error TS2322: Type '() => Promise<void>' is not assignable to type 'Expression'.
-
-1148                   <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: state.displayingDay, submitButtonText: "Add Info", "message":"Editing "+actEvent.Name+"'s event..."}, "(e) => handleSubmitPopUp(true,e)")} showCheckbox={this.state.toggle} index={i}/></td>
-                                                                                                               ~~~~~~~~~~~~~~
-
-  pages/index.tsx:1005:71
-    1005   class AddInfoButton extends React.Component<{showCheckbox: boolean, clickedAddInfo: Expression, clickedCheckbox: Expression},{}>{
-                                                                               ~~~~~~~~~~~~~~
-    The expected type comes from property 'clickedAddInfo' which is declared here on type 'IntrinsicAttributes & IntrinsicClassAttributes<AddInfoButton> & Readonly<{ showCheckbox: boolean; clickedAddInfo: Expression; clickedCheckbox: Expression; }> & Readonly<...>'
-
-pages/index.tsx:1248:15 - error TS2322: Type '{ badgeInDate: string; badgeInTime: string; badgeOutDate: string; badgeOutTime: string; message: string; submitButtonText: string; existsInDB: boolean; noId: false; event: string; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<Popup> & Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; noId: boolean; message: string; }> & Readonly<...>'.
-  Property 'submitButtonText' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<Popup> & Readonly<{ badgeInDate: string; badgeOutDate: string; badgeInTime: string; badgeOutTime: string; visitType: string; noId: boolean; message: string; }> & Readonly<...>'.
-
-1248               submitButtonText={state.displayProps.submitButtonText}
-                   ~~~~~~~~~~~~~~~~
-
-pages/index.tsx:1260:22 - error TS2322: Type '{ cancel: () => void; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<ConfigPopup> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-  Property 'cancel' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<ConfigPopup> & Readonly<{}> & Readonly<{ children?: ReactNode; }>'.
-
-1260         <ConfigPopup cancel={toggleConfigPopup}/>
-                          ~~~~~~
-
-
-Found 53 errors in the same file, starting at: pages/index.tsx:182
+Found 16 errors in the same file, starting at: pages/index.tsx:191

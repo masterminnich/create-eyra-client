@@ -30,11 +30,13 @@ export default async function handler(req, res) {
             
             try {
                 const activity = await Activity.create(req.body);
-                console.log("Successfully created activity ("+req.body.Events[0].Name+"|"+req.body.Events[0].event+") on date,",req.body.Date)
-                res.status(201).json({ success: true, data: activity })
+                console.log("Successfully created activity ("+req.body.Events.Name+"|"+req.body.Events.event+") on date,",req.body.Date)
+                let activitiesCollection = await Activity.find({});
+                res.status(201).json({ success: true, data: activity, activities: activitiesCollection })
             } catch (error) {
                 console.log("Error while creating activity [/api/activity/index POST]:",error);
                 res.status(400).json({ success: false });
+                console.log("req.bod.Event",req.body.Events,"typeof Events",typeof(req.body.Events))
             }
             break;
         case 'PUT':

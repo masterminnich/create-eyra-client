@@ -39,8 +39,6 @@ type PopupProps = {
   event?: string;
   submitting?: void | undefined;
 }
-
-type listOfEvents = Array<event>
 type Member = {
   Name: string;
   Major: string;
@@ -57,8 +55,23 @@ type ActivityDay = {
   Date: string,
   Events: event[],
 }
+type activityEvent = {
+  Name?: string;
+  badgeInTime: string;
+  badgeOutTime: string;
+  machineUtilized?: string[];
+  otherToolsUtilized?: string[];
+  event?: string;
+  sessionLengthMinutes?: number | null;
+  MemberID?: Schema.Types.ObjectId | null;
+  _id?: Schema.Types.ObjectId | null;
+  flags: string[];
+}
+type listOfEvents = Array<event>
 type onClick = () => void
 type onChange = (e : any) => void
+type mainState = { configCollection: any, membersCollection: Member[], activitiesCollection: ActivityDay[], displayingDay: string, isOpen: boolean, displayProps: any, batchEvents: event[], submitType: string, activityEvent: activityEvent, showConfigPopup: boolean, showForgotIDPopup: boolean }
+//type mainState = any;
 
 function getMachinesUtilized(){ //Get list of machinesUtilized from an on-screen PopUp
   let machinesUtilized: string[] = []
@@ -172,7 +185,7 @@ function createMemberTooltip(memberDataOrId,parentElement){
 /* End Tooltips Code */
 
 export default function Home({ members, activities, config }){
-  const [state, setState] = useState({
+  const [state, setState] = useState<mainState>({
     configCollection: config[0],
     membersCollection: members,
     activitiesCollection: activities,
@@ -201,17 +214,6 @@ export default function Home({ members, activities, config }){
     }
     socketInitializer();
   }, [])
-
-  /*
-  useEffect(() => socketInitializer(), [])
-    const socketInitializer = async () => {
-    await fetch('/api/socket');
-    socket = io();
-    socket.on('connect', () => { console.log('WebSocket connected.') })
-    socket.on('update-membersCollection', msg => { setState({...state, membersCollection: msg})  })
-    socket.on('update-activitiesCollection', msg => { setState({...state, activitiesCollection: msg}); })
-    socket.on('update-both', data => {  setState({...state, activitiesCollection: data.activities, membersCollection: data.members}); })
-  }*/
 
   function toggleConfigPopup(){ setState({...state, showConfigPopup: !state.showConfigPopup}); }
 
@@ -271,14 +273,18 @@ export default function Home({ members, activities, config }){
     } catch (error) { console.log("ERROR :",error); }
   }
   
-  const createNewActivity = async (date: date, events, originFn: string) => {
+  const createNewActivity = async (date: date, event, originFn: string) => {
     try {
       const res = await fetch(`/api/activity`, {
           method: 'POST',
           headers: headers,
-          body: JSON.stringify({Date: date, Events: events})
+          body: JSON.stringify({Date: date, Events: event})
       })
-      console.log("TODO: State needs to be updated here! FIX")
+      let response = res.json()
+      response.then((resp) => {
+        setState({...state, activitiesCollection: resp.activities, isOpen: false})
+        socket.emit('activitiesCollection-change', resp.activities)
+      });
     } catch (error) { console.log("ERROR in",originFn,":",error) }
   }
   
@@ -410,11 +416,12 @@ export default function Home({ members, activities, config }){
   }
 
   const batchEdit = (e,selected) => {
+    console.log("e",e)
     let date = document.getElementById("date")?.innerText
     let editDate = state.activitiesCollection.filter(a => a.Date== date)[0]
     let eventIdsToEdit: Array<Schema.Types.ObjectId> = []; //list of event ids to delete
     selected.forEach(item => eventIdsToEdit.push(item.parentNode.parentNode.id)) //Get a list of event ids to delete
-    let eventsToEdit = editDate.Events.filter(e => eventIdsToEdit.includes(e._id))
+    let eventsToEdit = editDate.Events.filter(e => eventIdsToEdit.includes(e._id!))
     let eventInfo = eventsToEdit[0];
     //console.log("EventsToEdit",eventsToEdit)
     //needs to find and pass batchEventsToEdit
@@ -432,14 +439,14 @@ export default function Home({ members, activities, config }){
     let deleteDate = state.activitiesCollection.filter(a => a.Date== date)[0]
     let eventIdsToDelete: Array<Schema.Types.ObjectId> = []; //list of event ids to delete
     selected.forEach(item => eventIdsToDelete.push(item.parentNode.parentNode.id)) //Get a list of event ids to delete
-    let eventsToKeep = deleteDate.Events.filter(e => !eventIdsToDelete.includes(e._id))
+    let eventsToKeep = deleteDate.Events.filter(e => !eventIdsToDelete.includes(e._id!))
     //console.log("e",e,"selected",selected,"eventsToKeep",eventsToKeep,"toDelete",eventsToDelete)
     updateActivityByDate(date, eventsToKeep, "batchDelete")
   }
 
   const handleSubmitPopUp = (existingInDB, e) => { //handleSubmitBadgeOut
     //console.log("existingInDB",existingInDB,"e",e)
-    let newActivity: event = state.activityEvent
+    let newActivity: activityEvent = state.activityEvent
     let badgeInTime = new Date(e.target.badgeInDate.value+" "+e.target.badgeInTime.value+" EDT")
     let badgeOutTime = new Date(e.target.badgeOutDate.value+" "+e.target.badgeOutTime.value+" EDT")
     newActivity.badgeInTime = badgeInTime.toISOString()
@@ -547,10 +554,10 @@ export default function Home({ members, activities, config }){
         editedEvent._id = singleEvent._id
         editedEvent.flags = singleEvent.flags
         editedEvents.push(editedEvent)
-        eventIDList.push(singleEvent._id)
+        eventIDList.push(singleEvent._id!)
         let dayMovingFrom: string = singleEvent.badgeOutTime.substring(0,10)
         if (dayMovingFrom !== activityInfo.badgeOutTime.substring(0,10)){ 
-          eventIDsToDelete.push(singleEvent._id) 
+          eventIDsToDelete.push(singleEvent._id!) 
           dayMovingFromL.push(dayMovingFrom)
         }
       };
@@ -558,14 +565,14 @@ export default function Home({ members, activities, config }){
       let activityDay = state.activitiesCollection.filter(a => a.Date == date)[0]//Get previous events
       if (activityDay){
         let oldEvents = activityDay.Events
-        oldEvents = oldEvents.filter(e => !eventIDList.includes(e._id))//remove edited Events
+        oldEvents = oldEvents.filter(e => !eventIDList.includes(e._id!))//remove edited Events
         editedEvents = editedEvents.concat(oldEvents)
         //console.log("updateAcitivtyByDate() editiedevents",editedEvents)
         updateActivityByDate(date,editedEvents,"Popup.batchEdit()")
         if (eventIDsToDelete){ //delete oldEvents if moving
           console.log("moving events to another day... removing original events.")
           let origActivityDay = state.activitiesCollection.filter(a => a.Date == dayMovingFromL[0])[0]
-          let keepEvents = origActivityDay.Events.filter(e => !eventIDsToDelete.includes(e._id))
+          let keepEvents = origActivityDay.Events.filter(e => !eventIDsToDelete.includes(e._id!))
           updateActivityByDate(dayMovingFromL[0], keepEvents, "moving events to another day...")
         }
       } else { 
@@ -594,11 +601,12 @@ export default function Home({ members, activities, config }){
       let trashButtonCSS = {"display": "block"}
       if(this.props.noId && this.props.noId == true){ trashButtonCSS = {"display": "none"} }
       if(state.batchEvents.length > 0){ trashButtonCSS = {"display": "none"} }
+      let member = state.membersCollection.filter(m => m._id !== state.activityEvent.MemberID)
       return (
         <>
           <h1 id="badgingOutTitle">{this.props.message}</h1>
           <Form onSubmit={eval(state.submitType)}>
-            <VisitType onChange={this.handleVisitType.bind(this)} selectValue={state.activityEvent.event}/>
+            <VisitType onChange={this.handleVisitType.bind(this)} selectValue={state.activityEvent.event!}/>
             <div id="badgeInTime" style={{display: "flex"}}>
               <label htmlFor="badgeInTime">Badged In: </label>
               <input onChange={value => this.updateBadgeInDate(value)} id="badgeInDate" type="date" className="date" defaultValue={this.props.badgeInDate}></input>
@@ -618,8 +626,8 @@ export default function Home({ members, activities, config }){
             <textarea style={{display:"none"}} id="displayProps" defaultValue={JSON.stringify(state.displayProps)}></textarea>
             <textarea style={{display:"none"}} id="hiddenProps" defaultValue={JSON.stringify(this.props)}></textarea>
 
-            <Button type='button' name={state.activityEvent._id} id="deleteActivityButton" onClick={(e) => deleteActivity([state.activitiesCollection, this.state, state.activityEvent._id, state.activityEvent.member])} style={trashButtonCSS}></Button>
-            <Button type='submit' id="submitBadgeOutPopup" onClick={this.props.submitting}>{state.displayProps.submitButtonText}</Button>
+            <Button type='button' name={state.activityEvent._id} id="deleteActivityButton" onClick={(e) => deleteActivity([state.activitiesCollection, this.state, state.activityEvent._id, member])} style={trashButtonCSS}></Button>
+            <Button type='submit' id="submitBadgeOutPopup" onClick={() => this.props.submitting}>{state.displayProps.submitButtonText}</Button>
             <Button type='button' id="cancelPopupButton" onClick={() => setState({ ...state,  isOpen: false, showForgotIDPopup: false })}>Cancel</Button>
           </Form>
         </>
@@ -635,7 +643,7 @@ export default function Home({ members, activities, config }){
         badgeOutTime: new Date().toISOString(), 
         Name: member.Name,
         MemberID: member._id,
-        member: member,
+        //member: member,
         flags: [],
       },
       displayProps: {
@@ -834,7 +842,7 @@ export default function Home({ members, activities, config }){
         showEditMemberPopup: false,
       }
     }
-
+    
     onKeyUpCapture(e){
       function BadgeInMemberSearch(members){
         //Searches for a member by name, then badges in the member.
@@ -884,11 +892,11 @@ export default function Home({ members, activities, config }){
         <input onFocus={this.onFocus.bind(this)} onBlur={this.onBlur.bind(this)} onKeyUpCapture={this.onKeyUpCapture.bind(this)} id='searchMemberBadgeIn'></input> 
         <BadgeInForgotIDButton/>
         {this.state.showResults && this.state.results.length > 0 ? 
-          <SearchResults handleSelect={() => this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
+          <SearchResults handleSelect={this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
           :  <div></div> }
         {this.state.selectionMade ? 
           <>
-            <SubmitSelection result={this.state.selection} handleSubmit={() => this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
+            <SubmitSelection result={this.state.selection} handleSubmit={this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
             <button type="button" onClick={() => this.setState({showEditMemberPopup: true})}>Edit Member</button>
           </>
           : <div></div>}
@@ -898,7 +906,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class SearchResults extends React.Component<{results: string[], handleSelect: onClick},{}>{
+  class SearchResults extends React.Component<{results: string[], handleSelect: onChange},{}>{
     constructor(props){
       super(props);
     }
@@ -914,7 +922,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class SubmitSelection extends React.Component<{selectionMade: string, handleSubmit: onClick, result: string[]},{}>{
+  class SubmitSelection extends React.Component<{selectionMade: string, handleSubmit: onChange, result: string[]},{}>{
     constructor(props){
       super(props);
       this.state = {}
@@ -1191,8 +1199,6 @@ export default function Home({ members, activities, config }){
       this.state = { }
     }
 
-    
-
     render(){
       //let joe = state.membersCollection.filter(m=>m.Name=="Joseph Minnich")[0]
       //let d = state.activitiesCollection.filter(m=>m.Date=="2022-11-12")[0]
@@ -1222,8 +1228,8 @@ export default function Home({ members, activities, config }){
                         <td>{member.Major}</td>
                         {state.configCollection.certifications.map((cert) => 
                           member.Certifications.includes(cert) ? (
-                            <td key={member.id+"_"+cert+"_td"} className="true"></td>
-                            ) : ( <td key={member.id+"_"+cert+"_td"} className="false"></td>)
+                            <td key={member._id+"_"+cert+"_td"} className="true"></td>
+                            ) : ( <td key={member._id+"_"+cert+"_td"} className="false"></td>)
                           )}
                         <td>
                           <button type="button" onClick={() => openManualBadgeOutPopup(member)}>Badge Out</button>
@@ -1275,10 +1281,7 @@ export default function Home({ members, activities, config }){
         <div></div>
       )}
 
-      {state.showConfigPopup ? 
-        <ConfigPopup cancel={toggleConfigPopup}/>
-        : <div></div>
-      }
+      { state.showConfigPopup ?  <ConfigPopup cancel={toggleConfigPopup}/> : <div></div> }
 
       <BadgedInMembers></BadgedInMembers>
       <section id="recentActivity" className="fit">
