@@ -16,14 +16,15 @@ const headers = {"Accept": "application/json", "Content-Type": "application/json
 //TS Type Decs
 type date = string
 type event = {
+  Name?: string,
   badgeInTime: string;
   badgeOutTime: string;
   machineUtilized: string[];
   otherToolsUtilized: string[];
   event: string;
   sessionLengthMinutes: number | null;
-  MemberID: Schema.Types.ObjectId | null;
-  _id: Schema.Types.ObjectId | null;
+  MemberID?: Schema.Types.ObjectId | null;
+  _id?: Schema.Types.ObjectId | null;
   flags: string[];
 }
 type PopupProps = {
@@ -48,11 +49,13 @@ type Member = {
   joinedDate: Date;
   rfid: string;
   Certifications: string[];
+  _id?: Schema.Types.ObjectId | null;
 }
 type ActivityDay = {
   Date: string,
   Events: event,
 }
+type onClick = () => void
 
 function getMachinesUtilized(){ //Get list of machinesUtilized from an on-screen PopUp
   let machinesUtilized: string[] = []
@@ -178,7 +181,7 @@ export default function Home({ members, activities, config }){
     },
     displayProps: { submitButtonText:"", message:"" },
     batchEvents: [],
-    submitType: {},
+    submitType: "",
     showConfigPopup: false,
     showForgotIDPopup: false,
   });
@@ -456,7 +459,7 @@ export default function Home({ members, activities, config }){
     //let displayProps = JSON.parse(e.target[24].innerText);
     //let hiddenProps = JSON.parse(e.target[25].innerText);
     let numOfMembers = e.target.parentNode.children[2].children[1].value
-    let newActivities: listOfEvents = []
+    let newActivities: listOfEvents = [] 
     for (let i=0; i<numOfMembers; i++){
       let inputElem = document.getElementById("member"+i) as HTMLInputElement
       let out: number = new Date(props.badgeOutTime).getTime(); //ms since
@@ -484,7 +487,7 @@ export default function Home({ members, activities, config }){
     } else { createNewActivity(date, newActivities, "handleSubmitForgotID") }
   }
 
-  class Popup extends React.Component<{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, visitType: string, noId: boolean, message: string},{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, visitType: string, machineUtilized: string[], otherToolsUtilized: string[]}>{
+  class Popup extends React.Component<{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, visitType: string, noId: boolean, message: string, submitButtonText: string, existsInDB: boolean, event: string},{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, visitType: string, machineUtilized: string[], otherToolsUtilized: string[]}>{
     constructor(props) {
       super(props);
       let visitType: string;
@@ -511,7 +514,7 @@ export default function Home({ members, activities, config }){
     batchEdit(){
       let activityInfo = this.getInfo()
       let date = activityInfo.badgeOutTime.substring(0,10)
-      let editedEvents: Array<Event> = [];
+      let editedEvents: Array<event> = [];
       let eventIDList: Array<Schema.Types.ObjectId> = []; //List of _id of each edited event
       let eventIDsToDelete: Array<Schema.Types.ObjectId> = [];
       let dayMovingFromL: string[] = [];
@@ -610,7 +613,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  function openManualBadgeOutPopup(member){
+  function openManualBadgeOutPopup(member: Member){
     setState({
       ...state,
       activityEvent: {
@@ -735,7 +738,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class BadgeInForgotIDPopUp extends React.Component{
+  class BadgeInForgotIDPopUp extends React.Component<{},{members: Member[]}>{
     constructor(props){
       super(props);
       this.state = {
@@ -884,7 +887,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class SearchResults extends React.Component<{results: Array},{}>{
+  class SearchResults extends React.Component<{results: string[], handleSelect: onClick},{}>{
     constructor(props){
       super(props);
     }
@@ -965,7 +968,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class ConfigPopup extends React.Component{
+  class ConfigPopup extends React.Component<{cancel: onClick},{}>{
     constructor(props){
       super(props);
     }
@@ -1007,7 +1010,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class AddInfoButton extends React.Component<{showCheckbox: boolean, clickedAddInfo: Expression, clickedCheckbox: Expression},{}>{
+  class AddInfoButton extends React.Component<{showCheckbox: boolean, clickedAddInfo: onClick, clickedCheckbox: onClick},{}>{
     constructor(props){
       super(props);
       this.state = { 
