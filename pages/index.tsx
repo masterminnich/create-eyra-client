@@ -201,7 +201,7 @@ export default function Home({ members, activities, config }){
     showConfigPopup: false,
     showForgotIDPopup: false,
   });
-  //console.log("state",state)
+  console.log("state",state)
 
   useEffect(() => { 
     async function socketInitializer(){
@@ -232,6 +232,15 @@ export default function Home({ members, activities, config }){
     }
     return err;
   }*/
+
+  const toggleShowGhostPopup = () => {
+    let stateBefore = state.showForgotIDPopup
+    setState({ 
+      ...state,
+      submitType: "(e) => handleSubmitForgotID(this.getInfo(),e)",
+      showForgotIDPopup: !stateBefore,
+    })
+  }
 
   const updateMemberThenActivities = async ({member, activityProps}) => {
     try {
@@ -628,7 +637,7 @@ export default function Home({ members, activities, config }){
             <textarea style={{display:"none"}} id="hiddenProps" defaultValue={JSON.stringify(this.props)}></textarea>
 
             <Button type='button' name={state.activityEvent._id} id="deleteActivityButton" onClick={(e) => deleteActivity([state.activitiesCollection, this.state, state.activityEvent._id, member])} style={trashButtonCSS}></Button>
-            <Button type='submit' id="submitBadgeOutPopup" onClick={() => this.props.submitting}>{state.displayProps.submitButtonText}</Button>
+            <Button type='submit' id="submitBadgeOutPopup" onClick={() => this.props.submitting}>{this.props.submitButtonText}</Button>
             <Button type='button' id="cancelPopupButton" onClick={() => setState({ ...state,  isOpen: false, showForgotIDPopup: false })}>Cancel</Button>
           </Form>
         </>
@@ -761,7 +770,8 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class BadgeInForgotIDPopUp extends React.Component<{toggle: onClick},{members: number[]}>{
+  class BadgeInForgotIDPopUp extends React.Component<{},{members: number[]}>{
+    //toggle: () => void
     constructor(props){
       super(props);
       this.state = {
@@ -788,7 +798,7 @@ export default function Home({ members, activities, config }){
               submitButtonText="Create"
               existsInDB={false}
               noId={true}
-              submitting={this.props.toggle()}
+              //submitting={this.props.toggle()}
             />
 
             <div>
@@ -814,19 +824,12 @@ export default function Home({ members, activities, config }){
       super(props);
     }
 
-    toggle(){ 
-      setState({ 
-        ...state,
-        submitType: "(e) => handleSubmitForgotID(this.getInfo(),e)" ,
-        showForgotIDPopup: !state.showForgotIDPopup,
-      })
-    }
-
     render(){
+      // toggle={toggleShowGhostPopup}
       return(
         <>
-          <button onClick={() => this.toggle()} type="button">Forgot ID</button>
-          { state.showForgotIDPopup ? <BadgeInForgotIDPopUp toggle={this.toggle}/> : <div></div> }
+          <button onClick={toggleShowGhostPopup} type="button">Forgot ID</button> 
+          { state.showForgotIDPopup ? <BadgeInForgotIDPopUp/> : <div></div> }
         </>
       )
     }
@@ -995,7 +998,7 @@ export default function Home({ members, activities, config }){
 
     render(){
       //let config = getConfig()
-
+      console.log("cc",state.configCollection)
       return(
         <>
           <section className="Popup">
@@ -1010,7 +1013,7 @@ export default function Home({ members, activities, config }){
             <input type="text" value={state.configCollection.otherTools.toString()}></input>
 
             <p>visitType: </p>
-            <input type="text" value={state.configCollection.visitType.toString()}></input>
+            <input type="text" value={JSON.stringify(state.configCollection.visitType)}></input>
 
             <details>
               <summary>Member Attributes</summary>
