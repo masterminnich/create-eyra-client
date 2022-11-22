@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import clientPromise from '../lib/mongodb'
+import clientPromise from '../utils/mongodb'
 import React, { Component, useState, useEffect } from 'react';
 import { Button, Form } from 'semantic-ui-react';
 import io from 'Socket.IO-client'
