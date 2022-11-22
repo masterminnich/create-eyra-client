@@ -71,7 +71,7 @@ type listOfEvents = Array<event>
 type onClick = () => void
 type onChange = (e : any) => void
 type mainState = { configCollection: any, membersCollection: Member[], activitiesCollection: ActivityDay[], displayingDay: string, isOpen: boolean, displayProps: any, batchEvents: event[], submitType: string, activityEvent: activityEvent, showConfigPopup: boolean, showForgotIDPopup: boolean }
-//type mainState = any;
+
 
 function getMachinesUtilized(){ //Get list of machinesUtilized from an on-screen PopUp
   let machinesUtilized: string[] = []
@@ -569,7 +569,8 @@ export default function Home({ members, activities, config }){
         editedEvents = editedEvents.concat(oldEvents)
         //console.log("updateAcitivtyByDate() editiedevents",editedEvents)
         updateActivityByDate(date,editedEvents,"Popup.batchEdit()")
-        if (eventIDsToDelete){ //delete oldEvents if moving
+        console.log("eventIDsToDelete",eventIDsToDelete)
+        if (eventIDsToDelete.length > 0){ //delete oldEvents if moving
           console.log("moving events to another day... removing original events.")
           let origActivityDay = state.activitiesCollection.filter(a => a.Date == dayMovingFromL[0])[0]
           let keepEvents = origActivityDay.Events.filter(e => !eventIDsToDelete.includes(e._id!))
