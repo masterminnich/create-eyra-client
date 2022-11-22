@@ -1,5 +1,5 @@
 import Cors from 'cors'
-import initMiddleware from '../../../lib/init-middleware'
+import initMiddleware from '../../../utils/init-middleware'
 import connectToDatabase from '../../../utils/connectToDatabase';
 import Activity from '../../../models/Activity';
 
