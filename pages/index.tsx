@@ -3,7 +3,7 @@ import clientPromise from '../lib/mongodb'
 import React, { Component, useState, useEffect } from 'react';
 import { Button, Form } from 'semantic-ui-react';
 import io from 'Socket.IO-client'
-import { Schema } from 'mongoose';
+import { ObjectIdSchemaDefinition, Schema } from 'mongoose';
 import { Expression } from 'typescript';
 
 
@@ -29,15 +29,17 @@ type event = {
 }
 type PopupProps = {
   badgeInDate: string;
-  badgeInTime: string;
   badgeOutDate: string;
+  badgeInTime: string;
   badgeOutTime: string;
+  noId: boolean;
   message: string;
   submitButtonText: string;
   existsInDB: boolean;
-  noId: boolean;
-  //submitting = {this.props.toggle}
+  event?: string;
+  submitting?: void | undefined;
 }
+
 type listOfEvents = Array<event>
 type Member = {
   Name: string;
@@ -188,17 +190,28 @@ export default function Home({ members, activities, config }){
   });
   //console.log("state",state)
 
-  useEffect(() => socketInitializer(), [])
+  useEffect(() => { 
+    async function socketInitializer(){
+      await fetch('/api/socket');
+      socket = io();
+      socket.on('connect', () => { console.log('WebSocket connected.') })
+      socket.on('update-membersCollection', msg => { setState({...state, membersCollection: msg})  })
+      socket.on('update-activitiesCollection', msg => { setState({...state, activitiesCollection: msg}); })
+      socket.on('update-both', data => {  setState({...state, activitiesCollection: data.activities, membersCollection: data.members}); })  
+    }
+    socketInitializer();
+  }, [])
 
-  const socketInitializer = async () => {
+  /*
+  useEffect(() => socketInitializer(), [])
+    const socketInitializer = async () => {
     await fetch('/api/socket');
     socket = io();
-
     socket.on('connect', () => { console.log('WebSocket connected.') })
     socket.on('update-membersCollection', msg => { setState({...state, membersCollection: msg})  })
     socket.on('update-activitiesCollection', msg => { setState({...state, activitiesCollection: msg}); })
     socket.on('update-both', data => {  setState({...state, activitiesCollection: data.activities, membersCollection: data.members}); })
-  }
+  }*/
 
   function toggleConfigPopup(){ setState({...state, showConfigPopup: !state.showConfigPopup}); }
 
@@ -350,7 +363,7 @@ export default function Home({ members, activities, config }){
   }
 
 
-  class QuestionTooltip extends React.Component<{id: number},{}>{
+  class QuestionTooltip extends React.Component<{id: string},{}>{
     render(){
       return(
         <>
@@ -488,7 +501,7 @@ export default function Home({ members, activities, config }){
     } else { createNewActivity(date, newActivities, "handleSubmitForgotID") }
   }
 
-  class Popup extends React.Component<{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, noId: boolean, message: string, submitButtonText: string, existsInDB: boolean, event: string},{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, visitType: string, machineUtilized: string[], otherToolsUtilized: string[]}>{
+  class Popup extends React.Component<PopupProps, {badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, visitType: string, machineUtilized: string[], otherToolsUtilized: string[]}>{
     constructor(props) {
       super(props);
       let visitType: string;
@@ -739,7 +752,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class BadgeInForgotIDPopUp extends React.Component<{},{members: number[]}>{
+  class BadgeInForgotIDPopUp extends React.Component<{toggle: onClick},{members: number[]}>{
     constructor(props){
       super(props);
       this.state = {
@@ -766,7 +779,7 @@ export default function Home({ members, activities, config }){
               submitButtonText="Create"
               existsInDB={false}
               noId={true}
-              submitting={this.props.toggle}
+              submitting={this.props.toggle()}
             />
 
             <div>
@@ -804,10 +817,7 @@ export default function Home({ members, activities, config }){
       return(
         <>
           <button onClick={() => this.toggle()} type="button">Forgot ID</button>
-          {state.showForgotIDPopup ? 
-            <BadgeInForgotIDPopUp/>
-            : <div></div>
-          }
+          { state.showForgotIDPopup ? <BadgeInForgotIDPopUp toggle={this.toggle}/> : <div></div> }
         </>
       )
     }
@@ -874,11 +884,11 @@ export default function Home({ members, activities, config }){
         <input onFocus={this.onFocus.bind(this)} onBlur={this.onBlur.bind(this)} onKeyUpCapture={this.onKeyUpCapture.bind(this)} id='searchMemberBadgeIn'></input> 
         <BadgeInForgotIDButton/>
         {this.state.showResults && this.state.results.length > 0 ? 
-          <SearchResults handleSelect={this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
+          <SearchResults handleSelect={() => this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
           :  <div></div> }
         {this.state.selectionMade ? 
           <>
-            <SubmitSelection result={this.state.selection} handleSubmit={this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
+            <SubmitSelection result={this.state.selection} handleSubmit={() => this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
             <button type="button" onClick={() => this.setState({showEditMemberPopup: true})}>Edit Member</button>
           </>
           : <div></div>}
@@ -904,7 +914,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class SubmitSelection extends React.Component<{selectionMade: string},{}>{
+  class SubmitSelection extends React.Component<{selectionMade: string, handleSubmit: onClick, result: string[]},{}>{
     constructor(props){
       super(props);
       this.state = {}
@@ -917,7 +927,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class EditMemberPopup extends React.Component<{rfid: string},{}>{
+  class EditMemberPopup extends React.Component<{rfid: string, cancel: onClick},{}>{
     constructor(props){
       super(props);
     }
@@ -961,8 +971,8 @@ export default function Home({ members, activities, config }){
             <input type="text" defaultValue={member.Certifications.toString()}></input>
 
             <button type="button" onClick={this.props.cancel}>Cancel</button>
-            <button type="button" onClick={console.log("TODO: Fix this button")}>Update</button>
-            <button type="button" onClick={console.log("TODO: Fix this button")}>Delete</button>
+            <button type="button" onClick={() => console.log("TODO: Fix this button")}>Update</button>
+            <button type="button" onClick={() => console.log("TODO: Fix this button")}>Delete</button>
           </section>
         </>
       )
