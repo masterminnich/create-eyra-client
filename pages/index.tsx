@@ -53,9 +53,10 @@ type Member = {
 }
 type ActivityDay = {
   Date: string,
-  Events: event,
+  Events: event[],
 }
 type onClick = () => void
+type onChange = (e : any) => void
 
 function getMachinesUtilized(){ //Get list of machinesUtilized from an on-screen PopUp
   let machinesUtilized: string[] = []
@@ -349,7 +350,7 @@ export default function Home({ members, activities, config }){
   }
 
 
-  class QuestionTooltip extends React.Component<{id: string},{}>{
+  class QuestionTooltip extends React.Component<{id: number},{}>{
     render(){
       return(
         <>
@@ -362,7 +363,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class VisitType extends React.Component<{selectValue: string}, {selectValue: string}>{
+  class VisitType extends React.Component<{selectValue: string, onChange: onChange}, {selectValue: string}>{
     constructor(props){
       super(props);
       //this.selectedValue = this.props.selectValue;
@@ -487,7 +488,7 @@ export default function Home({ members, activities, config }){
     } else { createNewActivity(date, newActivities, "handleSubmitForgotID") }
   }
 
-  class Popup extends React.Component<{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, visitType: string, noId: boolean, message: string, submitButtonText: string, existsInDB: boolean, event: string},{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, visitType: string, machineUtilized: string[], otherToolsUtilized: string[]}>{
+  class Popup extends React.Component<{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, noId: boolean, message: string, submitButtonText: string, existsInDB: boolean, event: string},{badgeInDate: string, badgeOutDate: string, badgeInTime: string, badgeOutTime: string, visitType: string, machineUtilized: string[], otherToolsUtilized: string[]}>{
     constructor(props) {
       super(props);
       let visitType: string;
@@ -654,7 +655,7 @@ export default function Home({ members, activities, config }){
     })
   }
 
-  class MachinesUtilized extends React.Component<{},{machines: string[]}>{
+  class MachinesUtilized extends React.Component<{onChange: onChange},{machines: string[]}>{
     constructor(props){
       super(props);
       if(typeof(state.activityEvent.machineUtilized)!=="undefined"){
@@ -697,7 +698,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class OtherToolsUtilized extends React.Component<{},{otherTools: string[]}>{
+  class OtherToolsUtilized extends React.Component<{onChange: onChange},{otherTools: string[]}>{
     constructor(props){
       super(props);
       if(typeof(state.activityEvent.otherToolsUtilized)!=="undefined"){
@@ -738,7 +739,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class BadgeInForgotIDPopUp extends React.Component<{},{members: Member[]}>{
+  class BadgeInForgotIDPopUp extends React.Component<{},{members: number[]}>{
     constructor(props){
       super(props);
       this.state = {
@@ -1003,14 +1004,14 @@ export default function Home({ members, activities, config }){
             </details>
 
             <button type="button" onClick={this.props.cancel}>Cancel</button>
-            <button type="button" onClick={console.log("update config collection (TODO)")}>Update</button>
+            <button type="button" onClick={() => console.log("update config collection (TODO)")}>Update</button>
           </section>
         </>
       )
     }
   }
 
-  class AddInfoButton extends React.Component<{showCheckbox: boolean, clickedAddInfo: onClick, clickedCheckbox: onClick},{}>{
+  class AddInfoButton extends React.Component<{showCheckbox: boolean, clickedAddInfo: onClick, clickedCheckbox: onChange, activity: event, index: number},{}>{
     constructor(props){
       super(props);
       this.state = { 
@@ -1027,7 +1028,7 @@ export default function Home({ members, activities, config }){
           (!this.props.showCheckbox && this.props.activity.event == "Undefined") ? ( 
             <button onClick={this.props.clickedAddInfo} className="addInfoAttn" style={{display:"flex",margin:"auto","height":"1.8em"}}>Add Info</button>
           ) : (
-            <input className="addInfoCheckbox" id={this.props.index} onClick={this.props.clickedCheckbox} type="checkbox" style={{display:"flex",margin:"auto","height":"1.8em"}}></input>
+            <input className="addInfoCheckbox" id={String(this.props.index)} onClick={this.props.clickedCheckbox} type="checkbox" style={{display:"flex",margin:"auto","height":"1.8em"}}></input>
           )
         )}
         </>
@@ -1096,7 +1097,7 @@ export default function Home({ members, activities, config }){
             checkbox[i].checked = changeToState;
           }
           let selected = getSelectedActivites()
-          this.setState({firstCheckboxSelected: checkboxElems[secondId], selected: selected})
+          this.setState({firstCheckboxSelected: checkbox, selected: selected})
         } else {
           let selected = getSelectedActivites()
           this.setState({firstCheckboxSelected: e.target, selected: selected})
@@ -1123,11 +1124,11 @@ export default function Home({ members, activities, config }){
             <tbody id="recentActivityTbody">
             { this.state.displayingActivities == undefined || this.state.displayingActivities.Events.length == 0 ? (
               <tr key={"noEvents_tr"}>
-                <td colSpan="3" id="noEvents">No events today.</td>
+                <td colSpan={3} id="noEvents">No events today.</td>
               </tr>
             ) : (
               this.state.displayingActivities.Events.map((actEvent,i) => ( 
-                <tr id={actEvent._id} key={actEvent._id+"_tr"}>
+                <tr id={String(actEvent._id)} key={actEvent._id+"_tr"}>
                   <td onMouseEnter={(e) => hover([{actEvent}.actEvent.MemberID,e])} onMouseLeave={hoverOut}>{actEvent.Name}</td>
                   {actEvent.flags.includes("noID") ? (
                     <td>
