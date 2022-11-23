@@ -13,7 +13,7 @@ const cors = initMiddleware( Cors({ methods: ['GET', 'POST', 'OPTIONS', "PUT"] }
 const addEventToActivityCollection = async (member, prevBadgeIn) => {
     let badgeOutTime = member.lastBadgeIn;
     let date = badgeOutTime.toLocaleString("en-CA",localDateTimeOptions).substring(0,10)
-    let sessionLengthMinutes = Math.round(new Date(badgeOutTime) - new Date(prevBadgeIn))/60000   
+    let sessionLengthMinutes = Math.round(new Date(badgeOutTime).getTime() - new Date(prevBadgeIn).getTime())/60000   
     const activity = await Activity.find({});
     let newActivityDay = activity.filter(a => a.Date == date)[0]
     let newEvent = {
