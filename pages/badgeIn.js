@@ -1,12 +1,9 @@
 import React, { Component, useState } from 'react';
-import ReactDOM from 'react-dom';
 import io from 'Socket.IO-client'
 
 //This page allows users to manually type in their RFID number to badge in.
 //This file contains functionality to search for the RFID, record key strokes.
 
-//let socket;
-var createReactClass = require('create-react-class');
 var search_input = "";
 var last_search_input = "";
 
