@@ -10,12 +10,11 @@ const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",ho
 // Initialize the cors middleware. You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
 const cors = initMiddleware( Cors({ methods: ['GET', 'POST', 'OPTIONS', "PUT"] }) )
 
-const addEventToActivityCollection = async (member, prevBadgeIn) => {
+const addEventToActivityCollection = async (activitiesCollection, member, prevBadgeIn) => {
     let badgeOutTime = member.lastBadgeIn;
     let date = badgeOutTime.toLocaleString("en-CA",localDateTimeOptions).substring(0,10)
     let sessionLengthMinutes = Math.round(new Date(badgeOutTime).getTime() - new Date(prevBadgeIn).getTime())/60000   
-    const activity = await Activity.find({});
-    let newActivityDay = activity.filter(a => a.Date == date)[0]
+    let newActivityDay = activitiesCollection.filter(a => a.Date == date)[0]
     let newEvent = {
         MemberID: member._id, 
         Name: member.Name, 
@@ -26,11 +25,12 @@ const addEventToActivityCollection = async (member, prevBadgeIn) => {
         sessionLengthMinutes: sessionLengthMinutes
     }
 
+    let activityAdded;
     if(newActivityDay){ //Update existing activity document
         let oldEvents = newActivityDay.Events
         let updatedEvents = oldEvents.concat(newEvent)
         try {
-            let activitiesAfter = await Activity.findByIdAndUpdate(newActivityDay._id, {id: newActivityDay._id, Date: date, Events: updatedEvents}, {
+            activityAdded = await Activity.findByIdAndUpdate(newActivityDay._id, {id: newActivityDay._id, Date: date, Events: updatedEvents}, {
                 new: true,
                 runValidators: true
             });
@@ -39,15 +39,16 @@ const addEventToActivityCollection = async (member, prevBadgeIn) => {
         }
     } else { //Create new activity document in activity collection
         try {
-            const activity = await Activity.create({Date: date, Events: newEvent});
+            activityAdded = await Activity.create({Date: date, Events: newEvent});
             console.log("New activity added to database:",activity.date);
         } catch (error) {
             console.log("Error while creating new activity (/api/badgeIn):",error);
         }
     }
+    return activityAdded;
 }
 
-const updateMemberBadgeInStatus = async (member) => {
+const updateMemberBadgeInStatus = async (activitiesCollection, member) => {
     try {
         member.badgedIn = !member.badgedIn;
         console.log("Successfully changed "+member.Name+"'s badge in status to",member.badgedIn)
@@ -57,29 +58,32 @@ const updateMemberBadgeInStatus = async (member) => {
         
         let res = {};
         //Update Member
-        const member2 = await Member.findByIdAndUpdate(member._id, member, {
+        let updatedMember = await Member.findByIdAndUpdate(member._id, member, {
             new: true,
             runValidators: true
         });
 
-        if (!member2) {
+        if (!updatedMember) {
             return res.status(400).json({ success: false });
         }
         if (member.badgedIn){ 
-            console.log(member2.Name,"badged in!"); 
+            console.log(updatedMember.Name,"badged in!"); 
+            return [undefined, updatedMember];
         } else { 
-            console.log("mem1 vs mem2",prevBadgeIn," ",member2.lastBadgeIn)
-            await addEventToActivityCollection(member2, prevBadgeIn)
-            console.log(member2.Name,"badged out!") 
+            console.log("prevBadgeIn:",prevBadgeIn," lastBadgeIn:",updatedMember.lastBadgeIn)
+            let activityAdded = await addEventToActivityCollection(activitiesCollection, updatedMember, prevBadgeIn)
+            console.log(updatedMember.Name,"badged out!") 
+            return [activityAdded, updatedMember];
         }
     } catch (error) {
         console.log(error);
+        return
     }
 }
 
-function findMemberByRFID(membersArray, rfid_to_find) {
+function findMemberByRFID(membersCollection, rfid_to_find) {
     console.log("Searching for member with rfid",rfid_to_find,"...");
-    const foundMember = membersArray.filter(member => {return member.rfid === rfid_to_find})
+    const foundMember = membersCollection.filter(member => {return member.rfid === rfid_to_find})
     if (foundMember.length === 1){
         console.log("Found member", foundMember[0].Name," w/ rfid",foundMember[0].rfid);
         return foundMember;
@@ -88,7 +92,12 @@ function findMemberByRFID(membersArray, rfid_to_find) {
     } else if (foundMember.length === 0){
         return 404; //Search failed. No member with this RFID.
     } else { return 400; }
-    
+}
+
+function findAndReplace(array, valueToAdd){ //ex: activitiesCollection, activityToAdd
+    let index = array.findIndex((e) => e._id == valueToAdd._id); //find index of the element to replace
+    array[index] = valueToAdd;
+    return array;
 }
 
 
@@ -100,8 +109,9 @@ export default async function handler(req, res) {
 
     const rfid_to_find = req.body.rfid;
     try {
-        const membersArray = await Member.find({}); //Objects are not valid error...
-        const foundMember = findMemberByRFID(membersArray, rfid_to_find);
+        let activitiesCollection = await Activity.find({});
+        let membersCollection = await Member.find({}); //Objects are not valid error...
+        let foundMember = findMemberByRFID(membersCollection, rfid_to_find);
 
         switch (foundMember) {
             case 406:
@@ -121,9 +131,12 @@ export default async function handler(req, res) {
                     
             default: //Member is found
                 console.log("Attempting to update "+foundMember[0].Name+"'s badge in status. (Currently: "+foundMember[0].badgedIn+")");
-                await updateMemberBadgeInStatus(foundMember[0]);
-                let activitiesCollection = await Activity.find();
-                let membersCollection = await Member.find();
+                let [activityAdded, updatedMember] = await updateMemberBadgeInStatus(activitiesCollection, foundMember[0]);
+                console.log({activityAdded,updatedMember});
+                if (activityAdded !== undefined){
+                    activitiesCollection = findAndReplace(activitiesCollection, activityAdded);
+                }
+                membersCollection = findAndReplace(membersCollection, updatedMember);
                 res.status(200).json({ success: true, after: foundMember[0], members: membersCollection, activities: activitiesCollection })
                 break;
         }

@@ -188,7 +188,7 @@ class App extends Component {
             }
             search_input = ""
           }
-        }, 1500);
+        }, 150);
       }
     }
   }
