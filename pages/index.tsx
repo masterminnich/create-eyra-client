@@ -1114,19 +1114,16 @@ export default function Home({ members, activities, config }){
           if (e.shiftKey && this.state.firstCheckboxSelected) { 
           let firstId = parseInt(this.state.firstCheckboxSelected.id)
           let secondId = e.target.id
-          let checkboxElems = document.getElementsByClassName("addInfoCheckbox");
+          let checkboxElems = document.getElementsByClassName("addInfoCheckbox") as HTMLCollectionOf<HTMLInputElement>;
           let checkbox = checkboxElems[secondId] as HTMLInputElement
-          let changeToState = checkbox.checked //
+          let changeToState = checkbox.checked
           for (let i=Math.min(firstId,secondId); i<Math.max(firstId,secondId); i++){
-            checkbox[i].checked = changeToState;
+            checkboxElems[i].checked = changeToState;
           }
-          let selected = getSelectedActivites()
-          this.setState({firstCheckboxSelected: checkbox, selected: selected})
-        } else {
-          let selected = getSelectedActivites()
-          this.setState({firstCheckboxSelected: e.target, selected: selected})
         }
       }
+      let selected = getSelectedActivites();
+      this.setState({firstCheckboxSelected: e.target, selected: selected});
     }
     
     render() {
