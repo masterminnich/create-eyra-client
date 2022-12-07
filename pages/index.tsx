@@ -200,7 +200,7 @@ export default function Home({ members, activities, config }){
     showConfigPopup: false,
     showForgotIDPopup: false,
   });
-  console.log("state",state)
+  //console.log("state",state)
 
   useEffect(() => { 
     async function socketInitializer(){
@@ -243,7 +243,9 @@ export default function Home({ members, activities, config }){
 
   const updateMemberThenActivities = async ({member, activityProps}) => {
     try {
-      await updateMember(member);
+      if(member){ 
+        await updateMember(member);
+      }
       updateActivityLog(activityProps[0],activityProps[1],activityProps[2],activityProps[3]);
     } catch (error) { console.log("ERROR:",error) }
   }
@@ -455,8 +457,8 @@ export default function Home({ members, activities, config }){
   const handleSubmitPopUp = (existingInDB, e) => { //handleSubmitBadgeOut
     //console.log("existingInDB",existingInDB,"e",e)
     let newActivity: activityEvent = state.activityEvent
-    let badgeInTime = new Date(e.target.badgeInDate.value+" "+e.target.badgeInTime.value+" EDT")
-    let badgeOutTime = new Date(e.target.badgeOutDate.value+" "+e.target.badgeOutTime.value+" EDT")
+    let badgeInTime = new Date(e.target.badgeInDate.value+" "+e.target.badgeInTime.value)
+    let badgeOutTime = new Date(e.target.badgeOutDate.value+" "+e.target.badgeOutTime.value)
     newActivity.badgeInTime = badgeInTime.toISOString()
     newActivity.badgeOutTime = badgeOutTime.toISOString()
     newActivity.machineUtilized = getMachinesUtilized()
@@ -478,8 +480,9 @@ export default function Home({ members, activities, config }){
     }
     //if memberToUpdate is undefinded it could be because its a ghost activity. No need to update the member.
     //How can we detect if this is a noID activity.
-    if(newActivity.flags?.includes("noID")){ console.log("no need to update member...") }
-    console.log("memberToUpdate",memberToUpdate.Name)
+    if (memberToUpdate){
+      console.log("memberToUpdate",memberToUpdate.Name)
+    } else { console.log("updating a ghost activity...")}
     updateMemberThenActivities({member: memberToUpdate, activityProps: [state.activitiesCollection, newActivity, e, existingInDB]})
   }
 
@@ -590,8 +593,8 @@ export default function Home({ members, activities, config }){
     }
 
     getInfo(){
-      let badgeInTime = new Date(this.state.badgeInDate+" "+this.state.badgeInTime+" EDT");
-      let badgeOutTime = new Date(this.state.badgeOutDate+" "+this.state.badgeOutTime+" EDT");
+      let badgeInTime = new Date(this.state.badgeInDate+" "+this.state.badgeInTime);
+      let badgeOutTime = new Date(this.state.badgeOutDate+" "+this.state.badgeOutTime);
       let activityInfo = {
         badgeInTime: badgeInTime.toISOString(),
         badgeOutTime: badgeOutTime.toISOString(),
