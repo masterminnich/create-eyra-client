@@ -36,6 +36,12 @@ class NewCardButton extends React.Component {
 
 function createPopUp(msg,code){
   console.log("rfid:",last_search_input)
+
+  // Remove any existing popups
+  if(document.getElementById("twohundred")){ document.getElementById("twohundred").remove() } 
+  if(document.getElementById("fourohfour")){ document.getElementById("fourohfour").remove() } 
+  if(document.getElementById("fourohsix")){ document.getElementById("fourohsix").remove() } 
+
   let f = document.getElementsByClassName("herf")[0]
   const p = document.createElement("p");
   const d = document.createElement("div");
