@@ -1,15 +1,19 @@
 import React, { Component, useState } from 'react';
 import io from 'Socket.IO-client'
+import { sortAndDeduplicateDiagnostics } from 'typescript';
 
 //This page allows users to manually type in their RFID number to badge in.
 //This file contains functionality to search for the RFID, record key strokes.
 
-var search_input = "";
-var last_search_input = "";
+//If you want to detect both RFID and Magstripe, at least one of the inputs needs a pre or post stroke.
+const EXPECTED_RFID_LENGTH = 16 //Set value to 0 if not in use
+const EXPECTED_RFID_PRESTROKE = "" //Can be a pre or post stroke. Set to "" if not in use.
+const EXPECTED_MAGSTRIPE_LENGTH = 0 //Set value to 0 if not in use
+const EXPECTED_MAGSTRIPE_PRESTROKE = ";" //Can be a pre or post stroke. Set to "" if not in use.
 
-function timeout(delay) {
-  return new Promise( res => setTimeout(res, delay) );
-}
+
+var search_input = "";
+const headers = {"Accept": "application/json", "Content-Type": "application/json"}
 
 function checkFocus(){
   // This function is run when the badgeInInputText element is un-focused. It automatically re-focuses the element.
@@ -34,7 +38,215 @@ class NewCardButton extends React.Component {
   }
 }
 
-function createPopUp(msg,code){
+class Loading extends React.Component {
+  render(){
+    return(
+      <>
+        <p>loading...</p>
+      </>
+  )}
+}
+
+class NotFoundPopup extends React.Component {
+  render(){
+    return(
+      <>
+        <div className="popupMsg" id="NotFoundPopup">
+          <p>New member? Create an account!</p>
+          <a id="newMemberButton" href={"newMember?rfid=" + this.props.rfid}>Register</a>
+          <a id="close-button" onClick={this.props.closePopups}></a>
+        </div>
+      </>
+  )}
+}
+
+class FoundPopup extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {};
+  }
+
+  render(){
+    let message = this.props.memberData.Name;
+    if(this.props.memberData.badgeIn){
+      message += " badged in!"
+    } else { message += " badged out!" }
+
+    return(
+      <>
+        <div className="popupMsg" id="FoundPopup">
+          <p>{message}</p>
+        </div>
+      </>
+  )}
+}
+
+class TooManyPopup extends React.Component {
+  render(){
+    return(
+      <>
+        <div className="popupMsg" id="TooManyPopup">
+          <p>More than one member with this RFID...</p>
+        </div>
+      </>
+  )}
+}
+
+function closeNewMemberMsg(){
+  //document.getElementById("newMemberMsg").remove();
+  window.location.href = window.location.origin + "/badgeIn" //Remove the ?new search tag from the URL
+}
+
+function showNewMemberMsg(){
+  document.getElementById("newMemberMsg").style.display = "block";
+}
+
+const searchForMagstripe = async (magstripe_input) => {
+  searchForID(magstripe_input.slice(1,8)) //Convert Magstrip UID to CINO ID
+}
+
+const searchForID = async (id) => {
+  console.log("Searching database for ID matching",id,"...");
+  try {
+    console.log("Need to implement an api route for ID searching....")
+  } catch (error) {
+    console.log("Error searching for ID.",error);
+  }
+}
+
+class App extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      badgeStatus: "waiting", // waiting, loading, tooMany, notFound, found
+      rfid: '',
+      memberData: undefined,
+    };
+  }
+
+  closePopups = () => { this.setState({...this.state, badgeStatus: "waiting"}) }
+
+  searchForRFID = async (RFID_UID_input) => {
+    console.log("Searching database for RFID_UID matching",this.state.rfid,"...");
+    await fetch('/api/socket');
+    let socket = io();
+    socket.on('connect', () => { console.log('WebSocket connected.') })
+    //socket.on('update-both', data => {  setState({...state, activitiesCollection: data.activities, membersCollection: data.members}); })
+    try {
+      const res = await fetch('/api/badgeIn', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({rfid: RFID_UID_input})
+      });
+      let response = res.json()
+      response.then((resp) => {
+        let memberData = resp.after;
+        let updatedMembers = resp.members;
+        let updatedActivities = resp.activities;
+        
+        if (res.status == 200) {
+          this.setState({...this.state, badgeStatus: "found", memberData: memberData})
+          socket.emit('membersAndActivities-change', {members: updatedMembers, activities: updatedActivities})
+          setTimeout(this.setState({...this.state, badgeStatus: "waiting" }), 4000);
+        } else if (res.status == 406){ 
+          this.setState({...this.state, badgeStatus: "tooMany"});
+        } else {
+          this.setState({...this.state, badgeStatus: "notFound"});
+        }
+      });
+    } catch (error) { console.log("Error searching for RFID.",error); }
+  }
+
+  searchRFIDOrMagStripe(lengthBefore, MIN_INPUT_LENGTH, MAX_INPUT_LENGTH){
+    if (lengthBefore < search_input.length){
+      console.log("removed leading characters...")
+    } else { //If no additional keypresses follow, search for the RFID/Magstripe
+      let last_search_input = search_input.slice(-MAX_INPUT_LENGTH)
+      this.setState({...this.state, rfid: last_search_input})
+      if ((EXPECTED_MAGSTRIPE_LENGTH == 0) || (this.state.rfid.includes(EXPECTED_RFID_PRESTROKE) & EXPECTED_RFID_PRESTROKE !== "")){
+        this.state.rfid = this.state.rfid.slice(-EXPECTED_RFID_LENGTH)
+        console.log("r1")
+        this.searchForRFID(this.state.rfid)
+      } else if ((EXPECTED_RFID_LENGTH == 0) || (this.state.rfid.includes(EXPECTED_MAGSTRIPE_PRESTROKE) & EXPECTED_MAGSTRIPE_PRESTROKE !== "")){
+        this.state.rfid = this.state.rfid.slice(-EXPECTED_MAGSTRIPE_LENGTH)
+        searchForMagstripe(this.state.rfid)
+      } else {
+        //The input lacks a pre/post stroke 
+        if (EXPECTED_RFID_PRESTROKE == ""){
+          this.state.rfid = this.state.rfid.slice(-EXPECTED_RFID_LENGTH)
+          console.log("r2")
+          this.searchForRFID(this.state.rfid)
+        } else {
+          this.state.rfid = this.state.rfid.slice(-EXPECTED_MAGSTRIPE_LENGTH)
+          searchForMagstripe(this.state.rfid)
+        }
+      }
+      search_input = ""
+    }
+  }
+  
+  handleKeyDown = e => {
+    checkFocus()
+
+    const MIN_INPUT_LENGTH = Math.min.apply(null,[EXPECTED_RFID_LENGTH,EXPECTED_MAGSTRIPE_LENGTH].filter(x => x>0))
+    const MAX_INPUT_LENGTH = Math.max.apply(null,[EXPECTED_RFID_LENGTH,EXPECTED_MAGSTRIPE_LENGTH].filter(x => x>0))
+
+    if ([EXPECTED_RFID_PRESTROKE,EXPECTED_MAGSTRIPE_PRESTROKE,"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","1","2","3","4","5","6","7","8","9","0"].includes(e.key)){ //Ignore all keypresses except alphanumeric characters.
+      search_input += e.key.toUpperCase(); //Force all letters to be Upper Case
+      console.log("keypress: ", e.key.toUpperCase());
+    
+      if (search_input.length >= MIN_INPUT_LENGTH){ //Wait a short amount of time before searching database for string, if another keypress comes wait until keypresses finish then search last (16) characters. Helps minimize accidental keypresses.
+        window.clearTimeout(Timer)
+        this.setState({...this.state, badgeStatus: "loading"})
+        let lengthBefore = search_input.length 
+        var Timer = window.setTimeout(this.searchRFIDOrMagStripe(
+          lengthBefore, MIN_INPUT_LENGTH, MAX_INPUT_LENGTH), 2500);
+      }
+    }
+  }
+
+  componentDidMount(){
+    this.nameInput.focus(); 
+    if(window.location.search == "?new"){showNewMemberMsg()};
+  }
+
+  render() {
+      return (
+        <React.Fragment>
+          <div className="badgeIn">
+          <input id="badgeInTextInput" spellCheck="false" type='text' 
+            ref={(input) => { this.nameInput = input; }} //autoFocus wasn't working for some reason. Solution from StackOverflow: https://stackoverflow.com/questions/28889826/how-to-set-focus-on-an-input-field-after-rendering?rq=1
+            onKeyDown={this.handleKeyDown} onBlur={checkFocus}/>
+            <h1 id="pleaseBadgeIn">Please Badge In!</h1>
+            <h2 id="pleaseBadgeIn">(Hold your CINO ID to the reader until you hear a beep)</h2>
+            <div className="arrow"></div>
+            <div className="herf"></div>
+            { this.state.badgeStatus == "loading" ? (
+              <Loading/>
+            ) : (<div></div>) }
+            { this.state.badgeStatus == "tooMany" ? (
+              <TooManyPopup/>
+            ) : (<div></div>) }
+            { this.state.badgeStatus == "notFound" ? (
+              <NotFoundPopup closePopups={this.closePopups} rfid={this.state.rfid}/>
+            ) : (<div></div>) }
+            { this.state.badgeStatus == "found" ? (
+              <FoundPopup memberData={this.state.memberData}/>
+            ) : (<div></div>) }
+            <div id="newMemberMsg">
+	            <h1>Welcome New Member!</h1>
+	            <p>This database keeps track of your progress in the makerspace. Please <b>remember to badge in everytime you arrive at the makerspace</b> and badge out when you’re leaving.<br/><br/><b>You are NOT badged in yet!</b> If you are sticking around, please scan your card again to badge in for the first time. </p>
+	            <a onClick={closeNewMemberMsg}>Got it!</a>
+              </div>
+          </div>
+        </React.Fragment>
+      );
+  }
+}
+export default App;
+
+
+/*function createPopUp(msg,code){
   console.log("rfid:",last_search_input)
 
   // Remove any existing popups
@@ -79,14 +291,8 @@ function createPopUp(msg,code){
   }
 }
 
-function closeNewMemberMsg(){
-  //document.getElementById("newMemberMsg").remove();
-  window.location.href = window.location.origin + "/badgeIn" //Remove the ?new search tag from the URL
-}
 
-function showNewMemberMsg(){
-  document.getElementById("newMemberMsg").style.display = "block";
-}
+
 
 const searchForRFID = async (RFID_UID_input) => {
   console.log("Searching database for RFID_UID matching",last_search_input,"...");
@@ -129,101 +335,4 @@ const searchForRFID = async (RFID_UID_input) => {
   } catch (error) {
     console.log("Error searching for RFID.",error);
   }
-}
-
-const searchForMagstripe = async (magstripe_input) => {
-  searchForID(magstripe_input.slice(1,8)) //Convert Magstrip UID to CINO ID
-}
-
-const searchForID = async (id) => {
-  console.log("Searching database for ID matching",id,"...");
-  try {
-    console.log("Need to implement an api route for ID searching....")
-  } catch (error) {
-    console.log("Error searching for ID.",error);
-  }
-}
-
-class App extends Component {
-  state = {
-      badgeStatus: "waiting",
-      rfid: ''
-  };
-  
-  handleKeyDown = e => {
-    checkFocus()
-
-    //If you want to detect both RFID and Magstripe, at least one of the inputs needs a pre or post stroke.
-    const EXPECTED_RFID_LENGTH = 16 //Set value to 0 if not in use
-    const EXPECTED_RFID_PRESTROKE = "" //Can be a pre or post stroke. Set to "" if not in use.
-    const EXPECTED_MAGSTRIPE_LENGTH = 13 //Set value to 0 if not in use
-    const EXPECTED_MAGSTRIPE_PRESTROKE = ";" //Can be a pre or post stroke. Set to "" if not in use.
-
-    const MIN_INPUT_LENGTH = Math.min.apply(null,[EXPECTED_RFID_LENGTH,EXPECTED_MAGSTRIPE_LENGTH].filter(x => x>0))
-    const MAX_INPUT_LENGTH = Math.max.apply(null,[EXPECTED_RFID_LENGTH,EXPECTED_MAGSTRIPE_LENGTH].filter(x => x>0))
-
-    if ([EXPECTED_RFID_PRESTROKE,EXPECTED_MAGSTRIPE_PRESTROKE,"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","1","2","3","4","5","6","7","8","9","0"].includes(e.key)){ //Ignore all keypresses except alphanumeric characters.
-      search_input += e.key.toUpperCase(); //Force all letters to be Upper Case
-      console.log("keypress: ", e.key.toUpperCase());
-    
-      if (search_input.length >= MIN_INPUT_LENGTH){ //Wait a short amount of time before searching database for string, if another keypress comes wait until keypresses finish then search last (16) characters. Helps minimize accidental keypresses.
-        window.clearTimeout(Timer)
-        let lengthBefore = search_input.length 
-        var Timer = window.setTimeout(function(){
-          if (lengthBefore < search_input.length){
-            console.log("removed leading characters...")
-          } else { //If no additional keypresses follow, search for the RFID/Magstripe
-            last_search_input = search_input.slice(-MAX_INPUT_LENGTH)
-            if ((EXPECTED_MAGSTRIPE_LENGTH == 0) || (last_search_input.includes(EXPECTED_RFID_PRESTROKE) & EXPECTED_RFID_PRESTROKE !== "")){
-              last_search_input = last_search_input.slice(-EXPECTED_RFID_LENGTH)
-              console.log("r1")
-              searchForRFID(last_search_input)
-            } else if ((EXPECTED_RFID_LENGTH == 0) || (last_search_input.includes(EXPECTED_MAGSTRIPE_PRESTROKE) & EXPECTED_MAGSTRIPE_PRESTROKE !== "")){
-              last_search_input = last_search_input.slice(-EXPECTED_MAGSTRIPE_LENGTH)
-              searchForMagstripe(last_search_input)
-            } else {
-              //The input lacks a pre/post stroke 
-              if (EXPECTED_RFID_PRESTROKE == ""){
-                last_search_input = last_search_input.slice(-EXPECTED_RFID_LENGTH)
-                console.log("r2")
-                searchForRFID(last_search_input)
-              } else {
-                last_search_input = last_search_input.slice(-EXPECTED_MAGSTRIPE_LENGTH)
-                searchForMagstripe(last_search_input)
-              }
-            }
-            search_input = ""
-          }
-        }, 150);
-      }
-    }
-  }
-
-  componentDidMount(){
-    this.nameInput.focus(); 
-    if(window.location.search == "?new"){showNewMemberMsg()};
-  }
-
-  render() {
-      return (
-        <React.Fragment>
-          <div className="badgeIn">
-          <input id="badgeInTextInput" spellCheck="false" type='text' 
-            ref={(input) => { this.nameInput = input; }} //autoFocus wasn't working for some reason. Solution from StackOverflow: https://stackoverflow.com/questions/28889826/how-to-set-focus-on-an-input-field-after-rendering?rq=1
-            onKeyDown={this.handleKeyDown} onBlur={checkFocus}/>
-            <h1 id="pleaseBadgeIn">Please Badge In!</h1>
-            <h2 id="pleaseBadgeIn">(Hold your CINO ID to the reader until you hear a beep)</h2>
-            <div className="arrow"></div>
-            <div className="herf"></div>
-            <div id="newMemberMsg">
-	            <h1>Welcome New Member!</h1>
-	            <p>This database keeps track of your progress in the makerspace. Please <b>remember to badge in everytime you arrive at the makerspace</b> and badge out when you’re leaving.<br/><br/><b>You are NOT badged in yet!</b> If you are sticking around, please scan your card again to badge in for the first time. </p>
-	            <a onClick={closeNewMemberMsg}>Got it!</a>
-              </div>
-          </div>
-        </React.Fragment>
-        
-      );
-  }
-}
-export default App;
+}*/

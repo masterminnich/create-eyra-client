@@ -55,7 +55,7 @@ input#badgeInInput, input#badgeOutInput{
     margin-bottom: 5px;
 }
 
-a.close-button::before{
+a#close-button::before{
     position: absolute;
     top: -30px;
     bottom: 0;
@@ -349,15 +349,15 @@ div#memberPieChart, div.controlMemberPieChart{ position: absolute; }
 /* End stats page */
 
 /* Start badge in popup CSS */
-div#twohundred{
+div#FoundPopup{
     background-color: green;
 }
 
-div#fourohsix, div#fourohfour{
+div#NotFoundPopup, div#TooManyPopup{
     background-color:salmon;
 }
 
-div#twohundred, div#fourohsix, div#fourohfour{
+div#FoundPopup, div#TooManyPopup, div#NotFoundPopup{
     width: 75%;
     height: 25vw;
     left: 0;
@@ -370,7 +370,7 @@ div#twohundred, div#fourohsix, div#fourohfour{
     position: fixed;
 }
 
-p.popupMsg{
+.popupMsg{
     text-align: center;
     font-size: 3vw;
     font-weight: 700;
