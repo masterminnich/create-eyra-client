@@ -30,7 +30,7 @@ section.Popup{
     background-color: lightskyblue;
     display: flex;
     flex-direction: column;
-    position: absolute;
+    position: fixed;
     width: 90%;
     border: 1px solid black;
     border-radius: 15px;

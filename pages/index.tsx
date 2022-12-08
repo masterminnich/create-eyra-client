@@ -260,7 +260,7 @@ export default function Home({ members, activities, config }){
       let response = res.json()
       response.then((resp) => {
         //console.log("resp.after",resp.after, "filter....",resp.after.filter(m=>m.badgedIn==true))
-        setState({...state, membersCollection: resp.after, isOpen: false})
+        setState({...state, membersCollection: resp.after, isOpen: false, showForgotIDPopup: false})
         socket.emit('membersCollection-change', resp.after)
       });
     } catch (error) { console.log("ERROR in updateMember() ",error); }
@@ -276,7 +276,7 @@ export default function Home({ members, activities, config }){
       let response = res.json()
       response.then((resp) => {
         let updatedActivities = state.activitiesCollection.map(e => (e.Date==resp.after.Date) ? resp.after : e ) //Update a single entry in the activitiesCollection
-        setState({...state, activitiesCollection: updatedActivities, isOpen: false})
+        setState({...state, activitiesCollection: updatedActivities, isOpen: false, showForgotIDPopup: false})
         socket.emit('activitiesCollection-change', updatedActivities)
         //console.log("$state updated!",state)
       });
@@ -292,7 +292,7 @@ export default function Home({ members, activities, config }){
       })
       let response = res.json()
       response.then((resp) => {
-        setState({...state, activitiesCollection: resp.activities, isOpen: false})
+        setState({...state, activitiesCollection: resp.activities, isOpen: false, showForgotIDPopup: false})
         socket.emit('activitiesCollection-change', resp.activities)
       });
     } catch (error) { console.log("ERROR in",originFn,":",error) }
@@ -1295,7 +1295,6 @@ export default function Home({ members, activities, config }){
         <summary>Developer Notes</summary>
         <h3>Bugs:</h3>
         <ul>
-          <li>Batch Edit: Flags disappear when changing days</li>
           <li>/api/members PUT | Does not create an event! Just badges out.</li>
           <li>Fix: getMemberStats() (relies on member.sessions)</li>
           <li>Some times are it the wrong timezone. +5 1/1-3/14. +4 3/14-</li>
