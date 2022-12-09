@@ -259,7 +259,6 @@ export default function Home({ members, activities, config }){
       });
       let response = res.json()
       response.then((resp) => {
-        //console.log("resp.after",resp.after, "filter....",resp.after.filter(m=>m.badgedIn==true))
         setState({...state, membersCollection: resp.after, isOpen: false, showForgotIDPopup: false})
         socket.emit('membersCollection-change', resp.after)
       });
@@ -278,7 +277,6 @@ export default function Home({ members, activities, config }){
         let updatedActivities = state.activitiesCollection.map(e => (e.Date==resp.after.Date) ? resp.after : e ) //Update a single entry in the activitiesCollection
         setState({...state, activitiesCollection: updatedActivities, isOpen: false, showForgotIDPopup: false})
         socket.emit('activitiesCollection-change', updatedActivities)
-        //console.log("$state updated!",state)
       });
     } catch (error) { console.log("ERROR :",error); }
   }
@@ -303,7 +301,6 @@ export default function Home({ members, activities, config }){
     // activity : The activities collection
     // newActivity: the activityEvent to update
     // existing : true = edit an activity that exists in the DB. false = add a new activity to the DB
-    //console.log("newActivity prop",newActivity)
     let newBadgeOutDate = newActivity.badgeOutTime.substring(0,10);
     let displayProps = JSON.parse(e.target["displayProps"].innerText);
     let prevBadgeOutDate = displayProps.displayDay;
@@ -371,7 +368,6 @@ export default function Home({ members, activities, config }){
       let response = res.json();
       response.then((resp) => {
         let updatedMembers = state.membersCollection.map(m => (m._id==resp.after._id) ? resp.after : m )
-        //console.log("badgeInByRFID resp:",resp,"updatedMembers",updatedMembers,"updatedActivities",resp.activities)
         setState({...state, membersCollection: updatedMembers, activitiesCollection: resp.activities, isOpen: false});
         socket.emit("membersAndActivities-change", {members: updatedMembers, activities: resp.activities})
       });
@@ -426,20 +422,12 @@ export default function Home({ members, activities, config }){
   }
 
   const batchEdit = (e,selected) => {
-    console.log("e",e)
     let date = document.getElementById("date")?.innerText
     let editDate = state.activitiesCollection.filter(a => a.Date== date)[0]
     let eventIdsToEdit: Array<Schema.Types.ObjectId> = []; //list of event ids to delete
     selected.forEach(item => eventIdsToEdit.push(item.parentNode.parentNode.id)) //Get a list of event ids to delete
     let eventsToEdit = editDate.Events.filter(e => eventIdsToEdit.includes(e._id!))
     let eventInfo = eventsToEdit[0];
-    //console.log("EventsToEdit",eventsToEdit)
-    //needs to find and pass batchEventsToEdit
-    /*setState({
-      ...state,
-      batchEvents: eventsToEdit,
-    })
-    console.log("EventsToEdit",eventsToEdit)*/
     let message = "Editing ("+eventIdsToEdit.length+") events..."
     openBatchEditPopUp(eventsToEdit,eventInfo,{submitButtonText:"Batch Update","message":message}, "() => this.batchEdit()") 
   }
@@ -487,9 +475,6 @@ export default function Home({ members, activities, config }){
   }
 
   const handleSubmitForgotID = (props,e) => {
-    //console.log("props",props)
-    //let displayProps = JSON.parse(e.target[24].innerText);
-    //let hiddenProps = JSON.parse(e.target[25].innerText);
     let numOfMembers = e.target.parentNode.children[2].children[1].value
     let newActivities: listOfEvents = [] 
     for (let i=0; i<numOfMembers; i++){
@@ -550,7 +535,6 @@ export default function Home({ members, activities, config }){
       let eventIDList: Array<Schema.Types.ObjectId> = []; //List of _id of each edited event
       let eventIDsToDelete: Array<Schema.Types.ObjectId> = [];
       let dayMovingFromL: string[] = [];
-      //console.log("state",state,"activityInfo",activityInfo)
       for (let i=0; i<state.batchEvents.length; i++){
         let singleEvent: event = state.batchEvents[i]
         let editedEvent: event = { badgeInTime: "", badgeOutTime: "", machineUtilized: [], otherToolsUtilized: [], event: "", sessionLengthMinutes: null, MemberID: null, _id: null, flags: [] };
@@ -578,7 +562,6 @@ export default function Home({ members, activities, config }){
         let oldEvents = activityDay.Events
         oldEvents = oldEvents.filter(e => !eventIDList.includes(e._id!))//remove edited Events
         editedEvents = editedEvents.concat(oldEvents)
-        //console.log("updateAcitivtyByDate() editiedevents",editedEvents)
         updateActivityByDate(date,editedEvents,"Popup.batchEdit()")
         console.log("eventIDsToDelete",eventIDsToDelete)
         if (eventIDsToDelete.length > 0){ //delete oldEvents if moving
@@ -609,11 +592,10 @@ export default function Home({ members, activities, config }){
     }
     
     render(){
-      //console.log("popup props",this.props,"batchEvents type",batchEvents)
       let trashButtonCSS = {"display": "block"}
       if(this.props.noId && this.props.noId == true){ trashButtonCSS = {"display": "none"} }
       if(state.batchEvents.length > 0){ trashButtonCSS = {"display": "none"} }
-      let member = state.membersCollection.filter(m => m._id !== state.activityEvent.MemberID)
+      let member = state.membersCollection.filter(m => m._id == state.activityEvent.MemberID)[0]
       return (
         <>
           <h1 id="badgingOutTitle">{this.props.message}</h1>
@@ -1000,7 +982,6 @@ export default function Home({ members, activities, config }){
 
     render(){
       //let config = getConfig()
-      console.log("cc",state.configCollection)
       return(
         <>
           <section className="Popup">
@@ -1203,9 +1184,6 @@ export default function Home({ members, activities, config }){
     }
 
     render(){
-      //let joe = state.membersCollection.filter(m=>m.Name=="Joseph Minnich")[0]
-      //let d = state.activitiesCollection.filter(m=>m.Date=="2022-11-12")[0]
-      //console.log("joe:",joe.badgedIn," day:",d) //DELETE bebug notes
       return(
         <>
           <section className="fit">

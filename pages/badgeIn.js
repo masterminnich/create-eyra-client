@@ -1,6 +1,5 @@
-import React, { Component, useState } from 'react';
+import React from 'react';
 import io from 'Socket.IO-client'
-import { sortAndDeduplicateDiagnostics } from 'typescript';
 
 //This page allows users to manually type in their RFID number to badge in.
 //This file contains functionality to search for the RFID, record key strokes.
@@ -11,9 +10,9 @@ const EXPECTED_RFID_PRESTROKE = "" //Can be a pre or post stroke. Set to "" if n
 const EXPECTED_MAGSTRIPE_LENGTH = 0 //Set value to 0 if not in use
 const EXPECTED_MAGSTRIPE_PRESTROKE = ";" //Can be a pre or post stroke. Set to "" if not in use.
 
-
 var search_input = "";
 const headers = {"Accept": "application/json", "Content-Type": "application/json"}
+
 
 function checkFocus(){
   // This function is run when the badgeInInputText element is un-focused. It automatically re-focuses the element.
@@ -54,6 +53,7 @@ class NotFoundPopup extends React.Component {
         <div className="popupMsg" id="NotFoundPopup">
           <p>New member? Create an account!</p>
           <a id="newMemberButton" href={"newMember?rfid=" + this.props.rfid}>Register</a>
+          <p className="helpMsg">Already registered? Ask makerspace staff for assistance.</p>
           <a id="close-button" onClick={this.props.closePopups}></a>
         </div>
       </>

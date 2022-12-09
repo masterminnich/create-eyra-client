@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useRouter, withRouter } from 'next/router';
 import fetch from 'isomorphic-unfetch';
 import { Button, Form, Loader, Radio, Dropdown } from 'semantic-ui-react';
