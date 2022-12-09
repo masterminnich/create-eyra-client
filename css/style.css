@@ -36,6 +36,7 @@ section.Popup{
     border-radius: 15px;
     margin: 4%;
     z-index: 1;
+    top: 0;
 }
 
 input#badgeInInput, input#badgeOutInput{ 

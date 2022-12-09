@@ -923,52 +923,73 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class EditMemberPopup extends React.Component<{rfid: string, cancel: onClick},{}>{
+  class EditMemberPopup extends React.Component<{rfid: string, cancel: onClick}, {member}>{
     constructor(props){
       super(props);
+      this.state = {
+        member: state.membersCollection.filter(mem => mem.rfid == this.props.rfid)[0]
+      }
+    }
+
+    updateArray(property: string, value){
+      let updatedMember = this.state.member
+      updatedMember[property] = value.split(",")
+      this.setState({...this.state, member: updatedMember})
+      //console.log("updated",this.state.member[property])
+    }
+
+    updateString(property, value){
+      let updatedMember = this.state.member
+      updatedMember[property] = value
+      this.setState({...this.state, member: updatedMember})
+      //console.log("updated",this.state.member[property])
+    }
+
+    handleSubmit(){
+      updateMember(this.state.member)
+      setState({...state, isOpen: false})
     }
 
     render(){
-      let member = state.membersCollection.filter(mem => mem.rfid == this.props.rfid)[0]
-
       return(
         <>
           <section className="Popup">
             <p>EDITING MEMBER</p>
 
             <p>Name:</p>
-            <input type="text" defaultValue={member.Name}></input>
+            <input type="text" defaultValue={this.state.member.Name} onChange={(e) => this.updateString("Name", e.target.value)}></input>
 
             <p>RFID:</p>
-            <input type="text" defaultValue={this.props.rfid}></input>
+            <input type="text" defaultValue={this.props.rfid} onChange={(e) => this.updateString("rfid", e.target.value)}></input>
 
             <p>Major:</p>
-            <select defaultValue={member.Major}>
+            <select defaultValue={this.state.member.Major} onChange={(e) => this.updateString("Major", e.target.value)}>
               {state.configCollection.memberAttributes.majors.map((major) => 
                 <option key={major}>{major}</option>
               )}
             </select>
 
             <p>PatronType:</p> 
-            <select defaultValue={member.PatronType}>
+            <select defaultValue={this.state.member.PatronType} onChange={(e) => this.updateString("PatronType", e.target.value)}>
               {state.configCollection.memberAttributes.patronTypes.map((patronType) => 
                 <option key={patronType}>{patronType}</option>
               )}
             </select>
 
             <p>GraduationYear:</p>
-            <select defaultValue={member.GraduationYear}>
+            <select defaultValue={this.state.member.GraduationYear} onChange={(e) => this.updateString("GraduationYear", e.target.value)}>
               {state.configCollection.memberAttributes.graduationYears.map((gradYear) => 
                 <option key={gradYear}>{gradYear}</option>
               )}
             </select>
 
             <p>Certifications:</p>
-            <input type="text" defaultValue={member.Certifications.toString()}></input>
+            <p>Use a comma (,) between values</p>
+            <input type="text" defaultValue={this.state.member.Certifications.toString()} onChange={(e) => this.updateArray("Certifications", e.target.value)}></input>
 
             <button type="button" onClick={this.props.cancel}>Cancel</button>
-            <button type="button" onClick={() => console.log("TODO: Fix this button")}>Update</button>
-            <button type="button" onClick={() => console.log("TODO: Fix this button")}>Delete</button>
+            <button type="button" onClick={() => this.handleSubmit()}>Update</button>
+            <button type="button" onClick={() => console.log("TODO: Implement this button")}>Delete</button>
           </section>
         </>
       )
@@ -981,7 +1002,6 @@ export default function Home({ members, activities, config }){
     }
 
     render(){
-      //let config = getConfig()
       return(
         <>
           <section className="Popup">
