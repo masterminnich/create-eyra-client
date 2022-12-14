@@ -4,6 +4,7 @@ import React, { Component, useState, useEffect } from 'react';
 import { Button, Form } from 'semantic-ui-react';
 import io from 'Socket.IO-client'
 import { ObjectIdSchemaDefinition, Schema } from 'mongoose';
+import { createStyleRegistry } from 'styled-jsx';
 
 
 let socket;
@@ -923,19 +924,27 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class EditMemberPopup extends React.Component<{rfid: string, cancel: onClick}, {member}>{
+  class EditMemberPopup extends React.Component<{rfid: string, cancel: onClick}, {member, earnedCerts: String[]}>{
     constructor(props){
       super(props);
+      let member = state.membersCollection.filter(mem => mem.rfid == this.props.rfid)[0]
       this.state = {
-        member: state.membersCollection.filter(mem => mem.rfid == this.props.rfid)[0]
+        member: member,
+        earnedCerts: member.Certifications
       }
     }
 
-    updateArray(property: string, value){
-      let updatedMember = this.state.member
-      updatedMember[property] = value.split(",")
-      this.setState({...this.state, member: updatedMember})
-      //console.log("updated",this.state.member[property])
+    updateCerts(e){ //property: string, value
+      let certName = e.target.name
+      let checkboxValue = e.target.checked
+      let certsList = this.state.earnedCerts
+      if (checkboxValue){ //Certification added
+        certsList.push(certName)
+      } else { //Certification removed
+        certsList = certsList.filter(c => c !== certName)
+      }
+      this.setState({...this.state, earnedCerts: certsList})
+      //console.log({certName,checkboxValue,certsList})
     }
 
     updateString(property, value){
@@ -946,7 +955,9 @@ export default function Home({ members, activities, config }){
     }
 
     handleSubmit(){
-      updateMember(this.state.member)
+      let updatedMember = this.state.member
+      updatedMember.Certifications = this.state.earnedCerts
+      updateMember(updatedMember)
       setState({...state, isOpen: false})
     }
 
@@ -984,12 +995,18 @@ export default function Home({ members, activities, config }){
             </select>
 
             <p>Certifications:</p>
-            <p>Use a comma (,) between values</p>
-            <input type="text" defaultValue={this.state.member.Certifications.toString()} onChange={(e) => this.updateArray("Certifications", e.target.value)}></input>
+            <div style={{display: 'flex'}} onChange={(e) => this.updateCerts(e)}>
+            {state.configCollection.certifications.map((cert,i) => (
+              <div>
+                <p>{cert}</p>
+                <input name={cert} type="checkbox" defaultChecked={this.state.member.Certifications.includes(cert)}></input>
+              </div>
+            ))}
+            </div>
 
             <button type="button" onClick={this.props.cancel}>Cancel</button>
             <button type="button" onClick={() => this.handleSubmit()}>Update</button>
-            <button type="button" onClick={() => console.log("TODO: Implement this button")}>Delete</button>
+            <button type="button" onClick={() => console.log("TODO: Implement this button w/ an Are you Sure? popup")}>Delete</button>
           </section>
         </>
       )

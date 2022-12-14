@@ -1,15 +1,29 @@
-## Dependencies
- - PACSProbe
- - Node.JS / npm
+<h1 align="center">BadgingSystem</h1>
+<p align="center">An all-in-one credential solution for makerspaces!</p>
 
-## How to start the server
- - Install Dependecies + git clone BadgingSystem
- - Create .env.local and next.config.js files (using MongoDB URI) 
- - Whitelist your IP in MongoDB
- - From a command line navigate to the BadgingSystem directory and start the server using "npm run dev".
- - Connect to the server using localhost:3000 or [hostname]:3000
-   - Find hostname of the machine you are hosting the server from. (Use "ipconfig" on windows, "iwconfig" on linux)
-   - BadgingSystem can run locally and remotely. Moreover, multiple instances can be run simultaneously. 
+## What is BadgingSystem?
+BadgingSystem is a web app designed to make it easy for makerspaces to log their members, the credentials members have earned, and to compile useful statistics. It's meant to be easily reconfigurable and adaptable to almost any workplace.  
 
-## Additional Info
-This application was developed using [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) template.
+## Requirements
+- Download [Node.js](https://nodejs.org/en/download/)
+
+## Getting Started
+1. Clone the repository using npm.  ```git clone ...```
+2. Create a [MongoDB account](https://account.mongodb.com/account/register)
+3. Create a new [MongoDB "shared" cluster](https://account.mongodb.com/account/register)
+4. Whitelist your IP under the "Network Access" tab in MongoDB
+5. Download a keyboard wedge compatible with your ID cards. We recommend [PacsProbe](https://pacsprobe.com/free_software_download_for_card_number/)
+6. ```node setup.js YOUR_MONGODB_PASSWORD```
+7. Start the app with ```npm run dev```
+
+## Usage
+- Start the app: ```npm run dev```
+- Close the app: ```Ctrl+C```
+
+## Contribute
+BadgingSystem is open-source project written and maintained by makerspace directors. Your issues, pull requests and general feedback are welcomed!
+
+## Nice Features
+- Can be run locally or remotely.
+- Multiple sessions can run concurrently.
+- Data is stored on a MongoDB Shared cluster entirely for FREE!
