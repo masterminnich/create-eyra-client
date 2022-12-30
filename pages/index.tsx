@@ -4,7 +4,8 @@ import React, { Component, useState, useEffect } from 'react';
 import { Button, Form } from 'semantic-ui-react';
 import io from 'Socket.IO-client'
 import { ObjectIdSchemaDefinition, Schema } from 'mongoose';
-import { createStyleRegistry } from 'styled-jsx';
+import { rootCertificates } from 'tls';
+import { isNoSubstitutionTemplateLiteral } from 'typescript';
 
 
 let socket;
@@ -799,6 +800,7 @@ export default function Home({ members, activities, config }){
               )}
             </div>
           </section>
+          <div id="blur"></div>
         </>
       )
     }
@@ -814,7 +816,7 @@ export default function Home({ members, activities, config }){
       return(
         <>
           <button onClick={toggleShowGhostPopup} type="button">Forgot ID</button> 
-          { state.showForgotIDPopup ? <BadgeInForgotIDPopUp/> : <div></div> }
+          { state.showForgotIDPopup ? <BadgeInForgotIDPopUp/> : <></> }
         </>
       )
     }
@@ -873,7 +875,7 @@ export default function Home({ members, activities, config }){
         <>
         {this.state.showEditMemberPopup ? 
           <EditMemberPopup rfid={this.state.selection[1]} cancel={() => this.setState({showEditMemberPopup: false})}/>
-          : <div></div>
+          : <></>
         }
 
         <div style={{"textAlign": "center"}}>
@@ -882,13 +884,13 @@ export default function Home({ members, activities, config }){
         <BadgeInForgotIDButton/>
         {this.state.showResults && this.state.results.length > 0 ? 
           <SearchResults handleSelect={this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
-          :  <div></div> }
+          :  <></> }
         {this.state.selectionMade ? 
           <>
             <SubmitSelection result={this.state.selection} handleSubmit={this.handleSubmit.bind(this)} selectionMade={this.state.selection[0]}></SubmitSelection>
             <button type="button" onClick={() => this.setState({showEditMemberPopup: true})}>Edit Member</button>
           </>
-          : <div></div>}
+          : <></>}
         </div>
         </>
       ) 
@@ -1008,6 +1010,7 @@ export default function Home({ members, activities, config }){
             <button type="button" onClick={() => this.handleSubmit()}>Update</button>
             <button type="button" onClick={() => console.log("TODO: Implement this button w/ an Are you Sure? popup")}>Delete</button>
           </section>
+          <div id="blur"></div>
         </>
       )
     }
@@ -1048,6 +1051,7 @@ export default function Home({ members, activities, config }){
             <button type="button" onClick={this.props.cancel}>Cancel</button>
             <button type="button" onClick={() => console.log("update config collection (TODO)")}>Update</button>
           </section>
+          <div id="blur"></div>
         </>
       )
     }
@@ -1065,10 +1069,15 @@ export default function Home({ members, activities, config }){
       return(
         <>
         {!this.props.showCheckbox && this.props.activity.event !== "Undefined" ? (
-          <button onClick={this.props.clickedAddInfo} className="addInfo" style={{display:"flex",margin:"auto","height":"1.8em"}}>Add Info</button>
+          <button onClick={this.props.clickedAddInfo} className="addInfo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 32 34">
+              <path fill="#000" d="M31.674 3.377a1.116 1.116 0 0 1 0 1.576l-2.328 2.33-4.464-4.464L27.21.49a1.116 1.116 0 0 1 1.578 0l2.886 2.886v.002ZM27.768 8.86l-4.465-4.464L8.095 19.603a1.116 1.116 0 0 0-.27.438l-1.797 5.388a.558.558 0 0 0 .706.705l5.388-1.797c.165-.054.315-.145.438-.267L27.768 8.86Z"/>
+              <path fill="#000" fillRule="evenodd" d="M0 28.841a3.321 3.321 0 0 0 3.321 3.321H27.68A3.322 3.322 0 0 0 31 28.841V15.555a1.107 1.107 0 1 0-2.214 0v13.286a1.107 1.107 0 0 1-1.107 1.107H3.32a1.107 1.107 0 0 1-1.107-1.107V4.484A1.107 1.107 0 0 1 3.32 3.377h14.393a1.107 1.107 0 0 0 0-2.215H3.321A3.321 3.321 0 0 0 0 4.484V28.84Z" clipRule="evenodd"/>
+            </svg>
+          </button>
         ) : (
           (!this.props.showCheckbox && this.props.activity.event == "Undefined") ? ( 
-            <button onClick={this.props.clickedAddInfo} className="addInfoAttn" style={{display:"flex",margin:"auto","height":"1.8em"}}>Add Info</button>
+            <button onClick={this.props.clickedAddInfo} className="addInfoAttn">Add Info</button>
           ) : (
             <input className="addInfoCheckbox" id={String(this.props.index)} onClick={this.props.clickedCheckbox} type="checkbox" style={{display:"flex",margin:"auto","height":"1.8em"}}></input>
           )
@@ -1096,7 +1105,6 @@ export default function Home({ members, activities, config }){
       }
 
       this.state = {
-        //activity: state.activitiesCollection,
         displayingActivities: displayingActivities,
         toggle: false, //toggle batch selections on and off. If true, batch selections are on. 
         firstCheckboxSelected: undefined,
@@ -1143,32 +1151,86 @@ export default function Home({ members, activities, config }){
       let selected = getSelectedActivites();
       this.setState({firstCheckboxSelected: e.target, selected: selected});
     }
+
+    hourMinStr(minutes){
+      if (minutes/60 >= 1){
+        let hours = Math.floor(minutes/60);
+        let mins = minutes % 60;
+        return hours+"h "+mins+"m"
+      } else { return minutes+"m" }
+    }
+
+    inOutTime(props){//in_out: string, time: string
+      console.log(props.time,typeof(props.time))
+      let hr = parseInt(String(props.time).substring(0,3))
+      let mins = String(props.time).substring(3,6)
+      console.log(props,hr,mins)
+      let am_pm;
+      if (hr >= 13){
+        am_pm = "PM"
+      } else { am_pm = "AM"}
+      let timeStr = String(hr%12) +":"+ mins
+      return (<>
+        <div className="inOutTime">
+          <p className="in_out">{props.in_out}</p>
+          <p className="inOutTime">{timeStr}</p>
+          <p className="am_pm">{am_pm}</p>
+        </div></>
+      )
+    }
     
     render() {
       return (
         <>
-          <a id="activitiesForward" onClick={() => this.changeDay("forward-one-day",state.displayingDay)}></a>
-          <a id="activitiesBackward" onClick={() => this.changeDay("backward-one-day",state.displayingDay)}></a>
+        <section id="recentActivity" className="fit">
+          <header>
+            <div>
+              <h2>Activity</h2>
+            </div>
+            <div id="dateSelection">
+              <a id="activitiesBackward" onClick={() => this.changeDay("backward-one-day",state.displayingDay)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="33" fill="none" viewBox="0 0 32 33">
+                  <path fill="#000" fillRule="evenodd" d="M30 16.411a14 14 0 1 0-28 0 14 14 0 0 0 28 0Zm-30 0a16 16 0 1 1 32 0 16 16 0 0 1-32 0Zm23 1a1 1 0 0 0 0-2H11.414l4.294-4.292a1.001 1.001 0 0 0-1.416-1.416l-6 6a1 1 0 0 0 0 1.416l6 6a1.001 1.001 0 0 0 1.416-1.416l-4.294-4.292H23Z" clipRule="evenodd"/>
+                </svg>
+              </a>
+              <p id="date">{state.displayingDay}</p>
+              <a id="activitiesForward" onClick={() => this.changeDay("forward-one-day",state.displayingDay)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="33" fill="none" viewBox="0 0 32 33" style={{"transform": "rotate(180deg)"}}>
+                  <path fill="#000" fillRule="evenodd" d="M30 16.411a14 14 0 1 0-28 0 14 14 0 0 0 28 0Zm-30 0a16 16 0 1 1 32 0 16 16 0 0 1-32 0Zm23 1a1 1 0 0 0 0-2H11.414l4.294-4.292a1.001 1.001 0 0 0-1.416-1.416l-6 6a1 1 0 0 0 0 1.416l6 6a1.001 1.001 0 0 0 1.416-1.416l-4.294-4.292H23Z" clipRule="evenodd"/>
+                </svg>
+              </a>
+            </div>
+            <div onClick={() => this.setState({toggle:!this.state.toggle})} style={{justifyContent: "flex-end"}}>
+              <button>
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="25" fill="none" viewBox="0 0 40 25">
+                  { this.state.toggle ? (
+                    <path xmlns="http://www.w3.org/2000/svg" fill="#000" d="M12.5 0a12.5 12.5 0 1 0 0 25h15a12.5 12.5 0 0 0 0-25h-15Zm15 22.5a10 10 0 1 1 0-20 10 10 0 0 1 0 20Z"/>
+                  ):(
+                    <path fill="#000" d="M27.5 2.5a10 10 0 0 1 0 20H20a12.48 12.48 0 0 0 5-10 12.48 12.48 0 0 0-5-10h7.5Zm-15 20a10 10 0 1 1 0-20 10 10 0 0 1 0 20ZM0 12.5A12.5 12.5 0 0 0 12.5 25h15a12.5 12.5 0 0 0 0-25h-15A12.5 12.5 0 0 0 0 12.5Z"/>
+                  )}
+                </svg>
+              </button>
+            </div>
+          </header>
           <table id="recentActivity">
-            <caption>Recent Activity</caption>
-            <caption id="date">{state.displayingDay}</caption>
             <thead>
               <tr key={"head_tr"}>
-                <th style={{"width":"16rem"}}>Member Name</th>
-                <th style={{"width":"4rem"}}>Flags</th>
-                <th style={{"width":"12rem"}}>Visit Type</th>
-                <th style={{"textAlign": "center"}} onClick={() => this.setState({toggle:!this.state.toggle})}>Edit Activity</th>
+                <th style={{"width":"24px"}}></th>
+                <th style={{"width":"14rem"}}></th>
+                <th style={{"width":"8rem"}}></th>
+                <th style={{"width":"10ch"}}></th>
+                <th style={{"width":"6rem"}}></th>
+                <th style={{"width": "32px", "textAlign": "center"}}></th>
               </tr>
             </thead>
             <tbody id="recentActivityTbody">
             { this.state.displayingActivities == undefined || this.state.displayingActivities.Events.length == 0 ? (
               <tr key={"noEvents_tr"}>
-                <td colSpan={3} id="noEvents">No events today.</td>
+                <td colSpan={6} id="noEvents">No events today.</td>
               </tr>
             ) : (
-              this.state.displayingActivities.Events.map((actEvent,i) => ( 
+              this.state.displayingActivities.Events.map((actEvent,i) => (
                 <tr id={String(actEvent._id)} key={actEvent._id+"_tr"}>
-                  <td onMouseEnter={(e) => hover([{actEvent}.actEvent.MemberID,e])} onMouseLeave={hoverOut}>{actEvent.Name}</td>
                   {actEvent.flags.includes("noID") ? (
                     <td>
                       <svg viewBox="0 0 512 512" style={{width:"1.75rem"}}>
@@ -1192,7 +1254,17 @@ export default function Home({ members, activities, config }){
                   ) : (
                     <td></td>
                   )}
+                  <td onMouseEnter={(e) => hover([{actEvent}.actEvent.MemberID,e])} onMouseLeave={hoverOut}>{actEvent.Name}</td>
                   <td>{actEvent.event}</td>
+                  <td>
+                    <this.inOutTime in_out={"IN"} time={new Date(actEvent.badgeInTime).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)}/>
+                    <this.inOutTime in_out={"OUT"} time={new Date(actEvent.badgeOutTime).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)}/>
+                  </td>
+                  <td>
+                    <p>{
+                    this.hourMinStr((Date.parse(actEvent.badgeOutTime) - Date.parse(actEvent.badgeInTime))/60000)
+                    }</p>
+                  </td>
                   <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: state.displayingDay, submitButtonText: "Add Info", "message":"Editing "+actEvent.Name+"'s event..."}, "(e) => handleSubmitPopUp(true,e)")} showCheckbox={this.state.toggle} index={i}/></td>
                 </tr>))
             )}
@@ -1206,9 +1278,8 @@ export default function Home({ members, activities, config }){
                 <button type="button" style={{margin:".25em"}} onClick={(e) => batchDelete(e,this.state.selected)}>Delete</button>
               </div>
             </>
-          ):(
-            <></>
-          )}
+          ):( <></> )}
+        </section>
         </>
       );
     }
@@ -1220,6 +1291,14 @@ export default function Home({ members, activities, config }){
       this.state = { }
     }
 
+    Checkbox(isCertified) {
+      if (isCertified.isCertified) {
+        return <div className="checkbox" style={{backgroundColor: "#1BDC2E"}}></div>
+      } else {
+        return <div className="checkbox" style={{backgroundColor: "#ffffff"}}></div>
+      }
+    }
+
     render(){
       return(
         <>
@@ -1228,8 +1307,44 @@ export default function Home({ members, activities, config }){
               <p style={{"textAlign":"center"}}>No one badged in...</p>
             ) : (
               <>
-                <table>
-                  <caption>Badged In Members</caption>
+                <header>
+                  <div>
+                    <h2>{state.membersCollection.filter(member => member.badgedIn == true).length} Members in Now</h2>
+                  </div>
+                </header>
+                <div>
+                  <div className='row' style={{border: "none"}}>
+                    <div className="name"></div>
+                    <div className="major"></div>
+                    <div className="rotated">
+                      { state.configCollection.certifications.map((cert) => 
+                        <div className="certHeader"><p>{cert}</p></div>
+                      )}
+                    </div>
+                    <div className="badgeOut"></div>
+                  </div>
+                
+                  {state.membersCollection.filter(member => member.badgedIn == true).map((member) => (
+                    <div key={member._id+"_tr"} className="row">
+                      <div className="name" onMouseEnter={(e) => hover([{member},e])} onMouseLeave={hoverOut}>{member.Name}</div>
+                      <div className="major">{member.Major}</div>
+                      <div className="certChecbox">
+                      {state.configCollection.certifications.map((cert) => 
+                        <this.Checkbox isCertified={member.Certifications.includes(cert)}/>
+                      )}
+                      </div>
+                      <div className="badgeOut">
+                        <button type="button" className="badgeOut" onClick={() => openManualBadgeOutPopup(member)}>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="icon" width="42" height="33" fill="none" viewBox="0 0 42 33">
+                            <path fill="#000" d="M2.625 32.25S0 32.25 0 29.627c0-2.625 2.625-10.5 15.75-10.5S31.5 27 31.5 29.626s-2.625 2.625-2.625 2.625H2.625ZM15.75 16.5a7.875 7.875 0 1 0 0-15.75 7.875 7.875 0 0 0 0 15.75Z"/>
+                            <path fill="#000" fillRule="evenodd" d="M28.823 15.266a.824.824 0 0 1 .824-.824h9.54l-3.535-3.534a.824.824 0 1 1 1.166-1.166l4.94 4.94a.823.823 0 0 1 0 1.166l-4.94 4.94a.825.825 0 0 1-1.166-1.165l3.535-3.534h-9.54a.823.823 0 0 1-.823-.823Z" clipRule="evenodd"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/*<table>
                   <thead className="badgeInMembers">
                     <tr>
                       <th key={"NameHeader"}>Name</th>
@@ -1245,17 +1360,20 @@ export default function Home({ members, activities, config }){
                         <td onMouseEnter={(e) => hover([{member},e])} onMouseLeave={hoverOut}>{member.Name}</td>
                         <td>{member.Major}</td>
                         {state.configCollection.certifications.map((cert) => 
-                          member.Certifications.includes(cert) ? (
-                            <td key={member._id+"_"+cert+"_td"} className="true"></td>
-                            ) : ( <td key={member._id+"_"+cert+"_td"} className="false"></td>)
-                          )}
+                          <this.Checkbox isCertified={member.Certifications.includes(cert)}/>
+                        )}
                         <td>
-                          <button type="button" onClick={() => openManualBadgeOutPopup(member)}>Badge Out</button>
+                          <button type="button" className="badgeOut" onClick={() => openManualBadgeOutPopup(member)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="icon" width="42" height="33" fill="none" viewBox="0 0 42 33">
+                              <path fill="#000" d="M2.625 32.25S0 32.25 0 29.627c0-2.625 2.625-10.5 15.75-10.5S31.5 27 31.5 29.626s-2.625 2.625-2.625 2.625H2.625ZM15.75 16.5a7.875 7.875 0 1 0 0-15.75 7.875 7.875 0 0 0 0 15.75Z"/>
+                              <path fill="#000" fillRule="evenodd" d="M28.823 15.266a.824.824 0 0 1 .824-.824h9.54l-3.535-3.534a.824.824 0 1 1 1.166-1.166l4.94 4.94a.823.823 0 0 1 0 1.166l-4.94 4.94a.825.825 0 0 1-1.166-1.165l3.535-3.534h-9.54a.823.823 0 0 1-.823-.823Z" clipRule="evenodd"/>
+                            </svg>
+                          </button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table>*/}
               </>
             )}
             <SearchMemberBadgeIn members={members}></SearchMemberBadgeIn>
@@ -1268,17 +1386,31 @@ export default function Home({ members, activities, config }){
 
   return (
     <>
-      <Head>
-        <title>Makerspace Badging System</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <style>{` html { background: #D9D9D9; } `}</style>
+    <Head>
+      <title>Makerspace Badging System</title>
+      <link rel="icon" href="/favicon.ico" />
+    </Head>
+    
+    <header id="header">
+      <h1>Eyra</h1>
+      <h1 id="org_name">Kimbel Library Makerspace [CONFIG]</h1>
+      <nav>
+        <a id="stats" href="/stats">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 43 42">
+            <path fill="#000" fillRule="evenodd" d="M.775 0h2.614v39.375H42.6V42H.775V0Zm26.14 9.188a1.315 1.315 0 0 1 1.308-1.313h10.456c.347 0 .679.138.924.384.245.247.383.58.383.928v10.5c0 .349-.138.682-.383.929a1.304 1.304 0 0 1-2.231-.928v-6.825l-9.445 11.594a1.308 1.308 0 0 1-1.48.393 1.307 1.307 0 0 1-.454-.296l-6.763-6.79-9.557 13.195a1.306 1.306 0 0 1-2.314-.583 1.317 1.317 0 0 1 .202-.96l10.456-14.438a1.31 1.31 0 0 1 .955-.537 1.301 1.301 0 0 1 1.027.38l6.82 6.851L35.92 10.5h-7.698c-.347 0-.68-.138-.924-.384a1.316 1.316 0 0 1-.383-.928Z" clipRule="evenodd"/>
+          </svg>
+        </a>
+        <button className="cornerButton" id="config" onClick={() => toggleConfigPopup()}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 42 42">
+            <path fill="#000" d="M21 12.48a8.52 8.52 0 0 0-7.872 11.78A8.52 8.52 0 1 0 21 12.48ZM15.104 21a5.895 5.895 0 1 1 11.791 0 5.895 5.895 0 0 1-11.79 0Z"/>
+            <path fill="#000" d="M25.715 3.525c-1.384-4.698-8.046-4.698-9.43 0l-.246.838a2.291 2.291 0 0 1-3.295 1.365l-.766-.42c-4.305-2.342-9.012 2.368-6.668 6.67l.418.766a2.291 2.291 0 0 1-1.365 3.295l-.838.246c-4.698 1.384-4.698 8.046 0 9.43l.838.246a2.293 2.293 0 0 1 1.365 3.295l-.42.766c-2.342 4.305 2.365 9.014 6.67 6.668l.766-.418a2.293 2.293 0 0 1 3.295 1.365l.246.838c1.384 4.698 8.046 4.698 9.43 0l.246-.838a2.291 2.291 0 0 1 3.295-1.365l.766.42c4.305 2.344 9.014-2.367 6.668-6.67l-.418-.766a2.29 2.29 0 0 1 1.365-3.295l.838-.246c4.698-1.384 4.698-8.046 0-9.43l-.838-.246a2.291 2.291 0 0 1-1.365-3.295l.42-.766c2.344-4.305-2.367-9.012-6.67-6.668l-.766.418a2.292 2.292 0 0 1-3.295-1.365l-.246-.838Zm-6.912.743c.646-2.192 3.748-2.192 4.394 0l.247.838a4.916 4.916 0 0 0 7.069 2.927l.764-.42c2.005-1.09 4.2 1.102 3.108 3.11l-.417.767a4.916 4.916 0 0 0 2.929 7.066l.835.247c2.192.646 2.192 3.748 0 4.394l-.838.247a4.916 4.916 0 0 0-2.926 7.069l.42.764c1.089 2.005-1.103 4.2-3.111 3.108l-.764-.417a4.916 4.916 0 0 0-7.07 2.929l-.246.835c-.646 2.192-3.748 2.192-4.394 0l-.247-.838a4.917 4.917 0 0 0-7.066-2.926l-.767.42c-2.005 1.089-4.2-1.103-3.108-3.111l.418-.764a4.917 4.917 0 0 0-2.927-7.072l-.838-.246c-2.192-.646-2.192-3.749 0-4.395l.838-.247a4.917 4.917 0 0 0 2.927-7.063l-.42-.767c-1.09-2.005 1.102-4.2 3.11-3.108l.767.418a4.916 4.916 0 0 0 7.066-2.927l.247-.838Z"/>
+          </svg>
+        </button>
+      </nav>
+    </header>
 
-      <main> 
-        {/*<a className="cornerButton" id="stock" href="/stock">Config</a>*/}
-        <button className="cornerButton" id="config" onClick={() => toggleConfigPopup()}>Config</button>
-        <a className="cornerButton" id="stats" href="/stats">Stats</a>
-      </main>
-
+    <main>
       {state.isOpen ? (
         <React.Fragment>
           <section className="Popup">
@@ -1294,17 +1426,15 @@ export default function Home({ members, activities, config }){
               event={state.activityEvent.event}
             />
           </section>
+          <div id="blur"></div>
         </React.Fragment>
-      ) : (
-        <div></div>
-      )}
+      ) : ( <></> )}
 
-      { state.showConfigPopup ?  <ConfigPopup cancel={toggleConfigPopup}/> : <div></div> }
+      { state.showConfigPopup ?  <ConfigPopup cancel={toggleConfigPopup}/> : <></> }
 
       <BadgedInMembers></BadgedInMembers>
-      <section id="recentActivity" className="fit">
-        <RecentActivity></RecentActivity>
-      </section>
+      <RecentActivity></RecentActivity>
+      
 
       <details style={{"marginTop": "5vh"}}>
         <summary>Developer Notes</summary>
@@ -1345,6 +1475,7 @@ export default function Home({ members, activities, config }){
         </ul>
         <p>Random dev note: Isomorphic-unfetch allows us to make HTTP requests inside out NextJS app</p>
       </details>
+    </main>
     </>
   )
 }

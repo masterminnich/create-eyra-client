@@ -1,48 +1,57 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;500;700;900&display=swap');
 
-* { font-family: 'Lato'; }
+* { font-family: 'Inter'; }
 
 h2.subtitle { text-align: CENTER;}
 
-td.true{ background-color: greenyellow; }
-
-td.false{ background-color: hotpink; }
-
-thead.badgeInMembers { 
-    height: 130px;
-    top: 2ch;
+thead.badgeInMembers {
     position: relative; 
+}
+
+td.checkbox{ 
+    width: 24px;
+    border: 3px solid black;
+    border-radius: 8px;
+    height: 24px;
+}
+
+th.rotated { transform: rotate(315deg); }
+th.rotated div { 
+    width: 32px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 th { white-space: nowrap; }
 
-th > div {
-    transform: translate(16px,27px) rotate(315deg);
-    width: 30px;
-}
-
-th > div > span {
-    border-bottom: 1px solid black;
-    padding: 5px 10px;
-}
-
 section.Popup{
-    background-color: lightskyblue;
+    background-color: #EBEBEB;
     display: flex;
     flex-direction: column;
     position: fixed;
-    width: 90%;
-    border: 1px solid black;
-    border-radius: 15px;
-    margin: 4%;
-    z-index: 1;
-    top: 0;
+    width: 60%;
+    border: 3px solid black;
+    border-radius: 16px;
+    z-index: 2;
+    top: 10vh;
+    left: 20vw;
+    padding: 1ch 2ch;
+}
+
+section.Popup button{
+    width: fit-content;
+    border: 3px solid black;
+    border-radius: 6px;
+    font-size: 20px;
+    font-weight: 500;
+    display: inline;
 }
 
 input#badgeInInput, input#badgeOutInput{ 
     width: 24ch;
     position: absolute;
-    left: 12ch;
+    left: 14ch;
 }
 
 .enterInfoLabel{ 
@@ -148,10 +157,18 @@ table#recentActivity {
     border-spacing: 0;
 }
 
-section#recentActivity{ 
-    width: 65ch;
-    margin-top: 25px;
+#dateSelection{
+    display: inline-flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 18ch;
 }
+
+#dateSelection p{
+    font-size: 18px;
+}
+
+section#recentActivity, section.fit{ width: 60vw; }
 
 tbody#recentActivityTbody tr:nth-child(odd) {
     background-color: aliceblue;
@@ -173,7 +190,26 @@ table#recentActivity td#noEvents, td.noMembersIn{
 
 td.noMembersIn{ padding-top: 0.75em; }
 
-a#activitiesForward:after,a#activitiesBackward:after { 
+div.inOutTime{
+    display: flex;
+    align-items: center;
+    flex: 1;
+    margin: .5ch;
+}
+
+div.inOutTime p { 
+    margin: 0;
+    flex: 1;
+}
+p.in_out{ justify-content: flex-start; }
+p.inOutTime{ justify-content: center; }
+p.am_pm{ justify-content: flex-end; }
+
+p.in_out, p.am_pm{
+    font-size: 12px;
+}
+
+/*a#activitiesForward:after,a#activitiesBackward:after { 
     font-size: 36px; 
     line-height: 0;
     top: 40px;
@@ -181,11 +217,10 @@ a#activitiesForward:after,a#activitiesBackward:after {
     left: -10ch;
     content:'\1F846'
 }
-/*a#activitiesForward:after{ content:'\1F846' }*/
 a#activitiesBackward:after{ 
     content:'\1F844';
     left: 10ch;
-}
+}*/
 
 button#deleteActivityButton{
     top: 5px;
@@ -257,17 +292,17 @@ div section form div.field input{
 
 div section form div.field input, div#visitType select{
     position: absolute;
-    left: 12ch;
+    left: 14ch;
 }
 
 input.date{
     position: absolute;
-    left: 12ch;
+    left: 14ch;
 }
 
 input.time{
     position: absolute;
-    left: 28ch;
+    left: 29ch;
 }
 
 h1#badgingOutTitle{ text-align: center; }
@@ -276,32 +311,27 @@ div#visitType, div#badgeInTime{ margin-bottom: 5px; }
 
 div.checkboxes p{ margin-bottom: 5px; }
 
+.addInfoCheckbox{
+    display: flex;
+    margin: auto;
+    height: 1.8em;
+    width: 36px;
+}
+
 button.addInfoAttn{ background-color: yellow; }
 
-a#activitiesForward,a#activitiesBackward{ font-weight: 700; }
+button.addInfo { 
+    display: flex;
+    margin: auto;
+    background: none;
+    border: none;
+}
+
+button.addInfo svg{
+    width: 24px;
+}
 
 a#activitiesForward{ float: right; }
-
-a.cornerButton, button.cornerButton {/* Navigation buttons in top corners */
-    color: black;
-    border: 1px solid black;
-    padding: 4px;
-    text-decoration: none;
-    position: absolute;
-    left: 5px;
-    top: 4px;
-}
-
-button#config {
-    background-color: lightpink; /*palevioletred*/
-    left: calc(100% - 48px - 5px);
-}
-
-button#config:hover { background-color: palevioletred; }
-
-a#stats{ background-color: lightskyblue; }
-
-a#stats:hover { background-color: rgb(57, 166, 209); }
 
 a#backEndButton{ background-color: #42e36d; }
 
@@ -525,15 +555,15 @@ form#newMember{
 
 
 /* Start CSS for codeOfConduct */
-main#codeOfConduct .header{
+#codeOfConduct .header{
     text-align: center;
 }
 
-main#codeOfConduct p.header{ margin-bottom: calc(2.75vw + 18px); }
+#codeOfConduct p.header{ margin-bottom: calc(2.75vw + 18px); }
 
-main#codeOfConduct p{ font-size: calc(1.1vw + 9px); }
-main#codeOfConduct h1{ font-size: calc(1.6vw + 18px); }
-main#codeOfConduct li{ font-size: calc(1vw + 8px); }
+#codeOfConduct p{ font-size: calc(1.1vw + 9px); }
+#codeOfConduct h1{ font-size: calc(1.6vw + 18px); }
+#codeOfConduct li{ font-size: calc(1vw + 8px); }
 
 #iAgree{
     color: black;
@@ -556,3 +586,143 @@ main#codeOfConduct li{ font-size: calc(1vw + 8px); }
     background-color: #fdd89b;
 }
 /* End CSS for codeOfConduct */
+
+
+a.cornerButton, button.cornerButton {/* Navigation buttons in top corners */
+    color: black;
+    border: 1px solid black;
+    padding: 4px;
+    text-decoration: none;
+    position: absolute;
+    left: 5px;
+    top: 4px;
+}
+
+
+h1#org_name{
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+}
+
+header#header{
+    width: 80%;
+    border-bottom: 1px solid black;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header button {
+    display: contents;
+}
+
+header svg{
+    width: fit-content;
+}
+
+header#header svg {
+    padding: 0px 12px;
+}
+
+header nav {
+    float: right;
+}
+
+main {
+    width: 80%;
+    margin: auto;
+    display: flex;
+    gap: 2ch;
+    flex-direction: column;
+    top: 2ch;
+    position: relative;
+}
+
+section {
+    background: white;
+    border-radius: 12px;
+    filter: drop-shadow(-4px 6px 12px #00000025);
+}
+
+section header{
+    display: flex;
+    justify-content: space-between;
+    width: auto;
+    align-items: center;
+    padding: 0ch 2ch;
+}
+
+section header h2{
+    font-size: 18px;
+    font-weight: 500;
+}
+
+section header div{
+    /*flex: 1;*/
+    display: flex;
+}
+
+button.badgeOut{
+    display: contents;
+}
+
+.certChecbox div{
+    aspect-ratio: 1;
+    width: 2ch;
+    border: 3px solid black;
+    border-radius: 6px;
+}
+
+svg.icon{ width: 32px; }
+
+div.certChecbox { 
+    display: inline-flex;
+    width: fit-content;
+    gap: 2px;
+}
+
+div.row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid black;
+    border-radius: 6px;
+    margin: auto 2ch;
+    padding: 0ch 2ch;
+}
+
+div.name{ width: 30%; display: flex; }
+div.major{ width: 20%; display: flex; }
+div.badgeOut{ width: 32px; display: flex; }
+div.certHeader{ width: 24px; margin: 0px 2px; }
+
+div.rotated{
+    display: inline-flex;
+    flex-direction: row;
+    position: relative;
+}
+
+.rotated p {
+    transform: rotate(315deg);
+    width: 10ch;
+    white-space: nowrap;
+    font-size: 1.25ch;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-align: start;
+    margin: 0;
+    top: -3ch;
+    position: relative;
+}
+
+div#blur{
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    backdrop-filter: blur(1px);
+}
