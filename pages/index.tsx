@@ -1161,17 +1161,16 @@ export default function Home({ members, activities, config }){
     }
 
     inOutTime(props){//in_out: string, time: string
-      console.log(props.time,typeof(props.time))
       let hr = parseInt(String(props.time).substring(0,3))
       let mins = String(props.time).substring(3,6)
-      console.log(props,hr,mins)
+      //console.log(props,hr,mins)
       let am_pm;
       if (hr >= 13){
         am_pm = "PM"
       } else { am_pm = "AM"}
       let timeStr = String(hr%12) +":"+ mins
       return (<>
-        <div className="inOutTime">
+        <div className="inOutTime" key={"inOut"+props.in_out}>
           <p className="in_out">{props.in_out}</p>
           <p className="inOutTime">{timeStr}</p>
           <p className="am_pm">{am_pm}</p>
@@ -1318,7 +1317,7 @@ export default function Home({ members, activities, config }){
                     <div className="major"></div>
                     <div className="rotated">
                       { state.configCollection.certifications.map((cert) => 
-                        <div className="certHeader"><p>{cert}</p></div>
+                        <div className="certHeader" key={cert+"cert"}><p>{cert}</p></div>
                       )}
                     </div>
                     <div className="badgeOut"></div>
@@ -1330,7 +1329,7 @@ export default function Home({ members, activities, config }){
                       <div className="major">{member.Major}</div>
                       <div className="certChecbox">
                       {state.configCollection.certifications.map((cert) => 
-                        <this.Checkbox isCertified={member.Certifications.includes(cert)}/>
+                        <this.Checkbox isCertified={member.Certifications.includes(cert)} key={cert+"checkbox"}/>
                       )}
                       </div>
                       <div className="badgeOut">
