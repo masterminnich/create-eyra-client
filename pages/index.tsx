@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import clientPromise from '../utils/mongodb'
 import React, { Component, useState, useEffect } from 'react';
-import { Button, Form } from 'semantic-ui-react';
+import { Button, Form, Input } from 'semantic-ui-react';
 import io from 'Socket.IO-client'
 import { ObjectIdSchemaDefinition, Schema } from 'mongoose';
 import { rootCertificates } from 'tls';
@@ -39,6 +39,17 @@ type PopupProps = {
   existsInDB: boolean;
   event?: string;
   submitting?: void | undefined;
+}
+type memberAttributes = {
+  majors: string[], 
+  patronTypes: string[], 
+  graduationYears: string[],
+}
+type Config = {
+  certifications: string[],
+  otherTools: string[],
+  memberAttributes: memberAttributes,
+  visitType: Object,
 }
 type Member = {
   Name: string;
@@ -296,6 +307,21 @@ export default function Home({ members, activities, config }){
         socket.emit('activitiesCollection-change', resp.activities)
       });
     } catch (error) { console.log("ERROR in",originFn,":",error) }
+  }
+
+  const updateConfigCollection = async (config: object) => {
+    try {
+      const res = await fetch(`/api/config`, {
+          method: 'PUT',
+          headers: headers,
+          body: JSON.stringify(config)
+      })
+      let response = res.json()
+      response.then((resp) => {
+        setState({...state, configCollection: config, isOpen: false, showForgotIDPopup: false})
+        //socket.emit('configCollection-change', config)
+      });
+    } catch (error) { console.log("ERROR in updateConfigCollection :",error) }
   }
   
   //creates a new activity upon badge out
@@ -601,7 +627,7 @@ export default function Home({ members, activities, config }){
       return (
         <>
           <h1 id="badgingOutTitle">{this.props.message}</h1>
-          <Form onSubmit={eval(state.submitType)}>
+          <form onSubmit={eval(state.submitType)}>
             <VisitType onChange={this.handleVisitType.bind(this)} selectValue={state.activityEvent.event!}/>
             <div id="badgeInTime" style={{display: "flex"}}>
               <label htmlFor="badgeInTime">Badged In: </label>
@@ -625,7 +651,7 @@ export default function Home({ members, activities, config }){
             <Button type='button' name={state.activityEvent._id} id="deleteActivityButton" onClick={(e) => deleteActivity([state.activitiesCollection, this.state, state.activityEvent._id, member])} style={trashButtonCSS}></Button>
             <Button type='submit' id="submitBadgeOutPopup" onClick={() => this.props.submitting}>{this.props.submitButtonText}</Button>
             <Button type='button' id="cancelPopupButton" onClick={() => setState({ ...state,  isOpen: false, showForgotIDPopup: false })}>Cancel</Button>
-          </Form>
+          </form>
         </>
       )
     }
@@ -1016,36 +1042,213 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class ConfigPopup extends React.Component<{cancel: onClick},{}>{
+  class ConfirmationPopup extends React.Component<{action: string, details: string, onCancel, onConfirm},{}>{
     constructor(props){
       super(props);
+      this.state = {}
     }
 
     render(){
       return(
         <>
-          <section className="Popup">
-            <p>Editing Config</p>
+        <div id="confirmPopup">
+          <h2>Are you sure?</h2>
+          { this.props.action ? (
+            <h3>{this.props.action}</h3>) : (
+            <></>
+          )}
+          { this.props.details ? (
+            <h4>{this.props.details}</h4>) : (
+            <></>
+          )}
+          <div style={{display: "inline"}}>
+            <button type="button" onClick={eval(this.props.onCancel)}>Cancel</button>
+            <button type="button">Continue anyway</button>
+          </div>
+        </div>
+        </>
+      )
+    }
+  }
 
-            <p>Time Zone Settings</p>
+  class AddPill extends React.Component<{},{name: string, focus: boolean}>{
+    constructor(props){
+      super(props);
+      this.state = {
+        name: "",
+        focus: false, //show plus sign?
+      }
+      console.log(this.state)
+    }
 
-            <p>Certifications: </p>
-            <input type="text" value={state.configCollection.certifications.toString()}></input>
+    handleChange(e){
+      console.log("e",e.target.value)
+      this.setState({name: e.target.value})
+      console.log(this.state)
+    }
 
-            <p>otherTools: </p>
-            <input type="text" value={state.configCollection.otherTools.toString()}></input>
+    render(){
+      return(
+        <>
+          <div id="pill">
+            <input id="addPill" onFocus={() => this.setState({focus: true})} onBlur={() => this.setState({focus: false})} defaultValue={this.state.name} onChange={this.handleChange.bind(this)}></input>
+            { !this.state.focus && this.state.name == "" ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="x" style={{transform: "rotate(45deg)"}} width="18" height="18" fill="none" viewBox="0 0 18 18">
+                  <path fill="#545454" d="M.485.485a1.5 1.5 0 0 1 2.122 0L8.97 6.85 15.335.485a1.5 1.5 0 0 1 2.12 2.122L11.093 8.97l6.364 6.364a1.5 1.5 0 1 1-2.121 2.12L8.97 11.093l-6.364 6.364a1.5 1.5 0 1 1-2.122-2.121L6.85 8.97.485 2.607a1.5 1.5 0 0 1 0-2.122Z"/>
+                </svg>
+              ) : (
+                <></>
+              )
+            }
+          </div>
+        </>
+      )
+    }
+  }
 
-            <p>visitType: </p>
-            <input type="text" value={JSON.stringify(state.configCollection.visitType)}></input>
+  class DeletablePill extends React.Component<{inputName: string},{}>{
+    constructor(props){
+      super(props);
+      this.state = {}
+    }
+
+    render(){
+      return(
+        <>
+          <div id="pill">
+            <p>{this.props.inputName}</p>
+            <button type="button" id="x" onClick = {() => this.props.handler(this.props.inputName)}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="x" width="18" height="18" fill="none" viewBox="0 0 18 18">
+                <path fill="#545454" d="M.485.485a1.5 1.5 0 0 1 2.122 0L8.97 6.85 15.335.485a1.5 1.5 0 0 1 2.12 2.122L11.093 8.97l6.364 6.364a1.5 1.5 0 1 1-2.121 2.12L8.97 11.093l-6.364 6.364a1.5 1.5 0 1 1-2.122-2.121L6.85 8.97.485 2.607a1.5 1.5 0 0 1 0-2.122Z"/>
+              </svg>
+            </button>
+          </div>
+        </>
+      )
+    }
+  }
+
+  class ConfigPopup extends React.Component<{cancel: onClick},{config: Config, action: string, details: string, onCancel: string, onConfirm: string}>{
+    constructor(props){
+      super(props);
+      this.state = {
+        config: state.configCollection,
+        action: "",
+        details: "",
+        onCancel: "",
+        onConfirm: "",
+      }
+      this.handleRemoveCertification = this.handleRemoveCertification.bind(this)
+      this.handleRemoveTool = this.handleRemoveTool.bind(this)
+    }
+
+    updateConfigCollection = () => {
+      updateConfigCollection(this.state.config)
+    }
+
+    handleRemoveCertification = (inputName: string) => {
+      this.setState({
+        action: "Removing certification '"+inputName+"'",
+        details: "123098 members w/ this certification...",
+        onCancel: '() => this.closeConfirmationPopup()',
+        onConfirm: "() => this.removeCertification('"+inputName+"')",
+      })
+    }
+
+    handleRemoveTool = (inputName: string) => {
+      this.setState({
+        action: "Removing tool '"+inputName+"'",
+        details: "",
+        onCancel: '() => this.closeConfirmationPopup()',
+        onConfirm: "() => this.removeTool('"+inputName+"')",
+      })
+    }
+
+    test = (param) => {
+      console.log("test works!", param)
+    }
+
+    closeConfirmationPopup = () => {
+      this.setState({action: "", details: "", onCancel: "", onConfirm: ""})
+    }
+    
+    removeCertification = (inputName: string) => {
+      console.log("removing "+inputName+" from certifications")
+      
+      let newState = this.state.config
+      newState.certifications = newState.certifications.filter(c => c !== inputName) //remove certification from list 
+      this.setState({config: newState})
+
+      this.closeConfirmationPopup()
+    }
+
+    removeTool = (inputName: string) => {
+      console.log("removing "+inputName+" from tools")
+      
+      let newState = this.state.config
+      newState.otherTools = newState.otherTools.filter(c => c !== inputName) //remove certification from list 
+      this.setState({config: newState})
+
+      this.closeConfirmationPopup()
+    }
+
+    render(){
+      return(
+        <>
+          { this.state.action.length > 0 ? (
+            <><div id="confirmPopup">
+              <h2>Are you sure?</h2>
+              { this.state.action ? (
+                <h3>{this.state.action}</h3>) : (
+                <></>
+              )}
+              { this.state.details ? (
+                <h4>{this.state.details}</h4>) : (
+                <></>
+              )}
+              <div style={{display: "inline"}}>
+                <button type="button" onClick={eval(this.state.onCancel)}>Cancel</button>
+                <button type="button" onClick={eval(this.state.onConfirm)}>Continue anyway</button>
+              </div>
+            </div></>
+          ) : (<></>)}
+          <section className="Popup" id="config">
+            <h3>This configuration will apply to all activities going forward.<br/>Previous activities WILL NOT be retroactively updated.</h3>
+
+            <h2>Time Zone:</h2>
+            <select>
+              <option>(UTC -12) Baker Island</option>
+              <option>(UTC -11) American Samoa</option>
+              <option>(UTC -10)Baker Island</option>
+            </select>
+
+            <h2>Certifications: </h2>
+            <div id="certification-pills">
+              {this.state.config.certifications.map((i) => 
+                <DeletablePill inputName={i} handler={this.handleRemoveCertification} key={i}/>
+              )}
+              <AddPill/>
+            </div>
+
+            <h2>otherTools: </h2>
+            <div id="otherTools-pills">
+              {this.state.config.otherTools.map((i) => 
+                <DeletablePill inputName={i} handler={this.handleRemoveTool} key={i}/>
+              )}
+              <AddPill/>
+            </div>
+
+            <h2>visitType: </h2>
+            <input type="text" value={JSON.stringify(this.state.config.visitType)}></input>
 
             <details>
               <summary>Member Attributes</summary>
-              <p>Majors</p>
-              <input type="text" value={state.configCollection.memberAttributes.majors.toString()}></input>
-              <p>Patron Types</p>
-              <input type="text" value={state.configCollection.memberAttributes.patronTypes.toString()}></input>
-              <p>Graduation Years</p>
-              <input type="text" value={state.configCollection.memberAttributes.graduationYears.toString()}></input>
+              <h2>Majors:</h2>
+              <input type="text" value={this.state.config.memberAttributes.majors.toString()}></input>
+              <h2>Patron Types:</h2>
+              <input type="text" value={this.state.config.memberAttributes.patronTypes.toString()}></input>
+              <h2>Graduation Years:</h2>
+              <input type="text" value={this.state.config.memberAttributes.graduationYears.toString()}></input>
             </details>
 
             <button type="button" onClick={this.props.cancel}>Cancel</button>
@@ -1167,10 +1370,11 @@ export default function Home({ members, activities, config }){
       let am_pm;
       if (hr >= 13){
         am_pm = "PM"
+        hr = hr - 12
       } else { am_pm = "AM"}
-      let timeStr = String(hr%12) +":"+ mins
+      let timeStr = String(hr) +":"+ mins
       return (<>
-        <div className="inOutTime" key={"inOut"+props.in_out}>
+        <div className="inOutTime">
           <p className="in_out">{props.in_out}</p>
           <p className="inOutTime">{timeStr}</p>
           <p className="am_pm">{am_pm}</p>
@@ -1292,9 +1496,9 @@ export default function Home({ members, activities, config }){
 
     Checkbox(isCertified) {
       if (isCertified.isCertified) {
-        return <div className="checkbox" style={{backgroundColor: "#1BDC2E"}}></div>
+        return <div className="checkbox" style={{backgroundColor: "violet"}}></div>
       } else {
-        return <div className="checkbox" style={{backgroundColor: "#ffffff"}}></div>
+        return <div className="checkbox"></div>
       }
     }
 
@@ -1324,7 +1528,7 @@ export default function Home({ members, activities, config }){
                   </div>
                 
                   {state.membersCollection.filter(member => member.badgedIn == true).map((member) => (
-                    <div key={member._id+"_tr"} className="row">
+                    <div key={member._id+"_badgedIn"} className="row">
                       <div className="name" onMouseEnter={(e) => hover([{member},e])} onMouseLeave={hoverOut}>{member.Name}</div>
                       <div className="major">{member.Major}</div>
                       <div className="certChecbox">
@@ -1382,6 +1586,41 @@ export default function Home({ members, activities, config }){
     }
   }
 
+  class GraphStatCard extends React.Component<{statTitle: string},{studentsRegistered: number, goal: number}>{
+    constructor(props){
+      super(props);
+      this.state = { 
+        studentsRegistered: state.membersCollection.filter((mem) => mem.PatronType === "Student").length,
+        goal: 7.5
+      }
+    }
+    
+    render(){
+      return(
+        <div className="statCard">
+          <h3>{this.props.statTitle}</h3>
+          <h2>{Math.round(this.state.studentsRegistered/ 10 )/10}%</h2>
+          <div style={{width: "100%"}}>
+            <h4>Goal: {this.state.goal}%</h4>
+            <div className="progressBar">
+              <div className="progress" style={{width: this.state.studentsRegistered / this.state.goal +"%", maxWidth: "100%"}}></div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  }
+
+  class StatCard extends React.Component<{statTitle: string},{}>{
+    render(){
+      return(
+        <div className="statCard">
+          <h3>{this.props.statTitle}</h3>
+        </div>
+      )
+    }
+  }
+
 
   return (
     <>
@@ -1431,49 +1670,53 @@ export default function Home({ members, activities, config }){
 
       { state.showConfigPopup ?  <ConfigPopup cancel={toggleConfigPopup}/> : <></> }
 
-      <BadgedInMembers></BadgedInMembers>
-      <RecentActivity></RecentActivity>
-      
+      <div className="column" id="c1">
+        <BadgedInMembers></BadgedInMembers>
+        <RecentActivity></RecentActivity>
 
-      <details style={{"marginTop": "5vh"}}>
-        <summary>Developer Notes</summary>
-        <h3>Bugs:</h3>
-        <ul>
-          <li>/api/members PUT | Does not create an event! Just badges out.</li>
-          <li>Fix: getMemberStats() (relies on member.sessions)</li>
-          <li>Some times are it the wrong timezone. +5 1/1-3/14. +4 3/14-</li>
-          <li>Point of User confusion: ?new popup still open. badgeOut popup should be a higher z-height</li>
-          <li>validation: no negative session minutes</li>
-          <li>Fix: lastBadgeIn. It should trigger after edits, if lastBadge (lessthan) badgeInTime then update.</li>
-        </ul>
-        <h3>Next up:</h3>
-        <ul>
-          <li>Update newMember page to pull majors, patronTypes</li>
-          <li>Finish: Edit Member Pop Up</li>
-          <li>Convert javascript to React.Component: badgeIn.js PopUps</li>
-          <li>New Feature: Add button to failed badgeIn popup. When clicked lets you search members, selected member get its RFID updated.</li>
-          <li>Give all activities flags (edited, auto-generated, noID).</li>
-          <li>New Feature: Auto-badge in</li>
-          <li>Bash script executable: git pull updates, start the server, start PacsProbe</li>
-          <li>Add button to badgeIn allowing members to make accounts w/o an ID. We should flag all no id members w/ the same RFID_UID. They can select from the list of all accounts to badgeIn if they made an account already.</li>
-          <li>check if user badgeIn time is from a different day. Alert the user.</li>
-          <li>Prevent members from accessing this page (the backend)</li>
-          <li>Perfect VisitType nomenclature. Also add a question mark button that gives definitions of each visitType. Add Meeting w/ Joe</li>
-          <li>Proper Coding Convention: Replace getMachinesUtilized(), getotherToolsUtilized() with props</li>
-          <li>editing events w/ flags.contain(noID): Ability to change name</li>
-        </ul>
-        <h3>Before v1 Release:</h3>
-        <ul>
-          <li>ReadMe / Documentation</li>
-          <li>Look into railways.app / npm  / Vercel deployment</li>
-          <li>Timezone variable</li>
-          <li>Typescript!</li>
-          <li>NextJS 13 Migration: Pages to App routing<a href="https://beta.nextjs.org/docs/upgrade-guide#migrating-from-pages-to-app">Guide</a></li>
-          <li>Badgr Integration! (public certs)</li>
-          <li>Machine Restrictions (relay integration)</li>
-        </ul>
-        <p>Random dev note: Isomorphic-unfetch allows us to make HTTP requests inside out NextJS app</p>
-      </details>
+        <details style={{"marginTop": "5vh"}}>
+          <summary>Developer Notes</summary>
+          <h3>Bugs:</h3>
+          <ul>
+            <li>/api/members PUT | Does not create an event! Just badges out.</li>
+            <li>Fix: getMemberStats() (relies on member.sessions)</li>
+            <li>Some times are it the wrong timezone. +5 1/1-3/14. +4 3/14-</li>
+            <li>Point of User confusion: ?new popup still open. badgeOut popup should be a higher z-height</li>
+            <li>validation: no negative session minutes</li>
+            <li>Fix: lastBadgeIn. It should trigger after edits, if lastBadge (lessthan) badgeInTime then update.</li>
+          </ul>
+          <h3>Next up:</h3>
+          <ul>
+            <li>New Feature: Add button to failed badgeIn popup. When clicked lets you search members, selected member get its RFID updated.</li>
+            <li>Bash script executable: git pull updates, start the server, start PacsProbe</li>
+            <li>Add button to badgeIn allowing members to make accounts w/o an ID. We should flag all no id members w/ the same RFID_UID. They can select from the list of all accounts to badgeIn if they made an account already.</li>
+            <li>check if user badgeIn time is from a different day. Alert the user.</li>
+            <li>Prevent members from accessing this page (the backend)</li>
+            <li>Proper Coding Convention: Replace getMachinesUtilized(), getotherToolsUtilized() with props</li>
+            <li>editing events w/ flags.contain(noID): Ability to change name</li>
+            <li>Look into railways.app / npm  / Vercel deployment</li>
+          </ul>
+          <h3>Finish for V1:</h3>
+          <ul>
+            <li>Finish Config</li>
+            <li>Update newMember page to pull majors, patronTypes</li>
+            <li>Edit Member Pop Up</li>
+            <li>How to create your own stats</li>
+            <li>Tidy up ReadMe + Create Getting Started Videos</li>
+            <li>NextJS 13 Migration: Pages to App routing<a href="https://beta.nextjs.org/docs/upgrade-guide#migrating-from-pages-to-app">Guide</a></li>
+          </ul>
+          <h3>Finish for V1:</h3>
+          <ul>
+            <li>Badgr Integration! (public certs)</li>
+            <li>Machine Restrictions (relay integration)</li>
+          </ul>
+        </details>
+      </div>
+      <div className="column" id="c2">
+        <GraphStatCard statTitle="Campus Reach"/>
+        <StatCard statTitle="placeholder"/>
+        <StatCard statTitle="placeholder"/>
+      </div>
     </main>
     </>
   )

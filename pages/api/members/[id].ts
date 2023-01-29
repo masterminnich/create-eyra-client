@@ -37,13 +37,11 @@ export default async function handler(req, res) {
         case 'PUT':
             try {
                 //console.log("body",req.body)
-                console.log("hi for /members/id...",id)
                 
                 const member = await Member.findByIdAndUpdate(id, req.body, {
                     new: true,
                     runValidators: true
                 });
-                console.log("cat",{member})
 
                 if (!member) {
                     return res.status(400).json({ success: false });
@@ -53,9 +51,6 @@ export default async function handler(req, res) {
                 } else { console.log(member.Name,"badged out!") }
 
                 let membersCollection = await Member.find();
-                //let activitiesCollection = await Member.find();
-                console.log("hi")
-                console.log("membersCollection",{membersCollection})
 
                 res.status(200).json({ success: true, data: member, after: membersCollection });
             } catch (error) {

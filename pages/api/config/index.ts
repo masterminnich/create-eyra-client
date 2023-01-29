@@ -33,6 +33,7 @@ export default async function handler(req, res) {
                     runValidators: true
                 });
                 res.status(200).json({ success: false });
+                console.log("Successfully updated config.")
             } catch (error) {
                 console.log("Failed to update config.",error)
                 res.status(400).json({ success: false });
