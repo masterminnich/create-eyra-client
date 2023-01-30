@@ -798,8 +798,9 @@ section#config h3{
     font-weight: 500;
 }
 
-section#config h2{
-    
+section#config{
+    height: 80vh;
+    overflow: scroll;
 }
 
 button#x{
@@ -820,11 +821,11 @@ div#pill{
     gap: 1ch;
     justify-content: center;
     background-color: #D9D9D9;
+    color: #545454;
 }
 
 div#pill p{
     margin: auto;
-    color: #545454;
 }
 
 div#certification-pills, div#otherTools-pills{

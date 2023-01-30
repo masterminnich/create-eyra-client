@@ -3,7 +3,7 @@ import clientPromise from '../utils/mongodb'
 import React, { Component, useState, useEffect } from 'react';
 import { Button, Form, Input } from 'semantic-ui-react';
 import io from 'Socket.IO-client'
-import { ObjectIdSchemaDefinition, Schema } from 'mongoose';
+import { Callback, ObjectIdSchemaDefinition, Schema } from 'mongoose';
 import { rootCertificates } from 'tls';
 import { isNoSubstitutionTemplateLiteral } from 'typescript';
 
@@ -1042,63 +1042,31 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class ConfirmationPopup extends React.Component<{action: string, details: string, onCancel, onConfirm},{}>{
-    constructor(props){
-      super(props);
-      this.state = {}
-    }
-
-    render(){
-      return(
-        <>
-        <div id="confirmPopup">
-          <h2>Are you sure?</h2>
-          { this.props.action ? (
-            <h3>{this.props.action}</h3>) : (
-            <></>
-          )}
-          { this.props.details ? (
-            <h4>{this.props.details}</h4>) : (
-            <></>
-          )}
-          <div style={{display: "inline"}}>
-            <button type="button" onClick={eval(this.props.onCancel)}>Cancel</button>
-            <button type="button">Continue anyway</button>
-          </div>
-        </div>
-        </>
-      )
-    }
-  }
-
-  class AddPill extends React.Component<{},{name: string, focus: boolean}>{
+  class AddPill extends React.Component<{addPill: Function},{name: string, focus: boolean}>{
     constructor(props){
       super(props);
       this.state = {
         name: "",
-        focus: false, //show plus sign?
+        focus: false,
       }
-      console.log(this.state)
     }
 
     handleChange(e){
-      console.log("e",e.target.value)
-      this.setState({name: e.target.value})
-      console.log(this.state)
+      this.setState({name: e.target.innerText, focus: false});
+      this.props.addPill(e.target.innerText);
+      console.log(this.state);
     }
 
     render(){
       return(
         <>
           <div id="pill">
-            <input id="addPill" onFocus={() => this.setState({focus: true})} onBlur={() => this.setState({focus: false})} defaultValue={this.state.name} onChange={this.handleChange.bind(this)}></input>
+            <span id="addPill" contentEditable="true" onFocus={() => this.setState({focus: true})} onBlur={this.handleChange.bind(this)}></span>
             { !this.state.focus && this.state.name == "" ? (
                 <svg xmlns="http://www.w3.org/2000/svg" className="x" style={{transform: "rotate(45deg)"}} width="18" height="18" fill="none" viewBox="0 0 18 18">
                   <path fill="#545454" d="M.485.485a1.5 1.5 0 0 1 2.122 0L8.97 6.85 15.335.485a1.5 1.5 0 0 1 2.12 2.122L11.093 8.97l6.364 6.364a1.5 1.5 0 1 1-2.121 2.12L8.97 11.093l-6.364 6.364a1.5 1.5 0 1 1-2.122-2.121L6.85 8.97.485 2.607a1.5 1.5 0 0 1 0-2.122Z"/>
                 </svg>
-              ) : (
-                <></>
-              )
+              ) : ( <></> )
             }
           </div>
         </>
@@ -1142,6 +1110,20 @@ export default function Home({ members, activities, config }){
       this.handleRemoveTool = this.handleRemoveTool.bind(this)
     }
 
+    addCertPill = (pillName) => {
+      console.log("newPill",pillName)
+      let newState = this.state.config
+      newState.certifications.push(pillName)
+      this.setState({config: newState})
+    }
+
+    addToolPill = (pillName) => {
+      console.log("newPill",pillName)
+      let newState = this.state.config
+      newState.otherTools.push(pillName)
+      this.setState({config: newState})
+    }
+
     updateConfigCollection = () => {
       updateConfigCollection(this.state.config)
     }
@@ -1164,10 +1146,6 @@ export default function Home({ members, activities, config }){
       })
     }
 
-    test = (param) => {
-      console.log("test works!", param)
-    }
-
     closeConfirmationPopup = () => {
       this.setState({action: "", details: "", onCancel: "", onConfirm: ""})
     }
@@ -1178,17 +1156,15 @@ export default function Home({ members, activities, config }){
       let newState = this.state.config
       newState.certifications = newState.certifications.filter(c => c !== inputName) //remove certification from list 
       this.setState({config: newState})
-
       this.closeConfirmationPopup()
     }
 
     removeTool = (inputName: string) => {
       console.log("removing "+inputName+" from tools")
-      
+  
       let newState = this.state.config
       newState.otherTools = newState.otherTools.filter(c => c !== inputName) //remove certification from list 
       this.setState({config: newState})
-
       this.closeConfirmationPopup()
     }
 
@@ -1227,7 +1203,7 @@ export default function Home({ members, activities, config }){
               {this.state.config.certifications.map((i) => 
                 <DeletablePill inputName={i} handler={this.handleRemoveCertification} key={i}/>
               )}
-              <AddPill/>
+              <AddPill addPill={this.addCertPill}/>
             </div>
 
             <h2>otherTools: </h2>
@@ -1235,7 +1211,7 @@ export default function Home({ members, activities, config }){
               {this.state.config.otherTools.map((i) => 
                 <DeletablePill inputName={i} handler={this.handleRemoveTool} key={i}/>
               )}
-              <AddPill/>
+              <AddPill addPill={this.addToolPill}/>
             </div>
 
             <h2>visitType: </h2>
@@ -1626,7 +1602,7 @@ export default function Home({ members, activities, config }){
     <>
     <style>{` html { background: #D9D9D9; } `}</style>
     <Head>
-      <title>Makerspace Badging System</title>
+      <title>Eyra</title>
       <link rel="icon" href="/favicon.ico" />
     </Head>
     
