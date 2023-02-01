@@ -132,7 +132,7 @@ export default async function handler(req, res) {
             default: //Member is found
                 console.log("Attempting to update "+foundMember[0].Name+"'s badge in status. (Currently: "+foundMember[0].badgedIn+")");
                 let [activityAdded, updatedMember] = await updateMemberBadgeInStatus(activitiesCollection, foundMember[0]);
-                console.log({activityAdded,updatedMember});
+                //console.log({activityAdded,updatedMember});
                 if (activityAdded !== undefined){
                     activitiesCollection = findAndReplace(activitiesCollection, activityAdded);
                 }

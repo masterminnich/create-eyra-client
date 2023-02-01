@@ -11,7 +11,7 @@ const headers = {"Accept": "application/json", "Content-Type": "application/json
 //Copied from index.js and badgeIn.js -- Make sure to update any changes to both documents.
 const updateActivityLog = async (activities, newMemberData) => {
     await fetch('/api/socket');
-    let socket = io();
+    var socket = io({transports: ['websocket'], upgrade: false});
     socket.on('connect', () => { console.log('WebSocket connected.') })
     let dateStr = new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10);
     let dateObj = new Date();

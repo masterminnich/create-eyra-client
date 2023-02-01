@@ -41,7 +41,7 @@ class Loading extends React.Component {
   render(){
     return(
       <>
-        <p>loading...</p>
+        <p style={{textAlign: "center"}}>loading...</p>
       </>
   )}
 }
@@ -101,10 +101,6 @@ function showNewMemberMsg(){
   document.getElementById("newMemberMsg").style.display = "block";
 }
 
-const searchForMagstripe = async (magstripe_input) => {
-  searchForID(magstripe_input.slice(1,8)) //Convert Magstrip UID to CINO ID
-}
-
 const searchForID = async (id) => {
   console.log("Searching database for ID matching",id,"...");
   try {
@@ -112,6 +108,10 @@ const searchForID = async (id) => {
   } catch (error) {
     console.log("Error searching for ID.",error);
   }
+}
+
+const searchForMagstripe = async (magstripe_input) => {
+  searchForID(magstripe_input.slice(1,8)) //Convert Magstrip UID to CINO ID
 }
 
 class App extends React.Component {
@@ -127,9 +127,9 @@ class App extends React.Component {
   closePopups = () => { this.setState({...this.state, badgeStatus: "waiting"}) }
 
   searchForRFID = async (RFID_UID_input) => {
-    console.log("Searching database for RFID_UID matching",this.state.rfid,"...");
+    console.log("Searching database for RFID_UID matching",RFID_UID_input,"...");
     await fetch('/api/socket');
-    let socket = io();
+    var socket = io({transports: ['websocket'], upgrade: false});
     socket.on('connect', () => { console.log('WebSocket connected.') })
     //socket.on('update-both', data => {  setState({...state, activitiesCollection: data.activities, membersCollection: data.members}); })
     try {
@@ -145,13 +145,13 @@ class App extends React.Component {
         let updatedActivities = resp.activities;
         
         if (res.status == 200) {
-          this.setState({...this.state, badgeStatus: "found", memberData: memberData})
+          this.setState({...this.state, rfid: RFID_UID_input, badgeStatus: "found", memberData: memberData})
           socket.emit('membersAndActivities-change', {members: updatedMembers, activities: updatedActivities})
-          setTimeout(this.setState({...this.state, badgeStatus: "waiting" }), 4000);
+          setTimeout(() => this.setState({...this.state, badgeStatus: "waiting" }), 4000)
         } else if (res.status == 406){ 
-          this.setState({...this.state, badgeStatus: "tooMany"});
+          this.setState({...this.state, rfid: RFID_UID_input, badgeStatus: "tooMany"});
         } else {
-          this.setState({...this.state, badgeStatus: "notFound"});
+          this.setState({...this.state, rfid: RFID_UID_input, badgeStatus: "notFound"});
         }
       });
     } catch (error) { console.log("Error searching for RFID.",error); }
@@ -163,22 +163,21 @@ class App extends React.Component {
     } else { //If no additional keypresses follow, search for the RFID/Magstripe
       let last_search_input = search_input.slice(-MAX_INPUT_LENGTH)
       this.setState({...this.state, rfid: last_search_input})
-      if ((EXPECTED_MAGSTRIPE_LENGTH == 0) || (this.state.rfid.includes(EXPECTED_RFID_PRESTROKE) & EXPECTED_RFID_PRESTROKE !== "")){
-        this.state.rfid = this.state.rfid.slice(-EXPECTED_RFID_LENGTH)
-        console.log("r1")
-        this.searchForRFID(this.state.rfid)
-      } else if ((EXPECTED_RFID_LENGTH == 0) || (this.state.rfid.includes(EXPECTED_MAGSTRIPE_PRESTROKE) & EXPECTED_MAGSTRIPE_PRESTROKE !== "")){
-        this.state.rfid = this.state.rfid.slice(-EXPECTED_MAGSTRIPE_LENGTH)
-        searchForMagstripe(this.state.rfid)
+      if ((EXPECTED_MAGSTRIPE_LENGTH == 0) || (last_search_input.includes(EXPECTED_RFID_PRESTROKE) & EXPECTED_RFID_PRESTROKE !== "")){
+        last_search_input = last_search_input.slice(-EXPECTED_RFID_LENGTH)
+        this.searchForRFID(last_search_input)
+      } else if ((EXPECTED_RFID_LENGTH == 0) || (last_search_input.includes(EXPECTED_MAGSTRIPE_PRESTROKE) & EXPECTED_MAGSTRIPE_PRESTROKE !== "")){
+        last_search_input = last_search_input.slice(-EXPECTED_MAGSTRIPE_LENGTH)
+        searchForMagstripe(last_search_input)
       } else {
         //The input lacks a pre/post stroke 
         if (EXPECTED_RFID_PRESTROKE == ""){
-          this.state.rfid = this.state.rfid.slice(-EXPECTED_RFID_LENGTH)
+          last_search_input = last_search_input.slice(-EXPECTED_RFID_LENGTH)
           console.log("r2")
-          this.searchForRFID(this.state.rfid)
+          this.searchForRFID(last_search_input)
         } else {
-          this.state.rfid = this.state.rfid.slice(-EXPECTED_MAGSTRIPE_LENGTH)
-          searchForMagstripe(this.state.rfid)
+          last_search_input = last_search_input.slice(-EXPECTED_MAGSTRIPE_LENGTH)
+          searchForMagstripe(last_search_input)
         }
       }
       search_input = ""
@@ -199,8 +198,8 @@ class App extends React.Component {
         window.clearTimeout(Timer)
         this.setState({...this.state, badgeStatus: "loading"})
         let lengthBefore = search_input.length 
-        var Timer = window.setTimeout(this.searchRFIDOrMagStripe(
-          lengthBefore, MIN_INPUT_LENGTH, MAX_INPUT_LENGTH), 2500);
+        var Timer = window.setTimeout(() => this.searchRFIDOrMagStripe(
+          lengthBefore, MIN_INPUT_LENGTH, MAX_INPUT_LENGTH), 250);
       }
     }
   }

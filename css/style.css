@@ -226,6 +226,8 @@ table#recentActivity {
     font-size: 18px;
 }
 
+/*section#recentActivity{ z-index: -1; }/*
+
 section#recentActivity, section.fit{ width: 100%; }
 
 tbody#recentActivityTbody tr:nth-child(odd) {

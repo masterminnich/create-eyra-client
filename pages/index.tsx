@@ -218,7 +218,7 @@ export default function Home({ members, activities, config }){
   useEffect(() => { 
     async function socketInitializer(){
       await fetch('/api/socket');
-      socket = io();
+      var socket = io({transports: ['websocket'], upgrade: false});
       socket.on('connect', () => { console.log('WebSocket connected.') })
       socket.on('update-membersCollection', msg => { setState({...state, membersCollection: msg})  })
       socket.on('update-activitiesCollection', msg => { setState({...state, activitiesCollection: msg}); })
@@ -272,8 +272,9 @@ export default function Home({ members, activities, config }){
       });
       let response = res.json()
       response.then((resp) => {
-        setState({...state, membersCollection: resp.after, isOpen: false, showForgotIDPopup: false})
-        socket.emit('membersCollection-change', resp.after)
+        console.log("updateMember() finished")
+        //setState({...state, membersCollection: resp.after, isOpen: false, showForgotIDPopup: false})
+        //socket.emit('membersCollection-change', resp.after)
       });
     } catch (error) { console.log("ERROR in updateMember() ",error); }
   }
@@ -287,11 +288,12 @@ export default function Home({ members, activities, config }){
       });
       let response = res.json()
       response.then((resp) => {
+        console.log("updateActivityByDate() finished")
         let updatedActivities = state.activitiesCollection.map(e => (e.Date==resp.after.Date) ? resp.after : e ) //Update a single entry in the activitiesCollection
-        setState({...state, activitiesCollection: updatedActivities, isOpen: false, showForgotIDPopup: false})
-        socket.emit('activitiesCollection-change', updatedActivities)
+        //setState({...state, activitiesCollection: updatedActivities, isOpen: false, showForgotIDPopup: false})
+        //socket.emit('activitiesCollection-change', updatedActivities)
       });
-    } catch (error) { console.log("ERROR :",error); }
+    } catch (error) { console.log("ERROR in updateActivityByDate():",error); }
   }
   
   const createNewActivity = async (date: date, event, originFn: string) => {
@@ -495,7 +497,6 @@ export default function Home({ members, activities, config }){
       console.log("saved",memberToUpdate["Certifications"])
     }
     //if memberToUpdate is undefinded it could be because its a ghost activity. No need to update the member.
-    //How can we detect if this is a noID activity.
     if (memberToUpdate){
       console.log("memberToUpdate",memberToUpdate.Name)
     } else { console.log("updating a ghost activity...")}
