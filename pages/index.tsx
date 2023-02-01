@@ -7,6 +7,9 @@ import { Callback, ObjectIdSchemaDefinition, Schema } from 'mongoose';
 import { rootCertificates } from 'tls';
 import { isNoSubstitutionTemplateLiteral } from 'typescript';
 
+function test(){
+  console.log("nut");
+}
 
 let socket;
 let hoverTimerId;
@@ -38,7 +41,6 @@ type PopupProps = {
   submitButtonText: string;
   existsInDB: boolean;
   event?: string;
-  submitting?: void | undefined;
 }
 type memberAttributes = {
   majors: string[], 
@@ -272,8 +274,7 @@ export default function Home({ members, activities, config }){
       });
       let response = res.json()
       response.then((resp) => {
-        console.log("updateMember() finished")
-        //setState({...state, membersCollection: resp.after, isOpen: false, showForgotIDPopup: false})
+        setState({...state, membersCollection: resp.after, isOpen: false, showForgotIDPopup: false})
         //socket.emit('membersCollection-change', resp.after)
       });
     } catch (error) { console.log("ERROR in updateMember() ",error); }
@@ -288,9 +289,8 @@ export default function Home({ members, activities, config }){
       });
       let response = res.json()
       response.then((resp) => {
-        console.log("updateActivityByDate() finished")
         let updatedActivities = state.activitiesCollection.map(e => (e.Date==resp.after.Date) ? resp.after : e ) //Update a single entry in the activitiesCollection
-        //setState({...state, activitiesCollection: updatedActivities, isOpen: false, showForgotIDPopup: false})
+        setState({...state, activitiesCollection: updatedActivities, isOpen: false, showForgotIDPopup: false})
         //socket.emit('activitiesCollection-change', updatedActivities)
       });
     } catch (error) { console.log("ERROR in updateActivityByDate():",error); }
@@ -474,6 +474,7 @@ export default function Home({ members, activities, config }){
 
   const handleSubmitPopUp = (existingInDB, e) => { //handleSubmitBadgeOut
     //console.log("existingInDB",existingInDB,"e",e)
+    e.preventDefault();
     let newActivity: activityEvent = state.activityEvent
     let badgeInTime = new Date(e.target.badgeInDate.value+" "+e.target.badgeInTime.value)
     let badgeOutTime = new Date(e.target.badgeOutDate.value+" "+e.target.badgeOutTime.value)
@@ -504,6 +505,7 @@ export default function Home({ members, activities, config }){
   }
 
   const handleSubmitForgotID = (props,e) => {
+    e.preventDefault();
     let numOfMembers = e.target.parentNode.children[2].children[1].value
     let newActivities: listOfEvents = [] 
     for (let i=0; i<numOfMembers; i++){
@@ -650,7 +652,7 @@ export default function Home({ members, activities, config }){
             <textarea style={{display:"none"}} id="hiddenProps" defaultValue={JSON.stringify(this.props)}></textarea>
 
             <Button type='button' name={state.activityEvent._id} id="deleteActivityButton" onClick={(e) => deleteActivity([state.activitiesCollection, this.state, state.activityEvent._id, member])} style={trashButtonCSS}></Button>
-            <Button type='submit' id="submitBadgeOutPopup" onClick={() => this.props.submitting}>{this.props.submitButtonText}</Button>
+            <Button type='submit' id="submitBadgeOutPopup">{this.props.submitButtonText}</Button>
             <Button type='button' id="cancelPopupButton" onClick={() => setState({ ...state,  isOpen: false, showForgotIDPopup: false })}>Cancel</Button>
           </form>
         </>
@@ -811,7 +813,6 @@ export default function Home({ members, activities, config }){
               submitButtonText="Create"
               existsInDB={false}
               noId={true}
-              //submitting={this.props.toggle()}
             />
 
             <div>
@@ -1445,7 +1446,7 @@ export default function Home({ members, activities, config }){
                     this.hourMinStr((Date.parse(actEvent.badgeOutTime) - Date.parse(actEvent.badgeInTime))/60000)
                     }</p>
                   </td>
-                  <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: state.displayingDay, submitButtonText: "Add Info", "message":"Editing "+actEvent.Name+"'s event..."}, "(e) => handleSubmitPopUp(true,e)")} showCheckbox={this.state.toggle} index={i}/></td>
+                  <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: state.displayingDay, submitButtonText: "Update", "message":"Editing "+actEvent.Name+"'s event..."}, "(e) => handleSubmitPopUp(true,e)")} showCheckbox={this.state.toggle} index={i}/></td>
                 </tr>))
             )}
             </tbody>
@@ -1639,6 +1640,7 @@ export default function Home({ members, activities, config }){
               existsInDB={false}
               noId={false}
               event={state.activityEvent.event}
+              //submitting={() => console.log("test!")}
             />
           </section>
           <div id="blur"></div>
