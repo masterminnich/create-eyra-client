@@ -780,7 +780,6 @@ export default function Home({ members, activities, config }){
   }
 
   class BadgeInForgotIDPopUp extends React.Component<{},{members: number[]}>{
-    //toggle: () => void
     constructor(props){
       super(props);
       this.state = {
@@ -902,7 +901,7 @@ export default function Home({ members, activities, config }){
 
         <div style={{"textAlign": "center"}}>
         <p style={{display: "inline"}}>Search members: </p>
-        <input onFocus={this.onFocus.bind(this)} onBlur={this.onBlur.bind(this)} onKeyUpCapture={this.onKeyUpCapture.bind(this)} id='searchMemberBadgeIn'></input> 
+        <input autoComplete='' onFocus={this.onFocus.bind(this)} onBlur={this.onBlur.bind(this)} onKeyUpCapture={this.onKeyUpCapture.bind(this)} id='searchMemberBadgeIn'></input> 
         <BadgeInForgotIDButton/>
         {this.state.showResults && this.state.results.length > 0 ? 
           <SearchResults handleSelect={this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
