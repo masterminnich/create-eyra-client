@@ -47,7 +47,7 @@ type Config = {
   certifications: string[],
   otherTools: string[],
   memberAttributes: memberAttributes,
-  visitType: Object,
+  visitType: Object
 }
 type Member = {
   Name: string;
@@ -1144,18 +1144,32 @@ export default function Home({ members, activities, config }){
       newState.otherTools.push(pillName)
       this.setState({config: newState})
     }
+    
+    addPatron = (pillName) => {
+      let newState = this.state.config
+      newState.memberAttributes.patronTypes.push(pillName)
+      this.setState({config: newState})
+    }
 
     updateConfigCollection = () => {
       updateConfigCollection(this.state.config)
     }
 
     handleRemoveCertification = (inputName: string) => {
-      this.setState({
-        action: "Removing certification '"+inputName+"'",
-        details: "???? members w/ this certification...",
-        onCancel: '() => this.closeConfirmationPopup()',
-        onConfirm: "() => this.removeCertification('"+inputName+"')",
-      })
+      //Check Certification Usage
+      let certified = members.filter(m => m.Certifications && m.Certifications.includes(inputName))
+
+      if (certified.length == 0){
+        //Do not throw a confirmation popup if no members have the certification
+        eval("this.removeCertification('"+inputName+"')")
+      } else {
+        this.setState({
+          action: "Removing certification '"+inputName+"'",
+          details: certified.length+" members w/ this certification...",
+          onCancel: '() => this.closeConfirmationPopup()',
+          onConfirm: "() => this.removeCertification('"+inputName+"')",
+        })
+      }
     }
 
     handleRemoveTool = (inputName: string) => {
@@ -1172,8 +1186,6 @@ export default function Home({ members, activities, config }){
     }
     
     removeCertification = (inputName: string) => {
-      console.log("removing "+inputName+" from certifications")
-      
       let newState = this.state.config
       newState.certifications = newState.certifications.filter(c => c !== inputName) //remove certification from list 
       this.setState({config: newState})
@@ -1181,12 +1193,34 @@ export default function Home({ members, activities, config }){
     }
 
     removeTool = (inputName: string) => {
-      console.log("removing "+inputName+" from tools")
-  
       let newState = this.state.config
       newState.otherTools = newState.otherTools.filter(c => c !== inputName) //remove certification from list 
       this.setState({config: newState})
       this.closeConfirmationPopup()
+    }
+
+    removePatron = (inputName: string) => {
+      let newState = this.state.config
+      newState.memberAttributes.patronTypes = newState.memberAttributes.patronTypes.filter(c => c !== inputName) //remove certification from list 
+      this.setState({config: newState})
+      this.closeConfirmationPopup()
+    }
+
+    handleRemovePatron = (inputName: string) => {
+      //Check for patrons of this type
+      let patrons = members.filter(m => m.PatronType && m.PatronType.includes(inputName))
+
+      if (patrons.length == 0){
+        //Do not throw a confirmation popup if no members have the certification
+        eval("this.removePatron('"+inputName+"')")
+      } else {
+        this.setState({
+          action: "Removing patronType '"+inputName+"'",
+          details: patrons.length+" members w/ this patronType...",
+          onCancel: '() => this.closeConfirmationPopup()',
+          onConfirm: "() => this.removePatron('"+inputName+"')",
+        })
+      }
     }
 
     render(){
@@ -1243,7 +1277,13 @@ export default function Home({ members, activities, config }){
               <h2>Majors:</h2>
               <input type="text" defaultValue={this.state.config.memberAttributes.majors.toString()}></input>
               <h2>Patron Types:</h2>
-              <input type="text" defaultValue={this.state.config.memberAttributes.patronTypes.toString()}></input>
+              <div id="patron-pills">
+                {this.state.config.memberAttributes.patronTypes.map((i) => 
+                  <DeletablePill inputName={i} handler={this.handleRemovePatron} key={i}/>
+                )}
+                <AddPill addPill={this.addPatron} existingPills={state.configCollection.memberAttributes.patronTypes}/>
+              </div>
+              {/*<input type="text" defaultValue={this.state.config.memberAttributes.patronTypes.toString()}></input>*/}
               <h2>Graduation Years:</h2>
               <input type="text" defaultValue={this.state.config.memberAttributes.graduationYears.toString()}></input>
             </details>
