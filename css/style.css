@@ -709,7 +709,7 @@ main {
 section {
     background: white;
     border-radius: 12px;
-    filter: drop-shadow(-4px 6px 12px #00000025);
+    /*filter: drop-shadow(-4px 6px 12px #00000025);*/
 }
 
 section header{
