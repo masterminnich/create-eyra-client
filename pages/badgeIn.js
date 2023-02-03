@@ -68,7 +68,7 @@ class FoundPopup extends React.Component {
 
   render(){
     let message = this.props.memberData.Name;
-    if(this.props.memberData.badgeIn){
+    if(this.props.memberData.badgedIn){
       message += " badged in!"
     } else { message += " badged out!" }
 

@@ -7,11 +7,7 @@ import { Callback, ObjectIdSchemaDefinition, Schema } from 'mongoose';
 import { rootCertificates } from 'tls';
 import { isNoSubstitutionTemplateLiteral } from 'typescript';
 
-function test(){
-  console.log("nut");
-}
-
-let socket;
+var socket = io({transports: ['websocket'], upgrade: false});
 let hoverTimerId;
 let isHovering = false; //Whether the user is currently hovering over an element of interest
 const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"} as const
@@ -85,7 +81,6 @@ type listOfEvents = Array<event>
 type onClick = () => void
 type onChange = (e : any) => void
 type mainState = { configCollection: any, membersCollection: Member[], activitiesCollection: ActivityDay[], displayingDay: string, isOpen: boolean, displayProps: any, batchEvents: event[], submitType: string, activityEvent: activityEvent, showConfigPopup: boolean, showForgotIDPopup: boolean }
-
 
 function getMachinesUtilized(){ //Get list of machinesUtilized from an on-screen PopUp
   let machinesUtilized: string[] = []
@@ -220,7 +215,6 @@ export default function Home({ members, activities, config }){
   useEffect(() => { 
     async function socketInitializer(){
       await fetch('/api/socket');
-      var socket = io({transports: ['websocket'], upgrade: false});
       socket.on('connect', () => { console.log('WebSocket connected.') })
       socket.on('update-membersCollection', msg => { setState({...state, membersCollection: msg})  })
       socket.on('update-activitiesCollection', msg => { setState({...state, activitiesCollection: msg}); })
@@ -1044,28 +1038,56 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class AddPill extends React.Component<{addPill: Function},{name: string, focus: boolean}>{
+  class AddPill extends React.Component<{addPill: Function, existingPills: string[]},{name: string, focus: boolean}>{
     constructor(props){
       super(props);
+      this.textInput = React.createRef();
+      this.focusOnInput = this.focusOnInput.bind(this);
       this.state = {
         name: "",
         focus: false,
       }
     }
 
+    focusOnInput() {
+      this.textInput.current.focus();
+    }
+
+    checkForEnter(e){
+      if (e.key=="Enter"){
+        this.handleChange(e)
+        e.target.innerText = "";
+      }
+    }
+
     handleChange(e){
-      this.setState({name: e.target.innerText, focus: false});
-      this.props.addPill(e.target.innerText);
-      console.log(this.state);
+      this.validateNewPill(e)
+    }
+
+    createNewPill(e, pillName){
+      this.props.addPill(pillName);
+      this.setState({name: "", focus: false});
+      e.target.innerText = "";
+    }
+
+    validateNewPill(e){
+      let pillName = e.target.innerText.replace(/[^a-zA-Z0-9_()]+/g,""); //drop all non-alphanumeric characters except () and _
+      if (pillName == ""){
+        console.log("validate | pillName is empty")
+      } else if (this.props.existingPills.includes(pillName)) {
+        console.log("validate | duplicate pill detected")
+      } else {
+        this.createNewPill(e, pillName)
+      }
     }
 
     render(){
       return(
         <>
           <div id="pill">
-            <span id="addPill" contentEditable="true" onFocus={() => this.setState({focus: true})} onBlur={this.handleChange.bind(this)}></span>
+            <span id="addPill" contentEditable="true" onKeyDown={(e) => this.checkForEnter(e)} ref={this.textInput} onFocus={() => this.setState({focus: true})} onBlur={this.handleChange.bind(this)}></span>
             { !this.state.focus && this.state.name == "" ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="x" style={{transform: "rotate(45deg)"}} width="18" height="18" fill="none" viewBox="0 0 18 18">
+                <svg xmlns="http://www.w3.org/2000/svg" onClick={this.focusOnInput} className="x" style={{transform: "rotate(45deg)"}} width="18" height="18" fill="none" viewBox="0 0 18 18">
                   <path fill="#545454" d="M.485.485a1.5 1.5 0 0 1 2.122 0L8.97 6.85 15.335.485a1.5 1.5 0 0 1 2.12 2.122L11.093 8.97l6.364 6.364a1.5 1.5 0 1 1-2.121 2.12L8.97 11.093l-6.364 6.364a1.5 1.5 0 1 1-2.122-2.121L6.85 8.97.485 2.607a1.5 1.5 0 0 1 0-2.122Z"/>
                 </svg>
               ) : ( <></> )
@@ -1113,14 +1135,12 @@ export default function Home({ members, activities, config }){
     }
 
     addCertPill = (pillName) => {
-      console.log("newPill",pillName)
       let newState = this.state.config
       newState.certifications.push(pillName)
       this.setState({config: newState})
     }
 
     addToolPill = (pillName) => {
-      console.log("newPill",pillName)
       let newState = this.state.config
       newState.otherTools.push(pillName)
       this.setState({config: newState})
@@ -1133,7 +1153,7 @@ export default function Home({ members, activities, config }){
     handleRemoveCertification = (inputName: string) => {
       this.setState({
         action: "Removing certification '"+inputName+"'",
-        details: "123098 members w/ this certification...",
+        details: "???? members w/ this certification...",
         onCancel: '() => this.closeConfirmationPopup()',
         onConfirm: "() => this.removeCertification('"+inputName+"')",
       })
@@ -1205,7 +1225,7 @@ export default function Home({ members, activities, config }){
               {this.state.config.certifications.map((i) => 
                 <DeletablePill inputName={i} handler={this.handleRemoveCertification} key={i}/>
               )}
-              <AddPill addPill={this.addCertPill}/>
+              <AddPill addPill={this.addCertPill} existingPills={state.configCollection.certifications}/>
             </div>
 
             <h2>otherTools: </h2>
@@ -1213,20 +1233,20 @@ export default function Home({ members, activities, config }){
               {this.state.config.otherTools.map((i) => 
                 <DeletablePill inputName={i} handler={this.handleRemoveTool} key={i}/>
               )}
-              <AddPill addPill={this.addToolPill}/>
+              <AddPill addPill={this.addToolPill} existingPills={state.configCollection.otherTools}/>
             </div>
 
             <h2>visitType: </h2>
-            <input type="text" value={JSON.stringify(this.state.config.visitType)}></input>
+            <input type="text" defaultValue={JSON.stringify(this.state.config.visitType)}></input>
 
             <details>
               <summary>Member Attributes</summary>
               <h2>Majors:</h2>
-              <input type="text" value={this.state.config.memberAttributes.majors.toString()}></input>
+              <input type="text" defaultValue={this.state.config.memberAttributes.majors.toString()}></input>
               <h2>Patron Types:</h2>
-              <input type="text" value={this.state.config.memberAttributes.patronTypes.toString()}></input>
+              <input type="text" defaultValue={this.state.config.memberAttributes.patronTypes.toString()}></input>
               <h2>Graduation Years:</h2>
-              <input type="text" value={this.state.config.memberAttributes.graduationYears.toString()}></input>
+              <input type="text" defaultValue={this.state.config.memberAttributes.graduationYears.toString()}></input>
             </details>
 
             <button type="button" onClick={this.props.cancel}>Cancel</button>
@@ -1442,9 +1462,7 @@ export default function Home({ members, activities, config }){
                     <this.inOutTime in_out={"OUT"} time={new Date(actEvent.badgeOutTime).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)}/>
                   </td>
                   <td>
-                    <p>{
-                    this.hourMinStr((Date.parse(actEvent.badgeOutTime) - Date.parse(actEvent.badgeInTime))/60000)
-                    }</p>
+                    <p>{ this.hourMinStr((Date.parse(actEvent.badgeOutTime) - Date.parse(actEvent.badgeInTime))/60000) }</p>
                   </td>
                   <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: state.displayingDay, submitButtonText: "Update", "message":"Editing "+actEvent.Name+"'s event..."}, "(e) => handleSubmitPopUp(true,e)")} showCheckbox={this.state.toggle} index={i}/></td>
                 </tr>))
