@@ -1288,7 +1288,7 @@ export default function Home({ members, activities, config }){
             <details>
               <summary>Member Attributes</summary>
               <h2>Majors:</h2>
-              <textarea defaultValue={this.state.config.memberAttributes.majors.toString()}></textarea>
+              <textarea id="majors" defaultValue={this.state.config.memberAttributes.majors.toString()}></textarea>
               <h2>Patron Types:</h2>
               <div id="patron-pills">
                 {this.state.config.memberAttributes.patronTypes.map((i) => 

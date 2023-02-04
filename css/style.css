@@ -902,7 +902,7 @@ section#editMember label{
     gap: 1ch;
 }
 
-section#editMember textarea{
+textarea#majors{
     width: 98%;
     height: 5.5ch;
     resize: none;
