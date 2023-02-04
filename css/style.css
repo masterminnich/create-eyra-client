@@ -802,7 +802,7 @@ section#config h3{
 
 section#config{
     height: 80vh;
-    overflow: scroll;
+    overflow-y: scroll;
 }
 
 button#x{
@@ -830,11 +830,10 @@ div#pill p{
     margin: auto;
 }
 
-div#certification-pills, div#otherTools-pills{
+div#certification-pills, div#otherTools-pills, div#patron-pills{
     gap: 1ch;
     display: flex;
     flex-wrap: wrap;
-    margin: 1ch 0ch;
 }
 
 #confirmPopup{
@@ -902,3 +901,28 @@ section#editMember label{
     display: flex;
     gap: 1ch;
 }
+
+section#editMember textarea{
+    width: 98%;
+    height: 5.5ch;
+    resize: none;
+}
+
+/* Start custom scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    border-radius: 4px;
+}
+  
+/*::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+}*/
+
+::-webkit-scrollbar-thumb {
+    background: #888; 
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+}
+/* End custom scrollbar */
