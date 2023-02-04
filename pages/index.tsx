@@ -1061,6 +1061,7 @@ export default function Home({ members, activities, config }){
 
     handleChange(e){
       this.validateNewPill(e)
+      this.setState({focus: false})
     }
 
     createNewPill(e, pillName){
@@ -1283,7 +1284,6 @@ export default function Home({ members, activities, config }){
                 )}
                 <AddPill addPill={this.addPatron} existingPills={state.configCollection.memberAttributes.patronTypes}/>
               </div>
-              {/*<input type="text" defaultValue={this.state.config.memberAttributes.patronTypes.toString()}></input>*/}
               <h2>Graduation Years:</h2>
               <input type="text" defaultValue={this.state.config.memberAttributes.graduationYears.toString()}></input>
             </details>
