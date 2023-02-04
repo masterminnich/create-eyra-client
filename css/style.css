@@ -863,3 +863,42 @@ input#addPill{
     background: none;
     width: fit-content;
 }
+
+section#editMember select, section#editMember input{
+    max-width: fit-content;
+}
+
+section#editMember h2#title{
+    text-align: center;
+}
+
+section#editMember div#buttons{
+    display: flex;
+    justify-content: space-between;
+}
+
+input[type='checkbox']#checkbox:checked{
+    background-color: violet;
+}
+
+input[type='checkbox']#checkbox{
+    appearance: none;
+    background-color: #fff;
+    aspect-ratio: 1;
+    height: 2ch;
+    font-size: 20px;
+    border: 3px solid black;
+    border-radius: 6px;
+}
+
+section#editMember div#certs{
+    height: 95px;
+    align-content: flex-end;
+    flex-wrap: wrap;
+    display: flex;
+}
+
+section#editMember label{
+    display: flex;
+    gap: 1ch;
+}

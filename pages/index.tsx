@@ -987,49 +987,61 @@ export default function Home({ members, activities, config }){
     render(){
       return(
         <>
-          <section className="Popup">
-            <p>EDITING MEMBER</p>
+          <section id="editMember" className="Popup">
+            <h2 id="title">Editing Member</h2>
+            <div style={{display: "flex", gap: "4px", flexFlow: "wrap"}}>
+            <label>
+              Name:
+              <input type="text" defaultValue={this.state.member.Name} onChange={(e) => this.updateString("Name", e.target.value)}></input>
+            </label>
 
-            <p>Name:</p>
-            <input type="text" defaultValue={this.state.member.Name} onChange={(e) => this.updateString("Name", e.target.value)}></input>
+            <label>
+              RFID:
+              <input type="text" defaultValue={this.props.rfid} onChange={(e) => this.updateString("rfid", e.target.value)}></input>
+            </label>
 
-            <p>RFID:</p>
-            <input type="text" defaultValue={this.props.rfid} onChange={(e) => this.updateString("rfid", e.target.value)}></input>
+            <label>
+              Major:
+              <select defaultValue={this.state.member.Major} onChange={(e) => this.updateString("Major", e.target.value)}>
+                {state.configCollection.memberAttributes.majors.map((major) => 
+                  <option key={major}>{major}</option>
+                )}
+              </select>
+            </label>
 
-            <p>Major:</p>
-            <select defaultValue={this.state.member.Major} onChange={(e) => this.updateString("Major", e.target.value)}>
-              {state.configCollection.memberAttributes.majors.map((major) => 
-                <option key={major}>{major}</option>
-              )}
-            </select>
+            <label>
+              PatronType: 
+              <select defaultValue={this.state.member.PatronType} onChange={(e) => this.updateString("PatronType", e.target.value)}>
+                {state.configCollection.memberAttributes.patronTypes.map((patronType) => 
+                  <option key={patronType}>{patronType}</option>
+                )}
+              </select>
+            </label>
 
-            <p>PatronType:</p> 
-            <select defaultValue={this.state.member.PatronType} onChange={(e) => this.updateString("PatronType", e.target.value)}>
-              {state.configCollection.memberAttributes.patronTypes.map((patronType) => 
-                <option key={patronType}>{patronType}</option>
-              )}
-            </select>
-
-            <p>GraduationYear:</p>
-            <select defaultValue={this.state.member.GraduationYear} onChange={(e) => this.updateString("GraduationYear", e.target.value)}>
-              {state.configCollection.memberAttributes.graduationYears.map((gradYear) => 
-                <option key={gradYear}>{gradYear}</option>
-              )}
-            </select>
-
-            <p>Certifications:</p>
-            <div style={{display: 'flex'}} onChange={(e) => this.updateCerts(e)}>
-            {state.configCollection.certifications.map((cert,i) => (
-              <div>
-                <p>{cert}</p>
-                <input name={cert} type="checkbox" defaultChecked={this.state.member.Certifications.includes(cert)}></input>
-              </div>
-            ))}
+            <label>
+              GraduationYear:
+              <select defaultValue={this.state.member.GraduationYear} onChange={(e) => this.updateString("GraduationYear", e.target.value)}>
+                {state.configCollection.memberAttributes.graduationYears.map((gradYear) => 
+                  <option key={gradYear}>{gradYear}</option>
+                )}
+              </select>
+            </label>
             </div>
 
-            <button type="button" onClick={this.props.cancel}>Cancel</button>
-            <button type="button" onClick={() => this.handleSubmit()}>Update</button>
-            <button type="button" onClick={() => console.log("TODO: Implement this button w/ an Are you Sure? popup")}>Delete</button>
+            <div id="certs" onChange={(e) => this.updateCerts(e)}>
+              {state.configCollection.certifications.map((cert,i) => (
+                <div style={{flexDirection:"column", width: "35px"}} className='rotated'>
+                  <p>{cert}</p>
+                  <input name={cert} type="checkbox" id="checkbox" defaultChecked={this.state.member.Certifications.includes(cert)}></input>
+                </div>
+              ))}
+            </div>
+
+            <div id="buttons">
+              <button type="button" onClick={this.props.cancel}>Cancel</button>
+              <button type="button" onClick={() => console.log("TODO: Implement this button w/ an Are you Sure? popup")}>Delete</button>
+              <button type="button" onClick={() => this.handleSubmit()}>Update</button>
+            </div>
           </section>
           <div id="blur"></div>
         </>
