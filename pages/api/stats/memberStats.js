@@ -2,6 +2,7 @@ import Cors from 'cors'
 import initMiddleware from '../../../utils/init-middleware'
 import connectToDatabase from '../../../utils/connectToDatabase';
 import Member from '../../../models/Member';
+import Config from '../../../models/Config';
 
 // Initialize the cors middleware. You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
 const cors = initMiddleware(
@@ -10,27 +11,27 @@ const cors = initMiddleware(
   })
 )
 
-function getWorkshopPopularity(members){ //get data to create Donut Chart. 
+function getWorkshopPopularity(members, listOfCerts){ //get data to create Donut Chart. 
     let DonutChartData = [];
     DonutChartData.push(["Workshop","Completions"])
-    let WorkshopList = [{"BantamMill":0}, {"CircuitDesign":0}, {"FourAxisMill":0}, {"Fusion":0}, {"Glowforge":0}, {"P9000":0}, {"Sewing":0}, {"Silhouette":0}, {"Ultimaker":0}, {"VectorCAD":0}]
+    let WorkshopList = listOfCerts.reduce((listOfCerts,c) => (listOfCerts[c]=0,listOfCerts),{}); //[{"BantamMill":0}, {"CircuitDesign":0}, {"FourAxisMill":0}, {"Fusion":0}, {"Glowforge":0}, {"P9000":0}, {"Sewing":0}, {"Silhouette":0}, {"Ultimaker":0}, {"VectorCAD":0}]
     for (let i=0;i<members.length;i++){
         let member = members[i];
         let RowOfData = [];
-        for (let j=0;j<WorkshopList.length;j++){
-            let WorkshopName = Object.keys(WorkshopList[j])[0]
-            let FullCertificationName = WorkshopName+"Certified"
-            if (member[FullCertificationName]){ //If member is certified for this workshop
-                WorkshopList[j][WorkshopName] += 1;
+        for (let j=0; j<Object.keys(WorkshopList).length; j++){
+            let WorkshopName = Object.keys(WorkshopList)[j]
+            if (member.Certifications.includes(WorkshopName)){ //If member is certified for this workshop
+                WorkshopList[WorkshopName] += 1;
+                console.log("add to "+WorkshopName+"...",WorkshopList[WorkshopName])
             }
         }
     }
-    for (let i=0;i<WorkshopList.length;i++){
-        let WorkshopName = Object.keys(WorkshopList[i])[0]
-        let WorkshopAttendance = Object.values(WorkshopList[i])[0]
+    for (let k=0; k<Object.keys(WorkshopList).length; k++){
+        let WorkshopName = Object.keys(WorkshopList)[k]
+        let WorkshopAttendance = WorkshopList[WorkshopName]
         DonutChartData.push([WorkshopName,WorkshopAttendance])
     }
-    //console.log("WorkshopList",WorkshopList)
+    console.log({DonutChartData})
     return DonutChartData
 }
 
@@ -114,8 +115,9 @@ export default async function handler(req, res) {
             try{
                 console.log("/api/stats/memberStats is fetching stats...")
                 const members = await Member.find({}); 
+                const config = await Config.find({});
                 let memberStats = getMemberStats(members)
-                let workshopStats = getWorkshopPopularity(members)
+                let workshopStats = getWorkshopPopularity(members, config[0].certifications)
                 res.status(200).json({ success: true, data: [workshopStats,memberStats] })
             } catch (error) {
                 res.status(400).json({ success: false });

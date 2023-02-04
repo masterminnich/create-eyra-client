@@ -1770,7 +1770,7 @@ export async function getStaticProps(context) {
   const activityArray = await activityCollection.find({}).toArray();
   const activityP = JSON.parse(JSON.stringify(activityArray));
 
-  const configCollection = await client.db().collection("config");
+  const configCollection = await client.db().collection("configs");
   const configArray = await configCollection.find({}).toArray();
   const configP = JSON.parse(JSON.stringify(configArray));
 
