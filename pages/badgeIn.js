@@ -64,11 +64,12 @@ class FoundPopup extends React.Component {
   constructor(props){
     super(props);
     this.state = {};
+    console.log("mD2",this.props.memberData)
   }
 
   render(){
     let message = this.props.memberData.Name;
-    if(this.props.memberData.badgeIn){
+    if(this.props.memberData.badgedIn){
       message += " badged in!"
     } else { message += " badged out!" }
 
@@ -141,6 +142,7 @@ class App extends React.Component {
       let response = res.json()
       response.then((resp) => {
         let memberData = resp.after;
+        console.log("mD",memberData)
         let updatedMembers = resp.members;
         let updatedActivities = resp.activities;
         

@@ -1498,7 +1498,7 @@ export default function Home({ members, activities, config }){
                     <div className="name"></div>
                     <div className="major"></div>
                     <div className="rotated">
-                      { state.configCollection.certifications.map((cert) => 
+                      { state.configCollection?.certifications.map((cert) => 
                         <div className="certHeader" key={cert+"cert"}><p>{cert}</p></div>
                       )}
                     </div>
@@ -1713,7 +1713,7 @@ export async function getStaticProps(context) {
   const activityArray = await activityCollection.find({}).toArray();
   const activityP = JSON.parse(JSON.stringify(activityArray));
 
-  const configCollection = await client.db().collection("config");
+  const configCollection = await client.db().collection("configs");
   const configArray = await configCollection.find({}).toArray();
   const configP = JSON.parse(JSON.stringify(configArray));
 
