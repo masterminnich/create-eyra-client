@@ -21,6 +21,7 @@ export default async function handler(req, res) {
         case 'GET': //Returns all documents in activities collection
             try {
                 const config = await Config.find({});
+                console.log("config1",config)
                 res.status(200).json({ success: true, data: config })
             } catch (error) {
                 res.status(400).json({ success: false });

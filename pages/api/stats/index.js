@@ -109,7 +109,7 @@ const fetchDataOneDay = (todayDateStr,activitiesCollection) =>{
         ActivityDay.Events.forEach(event => eventTypeCount[event.event] += 1)
         collectedStats["eventTypeCount"] = eventTypeCount;
 
-    } else { console.log("No activities found with date",todayDateStr) }
+    } else { /*console.log("No activities found with date",todayDateStr)*/ }
     return collectedStats
 }
 

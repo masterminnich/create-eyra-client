@@ -11,10 +11,12 @@ let Semesters = {
     "Summer 2022": new Date("5/14/22"), 
     "Fall 2022": new Date("8/24/22"),
     "Spring 2023": new Date("1/16/23"),
+    "Summer 2023": new Date("5/8/23"), //check
 }
 let Years = {
     "2021 - 2022": new Date("8/18/21"), 
     "2022 - 2023": new Date("8/24/22"),
+    "2023 - 2024": new Date("8/25/23"), //check
 }
 
 

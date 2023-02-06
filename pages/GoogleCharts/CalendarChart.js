@@ -239,7 +239,7 @@ function CalendarChart ({google, calStats}) {
     return (
         <>
             {!google && <Spinner />}
-            <div id="calendarChart" className={!google ? 'd-none' : ''} />
+            <div id="calendarChart" className={!google ? 'd-none' : ''} style={{height: "34ch"}} />
             
             <div className="controlCalendarChart">
                 <p>Displaying Statistic: </p>

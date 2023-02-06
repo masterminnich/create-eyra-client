@@ -7,11 +7,7 @@ import { Callback, ObjectIdSchemaDefinition, Schema } from 'mongoose';
 import { rootCertificates } from 'tls';
 import { isNoSubstitutionTemplateLiteral } from 'typescript';
 
-function test(){
-  console.log("nut");
-}
-
-let socket;
+var socket = io({transports: ['websocket'], upgrade: false});
 let hoverTimerId;
 let isHovering = false; //Whether the user is currently hovering over an element of interest
 const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"} as const
@@ -51,7 +47,7 @@ type Config = {
   certifications: string[],
   otherTools: string[],
   memberAttributes: memberAttributes,
-  visitType: Object,
+  visitType: Object
 }
 type Member = {
   Name: string;
@@ -85,7 +81,6 @@ type listOfEvents = Array<event>
 type onClick = () => void
 type onChange = (e : any) => void
 type mainState = { configCollection: any, membersCollection: Member[], activitiesCollection: ActivityDay[], displayingDay: string, isOpen: boolean, displayProps: any, batchEvents: event[], submitType: string, activityEvent: activityEvent, showConfigPopup: boolean, showForgotIDPopup: boolean }
-
 
 function getMachinesUtilized(){ //Get list of machinesUtilized from an on-screen PopUp
   let machinesUtilized: string[] = []
@@ -218,9 +213,23 @@ export default function Home({ members, activities, config }){
   //console.log("state",state)
 
   useEffect(() => { 
+    if (state.configCollection == undefined){
+      console.log("Welcome to Eyra. Setting up your config collection...")
+      let c = {
+        certifications: [],
+        otherTools: [],
+        visitType: {},
+        memberAttributes: {
+          majors: [],
+          patronTypes: [],
+          graduationYears: [],
+        },
+      }
+      setState({...state,configCollection:c})
+    }
+
     async function socketInitializer(){
       await fetch('/api/socket');
-      var socket = io({transports: ['websocket'], upgrade: false});
       socket.on('connect', () => { console.log('WebSocket connected.') })
       socket.on('update-membersCollection', msg => { setState({...state, membersCollection: msg})  })
       socket.on('update-activitiesCollection', msg => { setState({...state, activitiesCollection: msg}); })
@@ -786,7 +795,6 @@ export default function Home({ members, activities, config }){
   }
 
   class BadgeInForgotIDPopUp extends React.Component<{},{members: number[]}>{
-    //toggle: () => void
     constructor(props){
       super(props);
       this.state = {
@@ -908,7 +916,7 @@ export default function Home({ members, activities, config }){
 
         <div style={{"textAlign": "center"}}>
         <p style={{display: "inline"}}>Search members: </p>
-        <input onFocus={this.onFocus.bind(this)} onBlur={this.onBlur.bind(this)} onKeyUpCapture={this.onKeyUpCapture.bind(this)} id='searchMemberBadgeIn'></input> 
+        <input autoComplete='' onFocus={this.onFocus.bind(this)} onBlur={this.onBlur.bind(this)} onKeyUpCapture={this.onKeyUpCapture.bind(this)} id='searchMemberBadgeIn'></input> 
         <BadgeInForgotIDButton/>
         {this.state.showResults && this.state.results.length > 0 ? 
           <SearchResults handleSelect={this.handleSelect.bind(this)} results={this.state.results}></SearchResults>
@@ -994,49 +1002,61 @@ export default function Home({ members, activities, config }){
     render(){
       return(
         <>
-          <section className="Popup">
-            <p>EDITING MEMBER</p>
+          <section id="editMember" className="Popup">
+            <h2 id="title">Editing Member</h2>
+            <div style={{display: "flex", gap: "4px", flexFlow: "wrap"}}>
+            <label>
+              Name:
+              <input type="text" defaultValue={this.state.member.Name} onChange={(e) => this.updateString("Name", e.target.value)}></input>
+            </label>
 
-            <p>Name:</p>
-            <input type="text" defaultValue={this.state.member.Name} onChange={(e) => this.updateString("Name", e.target.value)}></input>
+            <label>
+              RFID:
+              <input type="text" defaultValue={this.props.rfid} onChange={(e) => this.updateString("rfid", e.target.value)}></input>
+            </label>
 
-            <p>RFID:</p>
-            <input type="text" defaultValue={this.props.rfid} onChange={(e) => this.updateString("rfid", e.target.value)}></input>
+            <label>
+              Major:
+              <select defaultValue={this.state.member.Major} onChange={(e) => this.updateString("Major", e.target.value)}>
+                {state.configCollection.memberAttributes.majors.map((major) => 
+                  <option key={major}>{major}</option>
+                )}
+              </select>
+            </label>
 
-            <p>Major:</p>
-            <select defaultValue={this.state.member.Major} onChange={(e) => this.updateString("Major", e.target.value)}>
-              {state.configCollection.memberAttributes.majors.map((major) => 
-                <option key={major}>{major}</option>
-              )}
-            </select>
+            <label>
+              PatronType: 
+              <select defaultValue={this.state.member.PatronType} onChange={(e) => this.updateString("PatronType", e.target.value)}>
+                {state.configCollection.memberAttributes.patronTypes.map((patronType) => 
+                  <option key={patronType}>{patronType}</option>
+                )}
+              </select>
+            </label>
 
-            <p>PatronType:</p> 
-            <select defaultValue={this.state.member.PatronType} onChange={(e) => this.updateString("PatronType", e.target.value)}>
-              {state.configCollection.memberAttributes.patronTypes.map((patronType) => 
-                <option key={patronType}>{patronType}</option>
-              )}
-            </select>
-
-            <p>GraduationYear:</p>
-            <select defaultValue={this.state.member.GraduationYear} onChange={(e) => this.updateString("GraduationYear", e.target.value)}>
-              {state.configCollection.memberAttributes.graduationYears.map((gradYear) => 
-                <option key={gradYear}>{gradYear}</option>
-              )}
-            </select>
-
-            <p>Certifications:</p>
-            <div style={{display: 'flex'}} onChange={(e) => this.updateCerts(e)}>
-            {state.configCollection.certifications.map((cert,i) => (
-              <div>
-                <p>{cert}</p>
-                <input name={cert} type="checkbox" defaultChecked={this.state.member.Certifications.includes(cert)}></input>
-              </div>
-            ))}
+            <label>
+              GraduationYear:
+              <select defaultValue={this.state.member.GraduationYear} onChange={(e) => this.updateString("GraduationYear", e.target.value)}>
+                {state.configCollection.memberAttributes.graduationYears.map((gradYear) => 
+                  <option key={gradYear}>{gradYear}</option>
+                )}
+              </select>
+            </label>
             </div>
 
-            <button type="button" onClick={this.props.cancel}>Cancel</button>
-            <button type="button" onClick={() => this.handleSubmit()}>Update</button>
-            <button type="button" onClick={() => console.log("TODO: Implement this button w/ an Are you Sure? popup")}>Delete</button>
+            <div id="certs" onChange={(e) => this.updateCerts(e)}>
+              {state.configCollection.certifications.map((cert,i) => (
+                <div style={{flexDirection:"column", width: "35px"}} className='rotated'>
+                  <p>{cert}</p>
+                  <input name={cert} type="checkbox" id="checkbox" defaultChecked={this.state.member.Certifications.includes(cert)}></input>
+                </div>
+              ))}
+            </div>
+
+            <div id="buttons">
+              <button type="button" onClick={this.props.cancel}>Cancel</button>
+              <button type="button" onClick={() => console.log("TODO: Implement this button w/ an Are you Sure? popup")}>Delete</button>
+              <button type="button" onClick={() => this.handleSubmit()}>Update</button>
+            </div>
           </section>
           <div id="blur"></div>
         </>
@@ -1044,28 +1064,57 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class AddPill extends React.Component<{addPill: Function},{name: string, focus: boolean}>{
+  class AddPill extends React.Component<{addPill: Function, existingPills: string[]},{name: string, focus: boolean}>{
     constructor(props){
       super(props);
+      this.textInput = React.createRef();
+      this.focusOnInput = this.focusOnInput.bind(this);
       this.state = {
         name: "",
         focus: false,
       }
     }
 
+    focusOnInput() {
+      this.textInput.current.focus();
+    }
+
+    checkForEnter(e){
+      if (e.key=="Enter"){
+        this.handleChange(e)
+        e.target.innerText = "";
+      }
+    }
+
     handleChange(e){
-      this.setState({name: e.target.innerText, focus: false});
-      this.props.addPill(e.target.innerText);
-      console.log(this.state);
+      this.validateNewPill(e)
+      this.setState({focus: false})
+    }
+
+    createNewPill(e, pillName){
+      this.props.addPill(pillName);
+      this.setState({name: "", focus: false});
+      e.target.innerText = "";
+    }
+
+    validateNewPill(e){
+      let pillName = e.target.innerText.replace(/[^a-zA-Z0-9_()]+/g,""); //drop all non-alphanumeric characters except () and _
+      if (pillName == ""){
+        console.log("validate | pillName is empty")
+      } else if (this.props.existingPills.includes(pillName)) {
+        console.log("validate | duplicate pill detected")
+      } else {
+        this.createNewPill(e, pillName)
+      }
     }
 
     render(){
       return(
         <>
           <div id="pill">
-            <span id="addPill" contentEditable="true" onFocus={() => this.setState({focus: true})} onBlur={this.handleChange.bind(this)}></span>
+            <span id="addPill" contentEditable="true" onKeyDown={(e) => this.checkForEnter(e)} ref={this.textInput} onFocus={() => this.setState({focus: true})} onBlur={this.handleChange.bind(this)}></span>
             { !this.state.focus && this.state.name == "" ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="x" style={{transform: "rotate(45deg)"}} width="18" height="18" fill="none" viewBox="0 0 18 18">
+                <svg xmlns="http://www.w3.org/2000/svg" onClick={this.focusOnInput} className="x" style={{transform: "rotate(45deg)"}} width="18" height="18" fill="none" viewBox="0 0 18 18">
                   <path fill="#545454" d="M.485.485a1.5 1.5 0 0 1 2.122 0L8.97 6.85 15.335.485a1.5 1.5 0 0 1 2.12 2.122L11.093 8.97l6.364 6.364a1.5 1.5 0 1 1-2.121 2.12L8.97 11.093l-6.364 6.364a1.5 1.5 0 1 1-2.122-2.121L6.85 8.97.485 2.607a1.5 1.5 0 0 1 0-2.122Z"/>
                 </svg>
               ) : ( <></> )
@@ -1113,16 +1162,20 @@ export default function Home({ members, activities, config }){
     }
 
     addCertPill = (pillName) => {
-      console.log("newPill",pillName)
       let newState = this.state.config
       newState.certifications.push(pillName)
       this.setState({config: newState})
     }
 
     addToolPill = (pillName) => {
-      console.log("newPill",pillName)
       let newState = this.state.config
       newState.otherTools.push(pillName)
+      this.setState({config: newState})
+    }
+    
+    addPatron = (pillName) => {
+      let newState = this.state.config
+      newState.memberAttributes.patronTypes.push(pillName)
       this.setState({config: newState})
     }
 
@@ -1131,12 +1184,20 @@ export default function Home({ members, activities, config }){
     }
 
     handleRemoveCertification = (inputName: string) => {
-      this.setState({
-        action: "Removing certification '"+inputName+"'",
-        details: "123098 members w/ this certification...",
-        onCancel: '() => this.closeConfirmationPopup()',
-        onConfirm: "() => this.removeCertification('"+inputName+"')",
-      })
+      //Check Certification Usage
+      let certified = members.filter(m => m.Certifications && m.Certifications.includes(inputName))
+
+      if (certified.length == 0){
+        //Do not throw a confirmation popup if no members have the certification
+        eval("this.removeCertification('"+inputName+"')")
+      } else {
+        this.setState({
+          action: "Removing certification '"+inputName+"'",
+          details: certified.length+" members w/ this certification...",
+          onCancel: '() => this.closeConfirmationPopup()',
+          onConfirm: "() => this.removeCertification('"+inputName+"')",
+        })
+      }
     }
 
     handleRemoveTool = (inputName: string) => {
@@ -1153,8 +1214,6 @@ export default function Home({ members, activities, config }){
     }
     
     removeCertification = (inputName: string) => {
-      console.log("removing "+inputName+" from certifications")
-      
       let newState = this.state.config
       newState.certifications = newState.certifications.filter(c => c !== inputName) //remove certification from list 
       this.setState({config: newState})
@@ -1162,12 +1221,34 @@ export default function Home({ members, activities, config }){
     }
 
     removeTool = (inputName: string) => {
-      console.log("removing "+inputName+" from tools")
-  
       let newState = this.state.config
       newState.otherTools = newState.otherTools.filter(c => c !== inputName) //remove certification from list 
       this.setState({config: newState})
       this.closeConfirmationPopup()
+    }
+
+    removePatron = (inputName: string) => {
+      let newState = this.state.config
+      newState.memberAttributes.patronTypes = newState.memberAttributes.patronTypes.filter(c => c !== inputName) //remove certification from list 
+      this.setState({config: newState})
+      this.closeConfirmationPopup()
+    }
+
+    handleRemovePatron = (inputName: string) => {
+      //Check for patrons of this type
+      let patrons = members.filter(m => m.PatronType && m.PatronType.includes(inputName))
+
+      if (patrons.length == 0){
+        //Do not throw a confirmation popup if no members have the certification
+        eval("this.removePatron('"+inputName+"')")
+      } else {
+        this.setState({
+          action: "Removing patronType '"+inputName+"'",
+          details: patrons.length+" members w/ this patronType...",
+          onCancel: '() => this.closeConfirmationPopup()',
+          onConfirm: "() => this.removePatron('"+inputName+"')",
+        })
+      }
     }
 
     render(){
@@ -1205,7 +1286,7 @@ export default function Home({ members, activities, config }){
               {this.state.config.certifications.map((i) => 
                 <DeletablePill inputName={i} handler={this.handleRemoveCertification} key={i}/>
               )}
-              <AddPill addPill={this.addCertPill}/>
+              <AddPill addPill={this.addCertPill} existingPills={state.configCollection.certifications}/>
             </div>
 
             <h2>otherTools: </h2>
@@ -1213,20 +1294,25 @@ export default function Home({ members, activities, config }){
               {this.state.config.otherTools.map((i) => 
                 <DeletablePill inputName={i} handler={this.handleRemoveTool} key={i}/>
               )}
-              <AddPill addPill={this.addToolPill}/>
+              <AddPill addPill={this.addToolPill} existingPills={state.configCollection.otherTools}/>
             </div>
 
             <h2>visitType: </h2>
-            <input type="text" value={JSON.stringify(this.state.config.visitType)}></input>
+            <input type="text" defaultValue={JSON.stringify(this.state.config.visitType)}></input>
 
             <details>
               <summary>Member Attributes</summary>
               <h2>Majors:</h2>
-              <input type="text" value={this.state.config.memberAttributes.majors.toString()}></input>
+              <textarea id="majors" defaultValue={this.state.config.memberAttributes.majors.toString()}></textarea>
               <h2>Patron Types:</h2>
-              <input type="text" value={this.state.config.memberAttributes.patronTypes.toString()}></input>
+              <div id="patron-pills">
+                {this.state.config.memberAttributes.patronTypes.map((i) => 
+                  <DeletablePill inputName={i} handler={this.handleRemovePatron} key={i}/>
+                )}
+                <AddPill addPill={this.addPatron} existingPills={state.configCollection.memberAttributes.patronTypes}/>
+              </div>
               <h2>Graduation Years:</h2>
-              <input type="text" value={this.state.config.memberAttributes.graduationYears.toString()}></input>
+              <input type="text" defaultValue={this.state.config.memberAttributes.graduationYears.toString()}></input>
             </details>
 
             <button type="button" onClick={this.props.cancel}>Cancel</button>
@@ -1442,9 +1528,7 @@ export default function Home({ members, activities, config }){
                     <this.inOutTime in_out={"OUT"} time={new Date(actEvent.badgeOutTime).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)}/>
                   </td>
                   <td>
-                    <p>{
-                    this.hourMinStr((Date.parse(actEvent.badgeOutTime) - Date.parse(actEvent.badgeInTime))/60000)
-                    }</p>
+                    <p>{ this.hourMinStr((Date.parse(actEvent.badgeOutTime) - Date.parse(actEvent.badgeInTime))/60000) }</p>
                   </td>
                   <td><AddInfoButton activity={actEvent} clickedCheckbox={(e) => this.checkboxClicked(e)} clickedAddInfo={() => openPopUp(actEvent, {displayDay: state.displayingDay, submitButtonText: "Update", "message":"Editing "+actEvent.Name+"'s event..."}, "(e) => handleSubmitPopUp(true,e)")} showCheckbox={this.state.toggle} index={i}/></td>
                 </tr>))

@@ -709,7 +709,7 @@ main {
 section {
     background: white;
     border-radius: 12px;
-    filter: drop-shadow(-4px 6px 12px #00000025);
+    /*filter: drop-shadow(-4px 6px 12px #00000025);*/
 }
 
 section header{
@@ -802,7 +802,7 @@ section#config h3{
 
 section#config{
     height: 80vh;
-    overflow: scroll;
+    overflow-y: scroll;
 }
 
 button#x{
@@ -830,11 +830,10 @@ div#pill p{
     margin: auto;
 }
 
-div#certification-pills, div#otherTools-pills{
+div#certification-pills, div#otherTools-pills, div#patron-pills{
     gap: 1ch;
     display: flex;
     flex-wrap: wrap;
-    margin: 1ch 0ch;
 }
 
 #confirmPopup{
@@ -863,3 +862,67 @@ input#addPill{
     background: none;
     width: fit-content;
 }
+
+section#editMember select, section#editMember input{
+    max-width: fit-content;
+}
+
+section#editMember h2#title{
+    text-align: center;
+}
+
+section#editMember div#buttons{
+    display: flex;
+    justify-content: space-between;
+}
+
+input[type='checkbox']#checkbox:checked{
+    background-color: violet;
+}
+
+input[type='checkbox']#checkbox{
+    appearance: none;
+    background-color: #fff;
+    aspect-ratio: 1;
+    height: 2ch;
+    font-size: 20px;
+    border: 3px solid black;
+    border-radius: 6px;
+}
+
+section#editMember div#certs{
+    height: 95px;
+    align-content: flex-end;
+    flex-wrap: wrap;
+    display: flex;
+}
+
+section#editMember label{
+    display: flex;
+    gap: 1ch;
+}
+
+textarea#majors{
+    width: 98%;
+    height: 5.5ch;
+    resize: none;
+}
+
+/* Start custom scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    border-radius: 4px;
+}
+  
+/*::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+}*/
+
+::-webkit-scrollbar-thumb {
+    background: #888; 
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+}
+/* End custom scrollbar */
