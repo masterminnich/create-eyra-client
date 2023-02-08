@@ -64,6 +64,7 @@ class FoundPopup extends React.Component {
   constructor(props){
     super(props);
     this.state = {};
+    console.log("mD2",this.props.memberData)
   }
 
   render(){
@@ -141,6 +142,7 @@ class App extends React.Component {
       let response = res.json()
       response.then((resp) => {
         let memberData = resp.after;
+        console.log("mD",memberData)
         let updatedMembers = resp.members;
         let updatedActivities = resp.activities;
         

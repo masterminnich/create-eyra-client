@@ -213,6 +213,21 @@ export default function Home({ members, activities, config }){
   //console.log("state",state)
 
   useEffect(() => { 
+    if (state.configCollection == undefined){
+      console.log("Welcome to Eyra. Setting up your config collection...")
+      let c = {
+        certifications: [],
+        otherTools: [],
+        visitType: {},
+        memberAttributes: {
+          majors: [],
+          patronTypes: [],
+          graduationYears: [],
+        },
+      }
+      setState({...state,configCollection:c})
+    }
+
     async function socketInitializer(){
       await fetch('/api/socket');
       socket.on('connect', () => { console.log('WebSocket connected.') })
@@ -1567,7 +1582,7 @@ export default function Home({ members, activities, config }){
                     <div className="name"></div>
                     <div className="major"></div>
                     <div className="rotated">
-                      { state.configCollection.certifications.map((cert) => 
+                      { state.configCollection?.certifications.map((cert) => 
                         <div className="certHeader" key={cert+"cert"}><p>{cert}</p></div>
                       )}
                     </div>
