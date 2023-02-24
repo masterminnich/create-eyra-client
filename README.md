@@ -1,8 +1,8 @@
-<h1 align="center">BadgingSystem</h1>
+<h1 align="center">Eyra</h1>
 <p align="center">An all-in-one credential solution for makerspaces!</p>
 
-## What is BadgingSystem?
-BadgingSystem is a web app designed to make it easy for makerspaces to log their members, the credentials members have earned, and to compile useful statistics. It's meant to be easily reconfigurable and adaptable to almost any workplace.  
+## What is Eyra?
+Eyra is a web app designed to make it easy for makerspaces to log their members, the credentials members have earned, and to compile useful statistics. It's meant to be easily reconfigurable and adaptable to almost any workplace.  
 
 ## Requirements
 - Download [Node.js](https://nodejs.org/en/download/)
@@ -21,7 +21,7 @@ BadgingSystem is a web app designed to make it easy for makerspaces to log their
 - Close the app: ```Ctrl+C```
 
 ## Contribute
-BadgingSystem is open-source project written and maintained by makerspace directors. Your issues, pull requests and general feedback are welcomed!
+Eyra is open-source project written and maintained by makerspace directors. Your issues, pull requests and general feedback are welcomed!
 
 ## Nice Features
 - Can be run locally or remotely.
