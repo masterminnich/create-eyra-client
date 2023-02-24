@@ -10,7 +10,7 @@ import { isNoSubstitutionTemplateLiteral } from 'typescript';
 var socket = io({transports: ['websocket'], upgrade: false});
 let hoverTimerId;
 let isHovering = false; //Whether the user is currently hovering over an element of interest
-const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"} as const
+const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"} as const // mm/dd/yyyy in local timezone
 const headers = {"Accept": "application/json", "Content-Type": "application/json"}
 
 //TS Type Decs
@@ -55,8 +55,8 @@ type Member = {
   PatronType: string;
   GraduationYear: string;
   badgedIn: boolean;
-  lastBadgeIn: Date;
-  joinedDate: Date;
+  lastBadgeIn: string;
+  joinedDate: string;
   rfid: string;
   Certifications: string[];
   _id?: Schema.Types.ObjectId | null;
@@ -198,7 +198,7 @@ export default function Home({ members, activities, config }){
     configCollection: config[0],
     membersCollection: members,
     activitiesCollection: activities,
-    displayingDay: new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10),
+    displayingDay: new Date().toISOString().substring(0,10), //This should be converted to local time first!
     isOpen: false,
     activityEvent: {
       badgeInTime: "", badgeOutTime: "", machineUtilized: [], otherToolsUtilized: [],
@@ -673,7 +673,7 @@ export default function Home({ members, activities, config }){
     setState({
       ...state,
       activityEvent: {
-        badgeInTime: new Date(member.lastBadgeIn).toISOString(),
+        badgeInTime: member.lastBadgeIn,
         badgeOutTime: new Date().toISOString(), 
         Name: member.Name,
         MemberID: member._id,
