@@ -13,6 +13,8 @@ const runCommand = command => {
 }
 
 const repoName = process.argv[2];
+if (String(repoName) == "undefined"){ repoName = "Eyra" }
+
 const gitCheckoutCommand = `git clone --depth 1 https://github.com/masterminnich/create-eyra-client.git ${repoName}`;
 const installDepsCommand = `cd ${repoName} && npm install`;
 
@@ -20,7 +22,7 @@ console.log(`Cloning the repository with name ${repoName}`);
 const checkedOut = runCommand(gitCheckoutCommand);
 if(!checkedOut) process.exit(-1);
 
-console.log(`Installing dependcies for ${repoName}`);
+console.log(`Installing dependencies for ${repoName}`);
 const installedDeps = runCommand(installDepsCommand);
 if(!installedDeps) process.exit(-1);
 
