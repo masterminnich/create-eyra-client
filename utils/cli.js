@@ -12,7 +12,7 @@ const runCommand = command => {
   return true;
 }
 
-const repoName = process.argv[2];
+let repoName = process.argv[2];
 if (String(repoName) == "undefined"){ repoName = "Eyra" }
 
 const gitCheckoutCommand = `git clone --depth 1 https://github.com/masterminnich/create-eyra-client.git ${repoName}`;
