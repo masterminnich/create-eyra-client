@@ -52,6 +52,7 @@ type Config = {
   memberAttributes: memberAttributes,
   visitType: Object,
   graduationyrs: string[]
+  timezone: string;
 }
 type Member = {
   Name: string;
@@ -358,7 +359,7 @@ export default function Home({ members, activities, config }){
           headers: headers,
           body: JSON.stringify(config)
       })
-      console.log("res",res)
+      console.log("config",config)
       let response = res.json()
       response.then((resp) => {
         setState({...state, configCollection: config, isOpen: false, showForgotIDPopup: false, showConfigPopup: false})
@@ -1237,6 +1238,13 @@ export default function Home({ members, activities, config }){
       this.setState({config: newState})
     }
 
+    handleTimezone = (timezone) => {
+      console.log("handling timezone",timezone.target.value)
+      let newState = this.state.config
+      newState.timezone = timezone.target.value
+      this.setState({config: newState})
+    }
+
     handleRemoveCertification = (inputName: string) => {
       //Check Certification Usage
       let certified = members.filter(m => m.Certifications && m.Certifications.includes(inputName))
@@ -1345,8 +1353,8 @@ export default function Home({ members, activities, config }){
             <h3>This configuration will apply to all activities going forward.<br/>Previous activities WILL NOT be retroactively updated.</h3>
 
             <h2>Time Zone:</h2>
-            <select>
-              <option value="EDT" selected>(UTC-5) Eastern Standard Time</option>
+            <select onClick={this.handleTimezone} defaultValue={this.state.config.timezone}>
+              <option value="EDT">(UTC-5) Eastern Standard Time</option>
               <option value="CST">(UTC-6) Central Standard Time</option>
               <option value="MST">(UTC-7) Mountain Standard Time</option>
               <option value="PST">(UTC-8) Pacific Standard Time</option>
