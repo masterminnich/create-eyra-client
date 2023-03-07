@@ -13,7 +13,7 @@ const updateActivityLog = async (activities, newMemberData) => {
     await fetch('/api/socket');
     var socket = io({transports: ['websocket'], upgrade: false});
     socket.on('connect', () => { console.log('WebSocket connected.') })
-    let dateStr = new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10);
+    let dateStr = new Date().toISOString().substring(0,10);
     let dateObj = new Date();
     let ActivityDay = activities.find(a => a.Date == dateStr) //Get the activity document for the correct day
     let newActivity = {MemberID: newMemberData._id, Name: newMemberData.Name, badgeInTime: dateObj, badgeOutTime: dateObj, event: "New Member Registered",machineUtilized: [], sessionLengthMinutes: 0}

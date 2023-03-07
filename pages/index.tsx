@@ -3,6 +3,7 @@ import clientPromise from '../utils/mongodb'
 import React, { Component, useState, useEffect } from 'react';
 import { Button, Form, Input } from 'semantic-ui-react';
 import io from 'Socket.IO-client'
+import ReactDOM from "react-dom";
 import { Callback, ObjectIdSchemaDefinition, Schema } from 'mongoose';
 import { rootCertificates } from 'tls';
 import { isNoSubstitutionTemplateLiteral } from 'typescript';
@@ -28,10 +29,12 @@ type event = {
   flags: string[];
 }
 type PopupProps = {
-  badgeInDate: string;
-  badgeOutDate: string;
-  badgeInTime: string;
-  badgeOutTime: string;
+  //badgeInDate: string;
+  //badgeOutDate: string;
+  //badgeInTime: string;
+  //badgeOutTime: string;
+  inTime: string, 
+  outTime: string,
   noId: boolean;
   message: string;
   submitButtonText: string;
@@ -47,7 +50,8 @@ type Config = {
   certifications: string[],
   otherTools: string[],
   memberAttributes: memberAttributes,
-  visitType: Object
+  visitType: Object,
+  graduationyrs: string[]
 }
 type Member = {
   Name: string;
@@ -240,6 +244,15 @@ export default function Home({ members, activities, config }){
 
   function toggleConfigPopup(){ setState({...state, showConfigPopup: !state.showConfigPopup}); }
 
+  function ISOToLocalString(isoString){
+    let offsets = { EDT: 5, CST: 6, MST: 7, PST: 8}
+    let offset = offsets[state.configCollection.timezone] //get offset
+    let time = new Date(isoString).getTime() - offset*60 //time in minutes from UTC
+    let localDate = new Date()
+    localDate.setTime(time)
+    return localDate.toLocaleDateString("sv") +" "+ localDate.toTimeString().substring(0,5)
+  }
+
   /*function validate(e) {
     let err = {};
     let reqVariables = ['MemberID', 'Name','badgeInTime','badgeOutTime', 'event'];
@@ -304,6 +317,24 @@ export default function Home({ members, activities, config }){
       });
     } catch (error) { console.log("ERROR in updateActivityByDate():",error); }
   }
+
+  const batchCertify = async (newCerts, memberIDList) => {
+    console.log("Members to certify:",memberIDList)
+    console.log("Certifications to add:",newCerts)
+    try {  
+      const res = await fetch(`/api/certify`, {
+        method: 'PUT',
+        headers: headers,
+        body: JSON.stringify({ newCerts: newCerts, memberIDList: memberIDList })
+      });
+      let response = res.json()
+      response.then((resp) => {
+        console.log("resp",resp)
+        //setState({...state, membersCollection: resp.after, isOpen: false, showForgotIDPopup: false})
+        //socket.emit('membersCollection-change', resp.after)
+      });
+    } catch (error) { console.log("ERROR in batchCertify() ",error); }
+  }
   
   const createNewActivity = async (date: date, event, originFn: string) => {
     try {
@@ -327,9 +358,10 @@ export default function Home({ members, activities, config }){
           headers: headers,
           body: JSON.stringify(config)
       })
+      console.log("res",res)
       let response = res.json()
       response.then((resp) => {
-        setState({...state, configCollection: config, isOpen: false, showForgotIDPopup: false})
+        setState({...state, configCollection: config, isOpen: false, showForgotIDPopup: false, showConfigPopup: false})
         //socket.emit('configCollection-change', config)
       });
     } catch (error) { console.log("ERROR in updateConfigCollection :",error) }
@@ -550,10 +582,10 @@ export default function Home({ members, activities, config }){
       let visitType: string;
       if(state.activityEvent.event){ visitType = state.activityEvent.event } else { visitType = "Undefined" }
       this.state = {
-        badgeInDate: this.props.badgeInDate,
-        badgeInTime: this.props.badgeInTime,
-        badgeOutDate: this.props.badgeOutDate,
-        badgeOutTime: this.props.badgeOutTime,
+        badgeInDate: ISOToLocalString(this.props.inTime).substring(0,10),
+        badgeInTime: ISOToLocalString(this.props.inTime).substring(11,16),
+        badgeOutDate: ISOToLocalString(this.props.outTime).substring(0,10),
+        badgeOutTime: ISOToLocalString(this.props.outTime).substring(11,16),
         visitType: visitType,
         machineUtilized: [],
         otherToolsUtilized: [],
@@ -564,7 +596,7 @@ export default function Home({ members, activities, config }){
     updateBadgeInTime(item){ this.setState({"badgeInTime": item.target.value}) }
     updateBadgeOutDate(item){ this.setState({"badgeOutDate": item.target.value}) }
     updateBadgeOutTime(item){ this.setState({"badgeOutTime": item.target.value}) }
-    handleMachineUtilized(value: string[]){ this.setState({"machineUtilized": value}) }
+    handleMachineUtilized(value: string[]){ this.setState({"machineUtilized": getMachinesUtilized()})}
     handleOtherToolsUtilized(value: string[]){ this.setState({"otherToolsUtilized": value}) }
     handleVisitType(value){ this.setState({"visitType": value}) }
 
@@ -574,6 +606,7 @@ export default function Home({ members, activities, config }){
       let editedEvents: Array<event> = [];
       let eventIDList: Array<Schema.Types.ObjectId> = []; //List of _id of each edited event
       let eventIDsToDelete: Array<Schema.Types.ObjectId> = [];
+      let memberIDList: Array<Schema.Types.ObjectId> = [];
       let dayMovingFromL: string[] = [];
       for (let i=0; i<state.batchEvents.length; i++){
         let singleEvent: event = state.batchEvents[i]
@@ -595,7 +628,16 @@ export default function Home({ members, activities, config }){
           eventIDsToDelete.push(singleEvent._id!) 
           dayMovingFromL.push(dayMovingFrom)
         }
+        if (this.state.visitType == "Certification"){
+          memberIDList.push(singleEvent.MemberID!)
+        }
       };
+      console.log("memberIDs:",memberIDList)
+      console.log("state.membersCollection",state.membersCollection)
+
+      //Batch Certify Members
+      batchCertify(getMachinesUtilized(), memberIDList)
+
       //updateActivityLog(activitiesCollection, newActivity, e, existing)
       let activityDay = state.activitiesCollection.filter(a => a.Date == date)[0]//Get previous events
       if (activityDay){
@@ -611,7 +653,7 @@ export default function Home({ members, activities, config }){
           updateActivityByDate(dayMovingFromL[0], keepEvents, "moving events to another day...")
         }
       } else { 
-        console.log("about to created activity w/ editedEvents",editedEvents)
+        console.log("about to create activity w/ editedEvents",editedEvents)
         createNewActivity(date, editedEvents, "Popup.batchEdit()") }
     }
 
@@ -643,13 +685,13 @@ export default function Home({ members, activities, config }){
             <VisitType onChange={this.handleVisitType.bind(this)} selectValue={state.activityEvent.event!}/>
             <div id="badgeInTime" style={{display: "flex"}}>
               <label htmlFor="badgeInTime">Badged In: </label>
-              <input onChange={value => this.updateBadgeInDate(value)} id="badgeInDate" type="date" className="date" defaultValue={this.props.badgeInDate}></input>
-              <input onChange={value => this.updateBadgeInTime(value)} id="badgeInTime" type="time" className="time" defaultValue={this.props.badgeInTime}></input>
+              <input onChange={value => this.updateBadgeInDate(value)} id="badgeInDate" type="date" className="date" defaultValue={this.state.badgeInDate}></input>
+              <input onChange={value => this.updateBadgeInTime(value)} id="badgeInTime" type="time" className="time" defaultValue={this.state.badgeInTime}></input>
             </div>
             <div id="badgeOutTime" style={{display: "flex"}}>
               <label htmlFor="badgeOutTime">Badged Out: </label>
-              <input onChange={value => this.updateBadgeOutDate(value)} id="badgeOutDate" type="date" className="date" defaultValue={this.props.badgeOutDate}></input>
-              <input onChange={value => this.updateBadgeOutTime(value)} id="badgeOutTime" type="time" className="time" defaultValue={this.props.badgeOutTime}></input>
+              <input onChange={value => this.updateBadgeOutDate(value)} id="badgeOutDate" type="date" className="date" defaultValue={this.state.badgeOutDate}></input>
+              <input onChange={value => this.updateBadgeOutTime(value)} id="badgeOutTime" type="time" className="time" defaultValue={this.state.badgeOutTime}></input>
             </div>
 
             <div className="equipment">
@@ -813,10 +855,12 @@ export default function Home({ members, activities, config }){
         <>
           <section className="Popup">
             <Popup
-              badgeInDate={new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
-              badgeInTime={new Date().toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
-              badgeOutDate={new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
-              badgeOutTime={new Date().toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
+              //badgeInDate={new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
+              //badgeInTime={new Date().toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
+              //badgeOutDate={new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
+              //badgeOutTime={new Date().toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
+              inTime = {new Date().toISOString()}
+              outTime = {new Date().toISOString()}
               message={"Creating anonymous activity..."}
               submitButtonText="Create"
               existsInDB={false}
@@ -1159,6 +1203,14 @@ export default function Home({ members, activities, config }){
       }
       this.handleRemoveCertification = this.handleRemoveCertification.bind(this)
       this.handleRemoveTool = this.handleRemoveTool.bind(this)
+      this.handleRemoveGradyr = this.handleRemoveGradyr.bind(this)
+    }
+
+    updateConfigCollection = () => {
+      ReactDOM.unstable_batchedUpdates(() => {
+        toggleConfigPopup();
+        updateConfigCollection(this.state.config);
+      });
     }
 
     addCertPill = (pillName) => {
@@ -1179,8 +1231,10 @@ export default function Home({ members, activities, config }){
       this.setState({config: newState})
     }
 
-    updateConfigCollection = () => {
-      updateConfigCollection(this.state.config)
+    addGraduationYr = (pillName) => {
+      let newState = this.state.config
+      newState.memberAttributes.graduationYears.push(pillName)
+      this.setState({config: newState})
     }
 
     handleRemoveCertification = (inputName: string) => {
@@ -1209,8 +1263,24 @@ export default function Home({ members, activities, config }){
       })
     }
 
+    handleRemoveGradyr = (inputName: string) => {
+      this.setState({
+        action: "Removing Graduation Year '"+inputName+"'",
+        details: "",
+        onCancel: '() => this.closeConfirmationPopup()',
+        onConfirm: "() => this.removeGraduationYr('"+inputName+"','graduationyrs')",
+      })
+    }
+
     closeConfirmationPopup = () => {
       this.setState({action: "", details: "", onCancel: "", onConfirm: ""})
+    }
+
+    removeGraduationYr = (inputName: string) => {
+      let newState = this.state.config
+      newState.memberAttributes.graduationYears = newState.memberAttributes.graduationYears.filter(c => c !== inputName) //remove inputName from from list 
+      this.setState({config: newState})
+      this.closeConfirmationPopup()
     }
     
     removeCertification = (inputName: string) => {
@@ -1276,9 +1346,10 @@ export default function Home({ members, activities, config }){
 
             <h2>Time Zone:</h2>
             <select>
-              <option>(UTC -12) Baker Island</option>
-              <option>(UTC -11) American Samoa</option>
-              <option>(UTC -10)Baker Island</option>
+              <option value="EDT" selected>(UTC-5) Eastern Standard Time</option>
+              <option value="CST">(UTC-6) Central Standard Time</option>
+              <option value="MST">(UTC-7) Mountain Standard Time</option>
+              <option value="PST">(UTC-8) Pacific Standard Time</option>
             </select>
 
             <h2>Certifications: </h2>
@@ -1312,11 +1383,17 @@ export default function Home({ members, activities, config }){
                 <AddPill addPill={this.addPatron} existingPills={state.configCollection.memberAttributes.patronTypes}/>
               </div>
               <h2>Graduation Years:</h2>
-              <input type="text" defaultValue={this.state.config.memberAttributes.graduationYears.toString()}></input>
+              <div id="gradyr-pills">
+                {this.state.config.memberAttributes.graduationYears.map((i) => 
+                  <DeletablePill inputName={i} handler={this.handleRemoveGradyr} key={i}/>
+                )}
+                <AddPill addPill={this.addGraduationYr} existingPills={this.state.config.memberAttributes.graduationYears.toString()}/>
+              </div>
+              {/*<input type="text" defaultValue={this.state.config.memberAttributes.graduationYears.toString()}></input>*/}
             </details>
 
             <button type="button" onClick={this.props.cancel}>Cancel</button>
-            <button type="button" onClick={() => console.log("update config collection (TODO)")}>Update</button>
+            <button type="button" onClick={() => updateConfigCollection(this.state.config)}>Update</button>
           </section>
           <div id="blur"></div>
         </>
@@ -1381,7 +1458,7 @@ export default function Home({ members, activities, config }){
     }
 
     changeDay(arg,dayToChange){
-      let currDate = new Date(dayToChange)//new Date(this.state.displayingDay)
+      let currDate = new Date(dayToChange)
         if (arg == "forward-one-day"){
           currDate.setMinutes(currDate.getMinutes() + 24*60); //Change dateObj to the next day
         } else if (arg == "backward-one-day"){
@@ -1693,8 +1770,8 @@ export default function Home({ members, activities, config }){
     </Head>
     
     <header id="header">
-      <h1>Eyra</h1>
-      <h1 id="org_name">Kimbel Library Makerspace [CONFIG]</h1>
+      <h1 className="gradient">Eyra</h1>
+      <h1 id="org_name"></h1>
       <nav>
         <a id="stats" href="/stats">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 43 42">
@@ -1715,10 +1792,12 @@ export default function Home({ members, activities, config }){
         <React.Fragment>
           <section className="Popup">
             <Popup 
-              badgeInDate={new Date(state.activityEvent.badgeInTime).toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
-              badgeInTime={new Date(state.activityEvent.badgeInTime).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
-              badgeOutDate={new Date(state.activityEvent.badgeOutTime).toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
-              badgeOutTime={new Date(state.activityEvent.badgeOutTime).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
+              //badgeInDate={new Date(state.activityEvent.badgeInTime).toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
+              //badgeInTime={new Date(state.activityEvent.badgeInTime).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
+              //badgeOutDate={new Date(state.activityEvent.badgeOutTime).toLocaleString("en-CA", localDateTimeOptions).substring(0,10)} //In local time
+              //badgeOutTime={new Date(state.activityEvent.badgeOutTime).toLocaleString("en-CA", localDateTimeOptions).substring(12,17)} //In local time
+              inTime={state.activityEvent.badgeInTime}
+              outTime={state.activityEvent.badgeOutTime}
               message={state.displayProps.message}
               submitButtonText={state.displayProps.submitButtonText}
               existsInDB={false}
@@ -1736,44 +1815,6 @@ export default function Home({ members, activities, config }){
       <div className="column" id="c1">
         <BadgedInMembers></BadgedInMembers>
         <RecentActivity></RecentActivity>
-
-        <details style={{"marginTop": "5vh"}}>
-          <summary>Developer Notes</summary>
-          <h3>Bugs:</h3>
-          <ul>
-            <li>/api/members PUT | Does not create an event! Just badges out.</li>
-            <li>Fix: getMemberStats() (relies on member.sessions)</li>
-            <li>Some times are it the wrong timezone. +5 1/1-3/14. +4 3/14-</li>
-            <li>Point of User confusion: ?new popup still open. badgeOut popup should be a higher z-height</li>
-            <li>validation: no negative session minutes</li>
-            <li>Fix: lastBadgeIn. It should trigger after edits, if lastBadge (lessthan) badgeInTime then update.</li>
-          </ul>
-          <h3>Next up:</h3>
-          <ul>
-            <li>New Feature: Add button to failed badgeIn popup. When clicked lets you search members, selected member get its RFID updated.</li>
-            <li>Bash script executable: git pull updates, start the server, start PacsProbe</li>
-            <li>Add button to badgeIn allowing members to make accounts w/o an ID. We should flag all no id members w/ the same RFID_UID. They can select from the list of all accounts to badgeIn if they made an account already.</li>
-            <li>check if user badgeIn time is from a different day. Alert the user.</li>
-            <li>Prevent members from accessing this page (the backend)</li>
-            <li>Proper Coding Convention: Replace getMachinesUtilized(), getotherToolsUtilized() with props</li>
-            <li>editing events w/ flags.contain(noID): Ability to change name</li>
-            <li>Look into railways.app / npm  / Vercel deployment</li>
-          </ul>
-          <h3>Finish for V1:</h3>
-          <ul>
-            <li>Finish Config</li>
-            <li>Update newMember page to pull majors, patronTypes</li>
-            <li>Edit Member Pop Up</li>
-            <li>How to create your own stats</li>
-            <li>Tidy up ReadMe + Create Getting Started Videos</li>
-            <li>NextJS 13 Migration: Pages to App routing<a href="https://beta.nextjs.org/docs/upgrade-guide#migrating-from-pages-to-app">Guide</a></li>
-          </ul>
-          <h3>Finish for V1:</h3>
-          <ul>
-            <li>Badgr Integration! (public certs)</li>
-            <li>Machine Restrictions (relay integration)</li>
-          </ul>
-        </details>
       </div>
       <div className="column" id="c2">
         <GraphStatCard statTitle="Campus Reach"/>

@@ -1,6 +1,9 @@
 import { Schema, models, model } from 'mongoose';
 
 const ConfigSchema = new Schema({
+    timezone: {
+        type: String,
+    },
     certifications: {
         type: Array,
     },
