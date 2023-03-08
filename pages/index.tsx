@@ -1394,7 +1394,7 @@ export default function Home({ members, activities, config }){
             <h2 title="Categories to describe what someone did during their visit. 'Undefined' and 'Certification' are required visitTypes and have special functionality.">visitType:</h2>
             <div id="visitType-pills">
               {this.state.config.visitType.map((i) => 
-                <DeletablePill inputName={i} handler={this.handleRemoveVisitType} key={i}/>
+                <DeletablePill inputName={i} handler={this.removeVisitType} key={i}/>
               )}
               <AddPill addPill={this.addVisitType} existingPills={state.configCollection.visitType}/>
             </div>
