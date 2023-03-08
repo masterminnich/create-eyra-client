@@ -477,14 +477,9 @@ export default function Home({ members, activities, config }){
           <div id="visitType" style={{"display":"flex"}}>
             <label htmlFor="event">Visit Type: </label>
             <select onChange={(e) => this.VisitTypeChange(e)} defaultValue={this.state.selectValue} name="event">
-              <option value="Undefined">Undefined</option>
-              <option value="Individual">Personal Project</option>
-              <option value="Certification">Certification</option>
-              <option value="Homework / Class Project">Homework / Class Project</option>
-              <option value="Quick Visit">Quick Visit</option>
-              <option value="Class">Class</option>
-              <option value="Event">Event</option>
-              <option value="Staff on Duty">Staff on Duty</option>
+              {state.configCollection.visitType.map((v) => 
+                <option key={v} value={v}>{v}</option>
+              )} 
             </select>
           </div>
         </>
