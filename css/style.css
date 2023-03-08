@@ -949,3 +949,15 @@ details#memberAttributes summary{
     font-weight: bold;
     font-size: 1.5em;
 }
+
+@keyframes blinking {
+    to { fill: violet; }
+}
+
+button#config_true path {
+    animation-name: blinking;
+    animation-duration: 1.5s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate-reverse;
+    animation-timing-function: ease;
+}

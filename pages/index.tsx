@@ -215,7 +215,7 @@ export default function Home({ members, activities, config }){
     showConfigPopup: false,
     showForgotIDPopup: false,
   });
-  //console.log("state",state)
+  //console.log("state",state);
 
   useEffect(() => { 
     if (state.configCollection == undefined){
@@ -1652,8 +1652,6 @@ export default function Home({ members, activities, config }){
     constructor(props){
       super(props);
       this.state = { }
-      //console.log("state.membersCollection",state.membersCollection)
-      console.log("try2",state.membersCollection.filter(member => member.badgedIn == true))
     }
 
     Checkbox(isCertified) {
@@ -1801,7 +1799,7 @@ export default function Home({ members, activities, config }){
             <path fill="#000" fillRule="evenodd" d="M.775 0h2.614v39.375H42.6V42H.775V0Zm26.14 9.188a1.315 1.315 0 0 1 1.308-1.313h10.456c.347 0 .679.138.924.384.245.247.383.58.383.928v10.5c0 .349-.138.682-.383.929a1.304 1.304 0 0 1-2.231-.928v-6.825l-9.445 11.594a1.308 1.308 0 0 1-1.48.393 1.307 1.307 0 0 1-.454-.296l-6.763-6.79-9.557 13.195a1.306 1.306 0 0 1-2.314-.583 1.317 1.317 0 0 1 .202-.96l10.456-14.438a1.31 1.31 0 0 1 .955-.537 1.301 1.301 0 0 1 1.027.38l6.82 6.851L35.92 10.5h-7.698c-.347 0-.68-.138-.924-.384a1.316 1.316 0 0 1-.383-.928Z" clipRule="evenodd"/>
           </svg>
         </a>
-        <button className="cornerButton" id="config" onClick={() => toggleConfigPopup()}>
+        <button className="cornerButton" id={"config_"+String(state.configCollection == undefined || !state.configCollection.hasOwnProperty("_id"))} onClick={() => toggleConfigPopup()}>
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 42 42">
             <path fill="#000" d="M21 12.48a8.52 8.52 0 0 0-7.872 11.78A8.52 8.52 0 1 0 21 12.48ZM15.104 21a5.895 5.895 0 1 1 11.791 0 5.895 5.895 0 0 1-11.79 0Z"/>
             <path fill="#000" d="M25.715 3.525c-1.384-4.698-8.046-4.698-9.43 0l-.246.838a2.291 2.291 0 0 1-3.295 1.365l-.766-.42c-4.305-2.342-9.012 2.368-6.668 6.67l.418.766a2.291 2.291 0 0 1-1.365 3.295l-.838.246c-4.698 1.384-4.698 8.046 0 9.43l.838.246a2.293 2.293 0 0 1 1.365 3.295l-.42.766c-2.342 4.305 2.365 9.014 6.67 6.668l.766-.418a2.293 2.293 0 0 1 3.295 1.365l.246.838c1.384 4.698 8.046 4.698 9.43 0l.246-.838a2.291 2.291 0 0 1 3.295-1.365l.766.42c4.305 2.344 9.014-2.367 6.668-6.67l-.418-.766a2.29 2.29 0 0 1 1.365-3.295l.838-.246c4.698-1.384 4.698-8.046 0-9.43l-.838-.246a2.291 2.291 0 0 1-1.365-3.295l.42-.766c2.344-4.305-2.367-9.012-6.67-6.668l-.766.418a2.292 2.292 0 0 1-3.295-1.365l-.246-.838Zm-6.912.743c.646-2.192 3.748-2.192 4.394 0l.247.838a4.916 4.916 0 0 0 7.069 2.927l.764-.42c2.005-1.09 4.2 1.102 3.108 3.11l-.417.767a4.916 4.916 0 0 0 2.929 7.066l.835.247c2.192.646 2.192 3.748 0 4.394l-.838.247a4.916 4.916 0 0 0-2.926 7.069l.42.764c1.089 2.005-1.103 4.2-3.111 3.108l-.764-.417a4.916 4.916 0 0 0-7.07 2.929l-.246.835c-.646 2.192-3.748 2.192-4.394 0l-.247-.838a4.917 4.917 0 0 0-7.066-2.926l-.767.42c-2.005 1.089-4.2-1.103-3.108-3.111l.418-.764a4.917 4.917 0 0 0-2.927-7.072l-.838-.246c-2.192-.646-2.192-3.749 0-4.395l.838-.247a4.917 4.917 0 0 0 2.927-7.063l-.42-.767c-1.09-2.005 1.102-4.2 3.11-3.108l.767.418a4.916 4.916 0 0 0 7.066-2.927l.247-.838Z"/>
