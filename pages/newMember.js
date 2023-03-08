@@ -62,7 +62,6 @@ class NewMember extends React.Component {
             isSubmitting: false,
             errors: "",
         };
-        console.log("props (activities and config...?)",props)
     };
 
     componentDidMount() {
@@ -111,10 +110,7 @@ class NewMember extends React.Component {
         this.setState({ form:tempForm });
     };
 
-    handleRadio = (e) => {
-        document.querySelector('select').style.display = "inline-block"
-        document.querySelectorAll('label')[4].style.display = "inline"
-        
+    handleRadio = (e) => {        
         let tempForm = this.state.form
         let radioSelected;
         if(e.target.value == undefined){ //Find the radio value when the user clicks the <label>
