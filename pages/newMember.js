@@ -226,13 +226,9 @@ class NewMember extends React.Component {
                             <div className="formComponent" id="formGrad">
                                 <label htmlFor="GraduationYear">Graduation Year: </label>
                                 <select name="GraduationYear" onChange={this.handleSelect} style={ this.state.errors.GraduationYear ? { border:"red solid" } : {  }}>
-                                    <option value="N/A">N/A</option>
-                                    <option value="Grad Student">Grad Student</option>
-                                    <option value="2022">2022</option>
-                                    <option value="2023">2023</option>
-                                    <option value="2024">2024</option>
-                                    <option value="2025">2025</option>
-                                    <option value="2026">2026</option>
+                                    {this.props.config.memberAttributes.graduationYears.map((gradYr) => (
+                                        <option value={gradYr}>{gradYr}</option>
+                                    ))}
                                 </select>
                             </div>
                             <Button id="newMemberSubmit" type='submit'>Create</Button>
