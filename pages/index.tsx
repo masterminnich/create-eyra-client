@@ -50,7 +50,7 @@ type Config = {
   certifications: string[],
   otherTools: string[],
   memberAttributes: memberAttributes,
-  visitType: Object,
+  visitType: string[],
   graduationyrs: string[]
   timezone: string;
 }
@@ -223,7 +223,7 @@ export default function Home({ members, activities, config }){
       let c = {
         certifications: [],
         otherTools: [],
-        visitType: {},
+        visitType: ["Undefined","Certification"],
         memberAttributes: {
           majors: [],
           patronTypes: [],
@@ -451,7 +451,7 @@ export default function Home({ members, activities, config }){
     render(){
       return(
         <>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-question-circle" viewBox="0 0 16 16">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-question-circle" viewBox="0 0 16 16" style={{float:"right"}}>
             <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
             <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
           </svg>
@@ -486,7 +486,6 @@ export default function Home({ members, activities, config }){
               <option value="Event">Event</option>
               <option value="Staff on Duty">Staff on Duty</option>
             </select>
-            <QuestionTooltip id="VisitTypeQuestion"/>
           </div>
         </>
       )
@@ -1232,6 +1231,12 @@ export default function Home({ members, activities, config }){
       this.setState({config: newState})
     }
 
+    addVisitType = (pillName) => {
+      let newState = this.state.config
+      newState.visitType.push(pillName)
+      this.setState({config: newState})
+    }
+
     addGraduationYr = (pillName) => {
       let newState = this.state.config
       newState.memberAttributes.graduationYears.push(pillName)
@@ -1300,7 +1305,14 @@ export default function Home({ members, activities, config }){
 
     removeTool = (inputName: string) => {
       let newState = this.state.config
-      newState.otherTools = newState.otherTools.filter(c => c !== inputName) //remove certification from list 
+      newState.otherTools = newState.otherTools.filter(c => c !== inputName) //remove otherTool from list 
+      this.setState({config: newState})
+      this.closeConfirmationPopup()
+    }
+
+    removeVisitType = (inputName: string) => {
+      let newState = this.state.config
+      newState.visitType = newState.visitType.filter(c => c !== inputName) //remove visitType from list 
       this.setState({config: newState})
       this.closeConfirmationPopup()
     }
@@ -1360,7 +1372,7 @@ export default function Home({ members, activities, config }){
               <option value="PST">(UTC-8) Pacific Standard Time</option>
             </select>
 
-            <h2>Certifications: </h2>
+            <h2 title="List of all tools that require certification to access. When an activity is saved with a visitType of 'Certification' the member will be certified for the associated tool.">Certifications: </h2>
             <div id="certification-pills">
               {this.state.config.certifications.map((i) => 
                 <DeletablePill inputName={i} handler={this.handleRemoveCertification} key={i}/>
@@ -1368,7 +1380,7 @@ export default function Home({ members, activities, config }){
               <AddPill addPill={this.addCertPill} existingPills={state.configCollection.certifications}/>
             </div>
 
-            <h2>otherTools: </h2>
+            <h2 title="All other tools you want to track the usage of that don't require a certification.">otherTools: </h2>
             <div id="otherTools-pills">
               {this.state.config.otherTools.map((i) => 
                 <DeletablePill inputName={i} handler={this.handleRemoveTool} key={i}/>
@@ -1376,21 +1388,28 @@ export default function Home({ members, activities, config }){
               <AddPill addPill={this.addToolPill} existingPills={state.configCollection.otherTools}/>
             </div>
 
-            <h2>visitType: </h2>
-            <input type="text" defaultValue={JSON.stringify(this.state.config.visitType)}></input>
+            
+            <h2 title="Categories to describe what someone did during their visit. 'Undefined' and 'Certification' are required visitTypes and have special functionality.">visitType:</h2>
+            <div id="visitType-pills">
+              {this.state.config.visitType.map((i) => 
+                <DeletablePill inputName={i} handler={this.handleRemoveVisitType} key={i}/>
+              )}
+              <AddPill addPill={this.addVisitType} existingPills={state.configCollection.visitType}/>
+            </div>
 
-            <details>
+            <details id="memberAttributes">
               <summary>Member Attributes</summary>
-              <h2>Majors:</h2>
+              <p>The following fields are information that members are asked to provide upon registration.</p>
+              <h2 title="A comma seperated list of student majors. (ex: Physics,Mathematics,English)">Majors:</h2>
               <textarea id="majors" defaultValue={this.state.config.memberAttributes.majors.toString()}></textarea>
-              <h2>Patron Types:</h2>
+              <h2 title="Categories to track different types of members. (ex: Faculty, Student, Guest)">Patron Types:</h2>
               <div id="patron-pills">
                 {this.state.config.memberAttributes.patronTypes.map((i) => 
                   <DeletablePill inputName={i} handler={this.handleRemovePatron} key={i}/>
                 )}
                 <AddPill addPill={this.addPatron} existingPills={state.configCollection.memberAttributes.patronTypes}/>
               </div>
-              <h2>Graduation Years:</h2>
+              <h2 title="ex: 2023, 2024, 2025, 2026, Graduate Student">Graduation Years:</h2>
               <div id="gradyr-pills">
                 {this.state.config.memberAttributes.graduationYears.map((i) => 
                   <DeletablePill inputName={i} handler={this.handleRemoveGradyr} key={i}/>

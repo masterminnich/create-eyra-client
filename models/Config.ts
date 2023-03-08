@@ -14,7 +14,7 @@ const ConfigSchema = new Schema({
         type: Object,
     },
     visitType: {
-        type: Object,
+        type: Array,
     }
     /*timeZone
     patronType

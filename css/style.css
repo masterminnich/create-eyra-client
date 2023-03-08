@@ -843,7 +843,7 @@ div#pill p{
     margin: auto;
 }
 
-div#certification-pills, div#otherTools-pills, div#patron-pills{
+div#certification-pills, div#otherTools-pills, div#patron-pills, div#gradyr-pills, div#visitType-pills{
     gap: 1ch;
     display: flex;
     flex-wrap: wrap;
@@ -939,3 +939,13 @@ textarea#majors{
     background: #555; 
 }
 /* End custom scrollbar */
+
+details#memberAttributes{
+    margin-top: 1.5em;
+    position: relative;
+}
+
+details#memberAttributes summary{
+    font-weight: bold;
+    font-size: 1.5em;
+}
