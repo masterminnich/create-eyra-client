@@ -1164,7 +1164,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class DeletablePill extends React.Component<{inputName: string},{}>{
+  class DeletablePill extends React.Component<{inputName: string, handler: Function},{}>{
     constructor(props){
       super(props);
       this.state = {}
