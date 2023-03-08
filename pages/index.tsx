@@ -1279,6 +1279,23 @@ export default function Home({ members, activities, config }){
       })
     }
 
+    handleRemovePatron = (inputName: string) => {
+      //Check for patrons of this type
+      let patrons = members.filter(m => m.PatronType && m.PatronType.includes(inputName))
+
+      if (patrons.length == 0){
+        //Do not throw a confirmation popup if no members have the certification
+        eval("this.removePatron('"+inputName+"')")
+      } else {
+        this.setState({
+          action: "Removing patronType '"+inputName+"'",
+          details: patrons.length+" members w/ this patronType...",
+          onCancel: '() => this.closeConfirmationPopup()',
+          onConfirm: "() => this.removePatron('"+inputName+"')",
+        })
+      }
+    }
+
     closeConfirmationPopup = () => {
       this.setState({action: "", details: "", onCancel: "", onConfirm: ""})
     }
@@ -1318,21 +1335,11 @@ export default function Home({ members, activities, config }){
       this.closeConfirmationPopup()
     }
 
-    handleRemovePatron = (inputName: string) => {
-      //Check for patrons of this type
-      let patrons = members.filter(m => m.PatronType && m.PatronType.includes(inputName))
-
-      if (patrons.length == 0){
-        //Do not throw a confirmation popup if no members have the certification
-        eval("this.removePatron('"+inputName+"')")
-      } else {
-        this.setState({
-          action: "Removing patronType '"+inputName+"'",
-          details: patrons.length+" members w/ this patronType...",
-          onCancel: '() => this.closeConfirmationPopup()',
-          onConfirm: "() => this.removePatron('"+inputName+"')",
-        })
-      }
+    handleMajors = (e) => {
+      let majors = e.target.value.split(",")
+      let newState = this.state.config
+      newState.memberAttributes.majors = majors
+      this.setState({config: newState})
     }
 
     render(){
@@ -1395,7 +1402,7 @@ export default function Home({ members, activities, config }){
               <summary>Member Attributes</summary>
               <p>The following fields are information that members are asked to provide upon registration.</p>
               <h2 title="A comma seperated list of student majors. (ex: Physics,Mathematics,English)">Majors:</h2>
-              <textarea id="majors" defaultValue={this.state.config.memberAttributes.majors.toString()}></textarea>
+              <textarea id="majors" defaultValue={this.state.config.memberAttributes.majors.toString()} onChange={(e) => this.handleMajors(e)}></textarea>
               <h2 title="Categories to track different types of members. (ex: Faculty, Student, Guest)">Patron Types:</h2>
               <div id="patron-pills">
                 {this.state.config.memberAttributes.patronTypes.map((i) => 
