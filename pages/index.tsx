@@ -1103,6 +1103,7 @@ export default function Home({ members, activities, config }){
   }
 
   class AddPill extends React.Component<{addPill: Function, existingPills: string[]},{name: string, focus: boolean}>{
+    textInput: React.RefObject<HTMLSpanElement>;
     constructor(props){
       super(props);
       this.textInput = React.createRef();
@@ -1114,7 +1115,7 @@ export default function Home({ members, activities, config }){
     }
 
     focusOnInput() {
-      this.textInput.current.focus();
+      this.textInput.current?.focus();
     }
 
     checkForEnter(e){
