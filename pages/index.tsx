@@ -628,7 +628,6 @@ export default function Home({ members, activities, config }){
         }
       };
       console.log("memberIDs:",memberIDList)
-      console.log("state.membersCollection",state.membersCollection)
 
       //Batch Certify Members
       batchCertify(getMachinesUtilized(), memberIDList)
@@ -1653,6 +1652,8 @@ export default function Home({ members, activities, config }){
     constructor(props){
       super(props);
       this.state = { }
+      //console.log("state.membersCollection",state.membersCollection)
+      console.log("try2",state.membersCollection.filter(member => member.badgedIn == true))
     }
 
     Checkbox(isCertified) {

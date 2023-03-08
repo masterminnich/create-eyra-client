@@ -5,7 +5,7 @@ const fs = require('fs');
 let args = process.argv
 let password = args[2]
 
-let envLocalContent = "MONGODB_URI=mongodb+srv://admin:"+password+"@m0cluster.hqusv.mongodb.net/mainDB?retryWrites=true&w=majority"
+let envLocalContent = "MONGODB_URI=mongodb+srv://admin:"+password+"@m0cluster.hqusv.mongodb.net/eyra?retryWrites=true&w=majority"
 
 async function installNext() {
     console.log("Attempting to npm install Next.js...")
