@@ -1416,7 +1416,7 @@ export default function Home({ members, activities, config }){
                 {this.state.config.memberAttributes.graduationYears.map((i) => 
                   <DeletablePill inputName={i} handler={this.handleRemoveGradyr} key={i}/>
                 )}
-                <AddPill addPill={this.addGraduationYr} existingPills={this.state.config.memberAttributes.graduationYears.toString()}/>
+                <AddPill addPill={this.addGraduationYr} existingPills={this.state.config.memberAttributes.graduationYears}/>
               </div>
               {/*<input type="text" defaultValue={this.state.config.memberAttributes.graduationYears.toString()}></input>*/}
             </details>
