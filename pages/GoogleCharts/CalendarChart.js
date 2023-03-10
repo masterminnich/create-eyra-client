@@ -3,7 +3,7 @@ import { Spinner } from "react-bootstrap";
 import FileSaver from 'file-saver';
 
 
-function CalendarChart ({google, calStats}) {
+function CalendarChart ({google, calStats, config}) {
     const [chart, setChart] = useState(null);
     const [varOfInterest, setVarOfInterest] = useState("Total visits")
 
@@ -17,7 +17,6 @@ function CalendarChart ({google, calStats}) {
         if (currValue !== selectValue){ //Only update if the value changes.
             currValue = selectValue;
             changeVarOfInterest(selectValue);
-            console.log(selectValue);
         }
     }
 
@@ -79,7 +78,7 @@ function CalendarChart ({google, calStats}) {
         console.log(contentCSV)
 
         const csvBlob = new Blob([contentCSV], { type: 'text/csv;charset=utf-8;' });
-        FileSaver.saveAs(csvBlob, 'BadgingSystem Stats.csv');
+        FileSaver.saveAs(csvBlob, 'Eyra Stats.csv');
     }
 
 
@@ -248,14 +247,9 @@ function CalendarChart ({google, calStats}) {
                     <option value="avgSessionMinutes">avgSessionMinutes</option>
                     <option value="cumSessionMinutes">cumSessionMinutes</option>
                     <option disabled>──────────</option>
-                    <option value="Certification">Certification</option>
-                    <option value="Individual">Individual</option>
-                    <option value="Class">Class</option>
-                    <option value="Event">Event</option>
-                    <option value="New Member Registered">New Member Registered</option>
-                    <option value="Quick Visit">Quick Visit</option>
-                    <option value="Staff on Duty">Staff on Duty</option>
-                    <option value="Undefined">Undefined</option>
+                    {config.visitType.map((visitType) =>
+                        <option value={visitType} key={visitType}>{visitType}</option>
+                    )}
                 </select>
                 <button type="button" id="downloadCSV" download="" onClick={() => downloadCSV()}>
                     Download as CSV

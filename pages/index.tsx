@@ -46,13 +46,18 @@ type memberAttributes = {
   patronTypes: string[], 
   graduationYears: string[],
 }
+type statConfig = {
+  semesters: string[],
+  academicYears: string[],
+}
 type Config = {
   certifications: string[],
   otherTools: string[],
   memberAttributes: memberAttributes,
   visitType: string[],
-  graduationyrs: string[]
-  timezone: string;
+  graduationyrs: string[],
+  timezone: string,
+  stats: statConfig,
 }
 type Member = {
   Name: string;
@@ -228,6 +233,10 @@ export default function Home({ members, activities, config }){
           majors: [],
           patronTypes: [],
           graduationYears: [],
+        },
+        stats: {
+          semesters:[],
+          academicYears:[],
         },
       }
       setState({...state,configCollection:c})
@@ -1199,6 +1208,8 @@ export default function Home({ members, activities, config }){
       this.handleRemoveCertification = this.handleRemoveCertification.bind(this)
       this.handleRemoveTool = this.handleRemoveTool.bind(this)
       this.handleRemoveGradyr = this.handleRemoveGradyr.bind(this)
+
+      console.log("this.state.config.stats",this.state.config.stats)
     }
 
     updateConfigCollection = () => {
@@ -1235,6 +1246,18 @@ export default function Home({ members, activities, config }){
     addGraduationYr = (pillName) => {
       let newState = this.state.config
       newState.memberAttributes.graduationYears.push(pillName)
+      this.setState({config: newState})
+    }
+
+    addSemester = (pillName) => {
+      let newState = this.state.config
+      newState.stats.semesters.push(pillName)
+      this.setState({config: newState})
+    }
+
+    addAcademicYr = (pillName) => {
+      let newState = this.state.config
+      newState.stats.academicYears.push(pillName)
       this.setState({config: newState})
     }
 
@@ -1336,6 +1359,20 @@ export default function Home({ members, activities, config }){
       this.closeConfirmationPopup()
     }
 
+    removeSemester = (inputName: string) => {
+      let newState = this.state.config
+      newState.stats.semesters = newState.stats.semesters.filter(c => c !== inputName) //remove certification from list 
+      this.setState({config: newState})
+      this.closeConfirmationPopup()
+    }
+
+    removeAcademicYr = (inputName: string) => {
+      let newState = this.state.config
+      newState.stats.academicYears = newState.stats.academicYears.filter(c => c !== inputName) //remove certification from list 
+      this.setState({config: newState})
+      this.closeConfirmationPopup()
+    }
+
     handleMajors = (e) => {
       let majors = e.target.value.split(",")
       let newState = this.state.config
@@ -1419,6 +1456,26 @@ export default function Home({ members, activities, config }){
                 <AddPill addPill={this.addGraduationYr} existingPills={this.state.config.memberAttributes.graduationYears}/>
               </div>
               {/*<input type="text" defaultValue={this.state.config.memberAttributes.graduationYears.toString()}></input>*/}
+            </details>
+
+            <details id="stats">
+              <summary>Statistics</summary>
+              <p>The following fields add functionality to the stats page.</p>
+              <h2 title="Enter the dates (mm/dd/yyyy) representing the first day of each semester. Include the next upcoming semester as well.">Semesters:</h2>
+              <div id="semester-pills">
+                {this.state.config.stats.semesters.map((i) => 
+                  <DeletablePill inputName={i} handler={this.removeSemester} key={i}/>
+                )}
+                <AddPill addPill={this.addSemester} existingPills={state.configCollection.stats.semesters}/>
+              </div>
+
+              <h2 title="Enter the dates (mm/dd/yyyy) representing the first day of each academic year. Include the next academic year as well.">Academic Years:</h2>
+              <div id="academicYr-pills">
+                {this.state.config.stats.academicYears.map((i) => 
+                  <DeletablePill inputName={i} handler={this.removeAcademicYr} key={i}/>
+                )}
+                <AddPill addPill={this.addAcademicYr} existingPills={state.configCollection.stats.academicYears}/>
+              </div>
             </details>
 
             <button type="button" onClick={this.props.cancel}>Cancel</button>

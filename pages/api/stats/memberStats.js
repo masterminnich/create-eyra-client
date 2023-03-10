@@ -22,7 +22,7 @@ function getWorkshopPopularity(members, listOfCerts){ //get data to create Donut
             let WorkshopName = Object.keys(WorkshopList)[j]
             if (member.Certifications.includes(WorkshopName)){ //If member is certified for this workshop
                 WorkshopList[WorkshopName] += 1;
-                console.log("add to "+WorkshopName+"...",WorkshopList[WorkshopName])
+                //console.log("add to "+WorkshopName+"...",WorkshopList[WorkshopName])
             }
         }
     }
@@ -46,9 +46,9 @@ function getMemberTableData(members){ //Create a sortable table using GoogleChar
     return "test"
 }
 
-function getMemberStats(members){
-    let numOfMakerspaceStaff = {"registered":0,"cumEvents":0};
-    let numOfFaculty = {"registered":0,"cumEvents":0};
+function getMemberStats(members, config){
+    let numOfMakerspaceStaff = {"registered":0};
+    let numOfFaculty = {"registered":0};
     let numOf2022Grads = {"registered":0,"cumEvents":0};
     let numOf2023Grads = {"registered":0,"cumEvents":0};
     let numOf2024Grads = {"registered":0,"cumEvents":0};
@@ -85,12 +85,10 @@ function getMemberStats(members){
                 break;
             case "2026":
                 numOf2026Grads.registered += 1;
-                //numOf2026Grads.cumEvents += member.sessions.length;
                 break;
         }
     }
 
-    // Get cumEvents for each member.
     // Turn activities -> one giant array of all events (from everyday)
     // let allMemberEvents = activities.filter(a => a.memberID == )
     // .length
@@ -116,7 +114,7 @@ export default async function handler(req, res) {
                 console.log("/api/stats/memberStats is fetching stats...")
                 const members = await Member.find({}); 
                 const config = await Config.find({});
-                let memberStats = getMemberStats(members)
+                let memberStats = getMemberStats(members, config)
                 let workshopStats = getWorkshopPopularity(members, config[0].certifications)
                 res.status(200).json({ success: true, data: [workshopStats,memberStats] })
             } catch (error) {

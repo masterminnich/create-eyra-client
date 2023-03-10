@@ -4,26 +4,22 @@ import { Spinner } from "react-bootstrap";
 let defaultVarOfInterest = "Certification"
 let DataTables = {}
 
-//Event Annotations
-let Semesters = {
-    "Fall 2021": new Date("8/18/21"),
-    "Spring 2022": new Date("1/10/22"),
-    "Summer 2022": new Date("5/14/22"), 
-    "Fall 2022": new Date("8/24/22"),
-    "Spring 2023": new Date("1/16/23"),
-    "Summer 2023": new Date("5/8/23"), //check
-}
-let Years = {
-    "2021 - 2022": new Date("8/18/21"), 
-    "2022 - 2023": new Date("8/24/22"),
-    "2023 - 2024": new Date("8/25/23"), //check
-}
 
-
-function SemesterComparisonChart ({google,calStats}) {
+function SemesterComparisonChart ({google,calStats,config}) {
     const [chart, setChart] = useState(null);
     const [semCompVarOfInterest, setSemCompVarOfInterest] = useState(defaultVarOfInterest)
     const [segmentation, setSegmentation] = useState("Cummulative");
+
+    let Semesters = {}
+    for (let i=0; i<config.stats.semesters.length; i++){
+        config.stats.semesters[i]
+        Semesters["Semester "+String(i)] = new Date(config.stats.semesters[i])
+    }
+    let Years = {}
+    for (let i=0; i<config.stats.academicYears.length; i++){
+        let date = new Date(config.stats.academicYears[i])
+        Years[String(date.getFullYear()) +" - "+ String(date.getFullYear()+1)] = date
+    }
 
     function changeVarOfInterest(idOfSelectElem){
         let selectValue = document.getElementById(idOfSelectElem).value
@@ -257,7 +253,7 @@ function SemesterComparisonChart ({google,calStats}) {
             dataTable.sort({ column: 0 });
         }
 
-        console.log("dt",dataTable)
+        //console.log("semesterComparison dataTable:",dataTable)
         DataTables[semCompVarOfInterest+segmentation] = dataTable //Save the DataTable to an object so we don't have to compute it again.
         
         return dataTable
@@ -294,14 +290,9 @@ function SemesterComparisonChart ({google,calStats}) {
                 <option disabled value="avgSessionMinutes">avgSessionMinutes</option>
                 <option value="cumSessionMinutes">cumSessionMinutes</option>
                 <option disabled>──────────</option>
-                <option value="Certification">Certification</option>
-                <option value="Individual">Individual</option>
-                <option value="Class">Class</option>
-                <option value="Event">Event</option>
-                <option value="New Member Registered">New Member Registered</option>
-                <option value="Quick Visit">Quick Visit</option>
-                <option value="Staff on Duty">Staff on Duty</option>
-                <option value="Undefined">Undefined</option>
+                {config.visitType.map((visitType) =>
+                    <option value={visitType} key={visitType}>{visitType}</option>
+                )}
             </select>
             <select id="segmentation" onChange={() => changeSegmentation("segmentation")} defaultValue={segmentation}>
                 <option value="Cummulative">Cummulative</option>
@@ -313,21 +304,3 @@ function SemesterComparisonChart ({google,calStats}) {
 }
   
 export default SemesterComparisonChart;
-
-//Get activity collection
-//get fall semester, get spring semester
-//find days from start of semester
-
-
-
-//Select (dropdown) field to pick VarOfInterest
-//Create a function to calculate dayOfSemester. 
-    //Given an object of first days of the semester
-        //{"Fall 2021": new Date("9/18/2021"), "Summer 2022": new Date("5/8/22")}
-    //which semester?
-    //how many days since day 0 of the semester
-    //return the array
-    //Fully cummulative vs since beginning of semester
-
-//Create vertical lines to show each semester.
-// Convert from one long graph to one smaller graph with overlapping lines.

@@ -1,7 +1,8 @@
 import Cors from 'cors'
 import initMiddleware from '../../../utils/init-middleware'
 import connectToDatabase from '../../../utils/connectToDatabase';
-import Activity from '../../../models/Activity';
+import Activity from '../../../models/Activity'
+import Config from '../../../models/Config';
 
 const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
 
@@ -16,12 +17,12 @@ const cors = initMiddleware(
 
 let results; //Save compiled stats to a global variable.
 
-function fetchAllStats(activtiesCollection){
+function fetchAllStats(activtiesCollection,config){
     //console.log("activities",activtiesCollection)
     //Find Today's Stats
     let todayDateObj = new Date()
     let todayDateStr = new Date().toLocaleString("en-CA", localDateTimeOptions).substring(0,10)
-    let returnedVal = fetchDataOneDay(todayDateStr,activtiesCollection)
+    let returnedVal = fetchDataOneDay(todayDateStr,activtiesCollection,config)
 
     //Find This Week's Stats
     let sundayDate = new Date();
@@ -34,7 +35,7 @@ function fetchAllStats(activtiesCollection){
     for (let i = 0; i < dayOfWeek+1; i++) {
         let todaysDate = new Date();
         let todayDateStr = todaysDate.toLocaleString("en-CA", localDateTimeOptions).substring(0,10)
-        let returnedVal = fetchDataOneDay(todayDateStr,activtiesCollection)
+        let returnedVal = fetchDataOneDay(todayDateStr,activtiesCollection,config)
         let dateNickName = todaysDate.toString().substring(0,15)
         thisWeekStats[dateNickName] = returnedVal
     }
@@ -45,7 +46,7 @@ function fetchAllStats(activtiesCollection){
     let allStats = {}
     for (let j = 0; j < activtiesCollection.length; j++) {
         let dateStr = activtiesCollection[j].Date
-        let returnedVal = fetchDataOneDay(dateStr,activtiesCollection)
+        let returnedVal = fetchDataOneDay(dateStr,activtiesCollection,config)
         allStats[dateStr] = returnedVal
     }
 
@@ -82,7 +83,7 @@ function fetchAllStats(activtiesCollection){
     return [returnedVal,thisWeekStats,allStats,cumStats]
 }
 
-const fetchDataOneDay = (todayDateStr,activitiesCollection) =>{
+const fetchDataOneDay = (todayDateStr,activitiesCollection,config) =>{
     let collectedStats = {
         "Total visits":0,
         "cumSessionMinutes":0,
@@ -105,7 +106,10 @@ const fetchDataOneDay = (todayDateStr,activitiesCollection) =>{
         collectedStats["avgSessionMinutes"] = avgSessionMinutes;
 
         //Count each type of visit.
-        let eventTypeCount = {"Undefined":0,"Individual":0,"Certification":0,"Class":0,"Quick Visit":0,"New Member Registered":0,"Staff on Duty":0,"Event":0}
+        let eventTypeCount = {}
+        config.visitType.forEach((v) =>
+            eventTypeCount[v] = 0
+        )
         ActivityDay.Events.forEach(event => eventTypeCount[event.event] += 1)
         collectedStats["eventTypeCount"] = eventTypeCount;
 
@@ -187,10 +191,9 @@ export default async function handler(req, res) {
             try{
                 console.log("/api/stats getting stats...")
                 const activity = await Activity.find({}); 
-                let allStats = fetchAllStats(activity)
+                const config = await Config.find({});
+                let allStats = fetchAllStats(activity,config[0])
                 let calendarDataObj = convert(allStats)
-                //console.log("allStats",allStats)
-                //console.log("calendarDataObj",calendarDataObj)
                 console.log("/api/stats finished successfully...")
                 res.status(200).json({ success: true, data: calendarDataObj })
             } catch (error) {

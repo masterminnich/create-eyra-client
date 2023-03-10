@@ -10,11 +10,14 @@ const ConfigSchema = new Schema({
     otherTools: {
         type: Array,
     },
+    visitType: {
+        type: Array,
+    },
     memberAttributes: {
         type: Object,
     },
-    visitType: {
-        type: Array,
+    stats: {
+        type: Object
     }
     /*timeZone
     patronType

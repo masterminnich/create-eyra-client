@@ -11,7 +11,7 @@ function WorkshopPopularityPieChart ({google,workshopStats}) {
 
         // Set chart options
         var options = {
-            'title':'Workshop Popularity',
+            'title':'Certifications Earned',
             'width':400,
             'height':300
         };

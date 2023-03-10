@@ -40,7 +40,7 @@ function WorkshopPopularityPieChart ({google,memberStats}) {
 
         // Set chart options
         var options = {
-            'title':'Member Activity',
+            'title':'Registered Members',
             'width':400,
             'height':300
         };
@@ -57,11 +57,11 @@ function WorkshopPopularityPieChart ({google,memberStats}) {
             {!google && <Spinner />}
             <div>
             <div className="controlMemberPieChart">
-                <p>Displaying Statistic: </p>
+                {/*<p>Displaying Statistic: </p>
                 <select id="selectMemberData" onClick={() => changeVar("selectMemberData")}>
                     <option value="registered">Registered</option>
-                    <option value="cumEvents">Event Count</option>
-                </select>
+                     <option value="cumEvents">Event Count</option>
+                </select>*/}
             </div>
             <div id="memberPieChart" className={!google ? 'd-none' : ''} />
             
