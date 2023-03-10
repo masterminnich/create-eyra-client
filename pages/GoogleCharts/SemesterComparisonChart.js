@@ -11,13 +11,12 @@ function SemesterComparisonChart ({google,calStats,config}) {
     const [segmentation, setSegmentation] = useState("Cummulative");
 
     let Semesters = {}
-    for (let i=0; i<config.stats.semesters.length; i++){
-        config.stats.semesters[i]
-        Semesters["Semester "+String(i)] = new Date(config.stats.semesters[i])
+    for (let i=0; i<config?.stats?.semesters?.length; i++){
+        Semesters["Semester "+String(i)] = new Date(config?.stats?.semesters[i])
     }
     let Years = {}
-    for (let i=0; i<config.stats.academicYears.length; i++){
-        let date = new Date(config.stats.academicYears[i])
+    for (let i=0; i<config?.stats?.academicYears?.length; i++){
+        let date = new Date(config?.stats?.academicYears[i])
         Years[String(date.getFullYear()) +" - "+ String(date.getFullYear()+1)] = date
     }
 
@@ -281,6 +280,7 @@ function SemesterComparisonChart ({google,calStats,config}) {
         }
     }, [google, chart]);
   
+    if (config == undefined){ return(null) }
     return (
         <>
             {!google && <Spinner />}
@@ -290,7 +290,7 @@ function SemesterComparisonChart ({google,calStats,config}) {
                 <option disabled value="avgSessionMinutes">avgSessionMinutes</option>
                 <option value="cumSessionMinutes">cumSessionMinutes</option>
                 <option disabled>──────────</option>
-                {config.visitType.map((visitType) =>
+                {config?.visitType.map((visitType) =>
                     <option value={visitType} key={visitType}>{visitType}</option>
                 )}
             </select>

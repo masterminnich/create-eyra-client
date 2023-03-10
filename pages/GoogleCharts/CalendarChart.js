@@ -235,6 +235,7 @@ function CalendarChart ({google, calStats, config}) {
         }
     }, [google, chart]);
 
+    if (config == undefined){ return(null) }
     return (
         <>
             {!google && <Spinner />}
@@ -247,8 +248,8 @@ function CalendarChart ({google, calStats, config}) {
                     <option value="avgSessionMinutes">avgSessionMinutes</option>
                     <option value="cumSessionMinutes">cumSessionMinutes</option>
                     <option disabled>──────────</option>
-                    {config.visitType.map((visitType) =>
-                        <option value={visitType} key={visitType}>{visitType}</option>
+                    {config.visitType.map((v) =>
+                        <option value={v} key={v}>{v}</option>
                     )}
                 </select>
                 <button type="button" id="downloadCSV" download="" onClick={() => downloadCSV()}>

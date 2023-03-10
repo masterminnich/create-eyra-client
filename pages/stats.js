@@ -54,24 +54,23 @@ class AllCharts extends Component {
             
         } catch (error) { console.log("error fetching memberStats from /api/stats/memberStats: ",error); }
     }
-    
+
     render() {
         //console.log("this.state.data",this.state.data)
-        if (this.state.calendarData == "placeholder" || this.state.memberStats == "placeholder" || this.state.workshopStats == "placeholder"){
-            //console.log("calStats has not loaded yet.")
-            //console.log("props.google =",this.props.google)
+        if (this.state.calendarData == "placeholder" || this.state.memberStats == "placeholder" || this.state.workshopStats == "placeholder" || this.state.configData == "placeholder" || this.state.configData == undefined){
             return(<h1>loading Google Charts...</h1>)
-        } else { console.log("this.state.memberStats",this.state.memberStats,"this.state.workshopStats",this.state.workshopStats,"this.state.configData",this.state.configData,"this.state.calendarData",this.state.calendarData)
-        return (
-            <>
-            <SemesterComparisonChart google={this.props.google} calStats={this.state.calendarData} config={this.state.configData}/>
-            <CalendarChart google={this.props.google} calStats={this.state.calendarData} config={this.state.configData}/>
-            <div className="PieCharts">
-                <WorkshopPopularityPieChart google={this.props.google} workshopStats={this.state.workshopStats}/>
-                <MemberPieChart google={this.props.google} memberStats={this.state.memberStats}/>
-            </div>
-            </>
-        )}
+        } else { console.log("this.state",this.state)
+            return (
+                <>
+                <SemesterComparisonChart google={this.props.google} calStats={this.state.calendarData} config={this.state.configData}/>
+                <CalendarChart google={this.props.google} calStats={this.state.calendarData} config={this.state.configData}/>
+                <div className="PieCharts">
+                    <WorkshopPopularityPieChart google={this.props.google} workshopStats={this.state.workshopStats}/>
+                    <MemberPieChart google={this.props.google} memberStats={this.state.memberStats}/>
+                </div>
+                </>
+            )
+        }
     }
 }
 
