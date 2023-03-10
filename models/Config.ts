@@ -4,6 +4,9 @@ const ConfigSchema = new Schema({
     timezone: {
         type: String,
     },
+    rfidLength: {
+        type: Number,
+    },
     certifications: {
         type: Array,
     },

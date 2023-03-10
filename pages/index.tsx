@@ -58,6 +58,7 @@ type statConfig = {
   campusReach: campusReach
 }
 type Config = {
+  rfidLength: number,
   certifications: string[],
   otherTools: string[],
   memberAttributes: memberAttributes,
@@ -233,6 +234,7 @@ export default function Home({ members, activities, config }){
     if (state.configCollection == undefined){
       console.log("Welcome to Eyra. Setting up your config collection...")
       let c = {
+        rfidLength: 16,
         certifications: [],
         otherTools: [],
         visitType: ["Undefined","Certification"],
@@ -244,6 +246,11 @@ export default function Home({ members, activities, config }){
         stats: {
           semesters:[],
           academicYears:[],
+          campusReach:{
+            campusPopulation: 0,
+            goalPercentage: 0,
+            patronType: "",
+          },
         },
       }
       setState({...state,configCollection:c})
@@ -1153,7 +1160,12 @@ export default function Home({ members, activities, config }){
     }
 
     validateNewPill(e){
-      let pillName = e.target.innerText.replace(/[^a-zA-Z0-9_()]+/g,""); //drop all non-alphanumeric characters except () and _
+      let pillName = ""
+      if (!this.props.isDate){
+        pillName = e.target.innerText.replace(/[^a-zA-Z0-9_()]+/g,""); //drop all non-alphanumeric characters except () and _
+      } else {
+        pillName = e.target.innerText;
+      }
       if (pillName == ""){
         console.log("validate | pillName is empty")
       } else if (this.props.existingPills.includes(pillName)) {
@@ -1269,9 +1281,14 @@ export default function Home({ members, activities, config }){
     }
 
     handleTimezone = (timezone) => {
-      console.log("handling timezone",timezone.target.value)
       let newState = this.state.config
       newState.timezone = timezone.target.value
+      this.setState({config: newState})
+    }
+
+    handleRFIDLength = (e) => {
+      let newState = this.state.config
+      newState.rfidLength = parseInt(e.target.value)
       this.setState({config: newState})
     }
 
@@ -1425,6 +1442,9 @@ export default function Home({ members, activities, config }){
               <option value="PST">(UTC-8) Pacific Standard Time</option>
             </select>
 
+            <h2 title="The amount of characters that makeup each cardSerialNumber.">Expected RFID Length</h2>
+            <input type="number" defaultValue={this.state.config.rfidLength} min="1" max="64" onChange={(e) => this.handleRFIDLength(e)} id="rfidLength"></input>
+
             <h2 title="List of all tools that require certification to access. When an activity is saved with a visitType of 'Certification' the member will be certified for the associated tool.">Certifications: </h2>
             <div id="certification-pills">
               {this.state.config.certifications.map((i) => 
@@ -1494,13 +1514,13 @@ export default function Home({ members, activities, config }){
               <h2 title="Track what percentage of the total campus has registed in Eyra.">Campus Reach</h2>
               <div id="campusReach">
                 <label>Campus Population
-                  <input type="number" min="0" defaultValue={this.state.config.stats.campusReach.campusPopulation} onChange={(e) => this.handleCampusReachChange("campusPopulation",e)}></input>
+                  <input type="number" min="0" defaultValue={this.state.config?.stats?.campusReach?.campusPopulation} onChange={(e) => this.handleCampusReachChange("campusPopulation",e)}></input>
                 </label>
                 <label>% Reach Goal
-                  <input type="number" max="100" min="0" defaultValue={this.state.config.stats.campusReach.goalPercentage} onChange={(e) => this.handleCampusReachChange("goalPercentage",e)}></input>
+                  <input type="number" max="100" min="0" defaultValue={this.state.config?.stats?.campusReach?.goalPercentage} onChange={(e) => this.handleCampusReachChange("goalPercentage",e)}></input>
                 </label>
                 <label htmlFor="countPatronType">Count: 
-                  <select name="countPatronType" defaultValue={this.state.config.stats.campusReach.patronType} onClick={(e) => this.handleCampusReachChange("patronType",e)}>
+                  <select name="countPatronType" defaultValue={this.state.config?.stats?.campusReach?.patronType} onClick={(e) => this.handleCampusReachChange("patronType",e)}>
                     {this.state.config.memberAttributes.patronTypes.map((p) =>
                       <option key={p} value={p}>{p}</option>
                     )}
@@ -1847,18 +1867,18 @@ export default function Home({ members, activities, config }){
     constructor(props){
       super(props);
 
-      let goal = state.configCollection.stats.campusReach.goalPercentage;
+      let goal = state.configCollection?.stats?.campusReach?.goalPercentage;
       let patronsRegistered = 0
-      if (state.configCollection.stats.campusReach.patronType == "All Members"){
+      if (state.configCollection?.stats?.campusReach?.patronType == "All Members"){
         patronsRegistered = state.membersCollection.length
       } else {
-        patronsRegistered = state.membersCollection.filter((mem) => mem.PatronType === state.configCollection.stats.campusReach.patronType).length
+        patronsRegistered = state.membersCollection.filter((mem) => mem.PatronType === state.configCollection?.stats?.campusReach?.patronType).length
       }
 
       this.state = { 
         patronsRegistered: patronsRegistered,
         goal: goal,
-        progress: patronsRegistered / state.configCollection.stats.campusReach.campusPopulation * 100,
+        progress: patronsRegistered / state.configCollection?.stats?.campusReach?.campusPopulation * 100,
       }
     }
     

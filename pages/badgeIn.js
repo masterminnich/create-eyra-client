@@ -1,14 +1,9 @@
 import React from 'react';
 import io from 'Socket.IO-client'
+import clientPromise from '../utils/mongodb'
 
 //This page allows users to manually type in their RFID number to badge in.
 //This file contains functionality to search for the RFID, record key strokes.
-
-//If you want to detect both RFID and Magstripe, at least one of the inputs needs a pre or post stroke.
-const EXPECTED_RFID_LENGTH = 16 //Set value to 0 if not in use
-const EXPECTED_RFID_PRESTROKE = "" //Can be a pre or post stroke. Set to "" if not in use.
-const EXPECTED_MAGSTRIPE_LENGTH = 0 //Set value to 0 if not in use
-const EXPECTED_MAGSTRIPE_PRESTROKE = ";" //Can be a pre or post stroke. Set to "" if not in use.
 
 var search_input = "";
 const headers = {"Accept": "application/json", "Content-Type": "application/json"}
@@ -122,6 +117,11 @@ class App extends React.Component {
       badgeStatus: "waiting", // waiting, loading, tooMany, notFound, found
       rfid: '',
       memberData: undefined,
+      //If you want to detect both RFID and Magstripe, at least one of the inputs needs a pre or post stroke.
+      EXPECTED_RFID_LENGTH: this.props.config.rfidLength, //Set value to 0 if not in use
+      EXPECTED_RFID_PRESTROKE: "", //Can be a pre or post stroke. Set to "" if not in use.
+      EXPECTED_MAGSTRIPE_LENGTH: 0, //Set value to 0 if not in use
+      EXPECTED_MAGSTRIPE_PRESTROKE: ";", //Can be a pre or post stroke. Set to "" if not in use.
     };
   }
 
@@ -165,20 +165,20 @@ class App extends React.Component {
     } else { //If no additional keypresses follow, search for the RFID/Magstripe
       let last_search_input = search_input.slice(-MAX_INPUT_LENGTH)
       this.setState({...this.state, rfid: last_search_input})
-      if ((EXPECTED_MAGSTRIPE_LENGTH == 0) || (last_search_input.includes(EXPECTED_RFID_PRESTROKE) & EXPECTED_RFID_PRESTROKE !== "")){
-        last_search_input = last_search_input.slice(-EXPECTED_RFID_LENGTH)
+      if ((this.state.EXPECTED_MAGSTRIPE_LENGTH == 0) || (last_search_input.includes(this.state.EXPECTED_RFID_PRESTROKE) & this.state.EXPECTED_RFID_PRESTROKE !== "")){
+        last_search_input = last_search_input.slice(-this.state.EXPECTED_RFID_LENGTH)
         this.searchForRFID(last_search_input)
-      } else if ((EXPECTED_RFID_LENGTH == 0) || (last_search_input.includes(EXPECTED_MAGSTRIPE_PRESTROKE) & EXPECTED_MAGSTRIPE_PRESTROKE !== "")){
-        last_search_input = last_search_input.slice(-EXPECTED_MAGSTRIPE_LENGTH)
+      } else if ((this.state.EXPECTED_RFID_LENGTH == 0) || (last_search_input.includes(this.state.EXPECTED_MAGSTRIPE_PRESTROKE) & EXPECTED_MAGSTRIPE_PRESTROKE !== "")){
+        last_search_input = last_search_input.slice(-this.state.EXPECTED_MAGSTRIPE_LENGTH)
         searchForMagstripe(last_search_input)
       } else {
         //The input lacks a pre/post stroke 
-        if (EXPECTED_RFID_PRESTROKE == ""){
-          last_search_input = last_search_input.slice(-EXPECTED_RFID_LENGTH)
+        if (this.state.EXPECTED_RFID_PRESTROKE == ""){
+          last_search_input = last_search_input.slice(-this.state.EXPECTED_RFID_LENGTH)
           console.log("r2")
           this.searchForRFID(last_search_input)
         } else {
-          last_search_input = last_search_input.slice(-EXPECTED_MAGSTRIPE_LENGTH)
+          last_search_input = last_search_input.slice(-this.state.EXPECTED_MAGSTRIPE_LENGTH)
           searchForMagstripe(last_search_input)
         }
       }
@@ -189,10 +189,10 @@ class App extends React.Component {
   handleKeyDown = e => {
     checkFocus()
 
-    const MIN_INPUT_LENGTH = Math.min.apply(null,[EXPECTED_RFID_LENGTH,EXPECTED_MAGSTRIPE_LENGTH].filter(x => x>0))
-    const MAX_INPUT_LENGTH = Math.max.apply(null,[EXPECTED_RFID_LENGTH,EXPECTED_MAGSTRIPE_LENGTH].filter(x => x>0))
+    const MIN_INPUT_LENGTH = Math.min.apply(null,[this.state.EXPECTED_RFID_LENGTH,this.state.EXPECTED_MAGSTRIPE_LENGTH].filter(x => x>0))
+    const MAX_INPUT_LENGTH = Math.max.apply(null,[this.state.EXPECTED_RFID_LENGTH,this.state.EXPECTED_MAGSTRIPE_LENGTH].filter(x => x>0))
 
-    if ([EXPECTED_RFID_PRESTROKE,EXPECTED_MAGSTRIPE_PRESTROKE,"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","1","2","3","4","5","6","7","8","9","0"].includes(e.key)){ //Ignore all keypresses except alphanumeric characters.
+    if ([this.state.EXPECTED_RFID_PRESTROKE,this.state.EXPECTED_MAGSTRIPE_PRESTROKE,"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","1","2","3","4","5","6","7","8","9","0"].includes(e.key)){ //Ignore all keypresses except alphanumeric characters.
       search_input += e.key.toUpperCase(); //Force all letters to be Upper Case
       console.log("keypress: ", e.key.toUpperCase());
     
@@ -244,6 +244,20 @@ class App extends React.Component {
       );
   }
 }
+//export default App;
+
+export async function getStaticProps(context) {
+  const client = await clientPromise
+
+  const configCollection = await client.db().collection("configs");
+  const configArray = await configCollection.find({}).toArray();
+  const configP = JSON.parse(JSON.stringify(configArray));
+
+  return { 
+      props: { config: configP[0] } 
+  }
+}
+
 export default App;
 
 
