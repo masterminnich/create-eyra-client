@@ -961,3 +961,14 @@ button#config_true path {
     animation-direction: alternate-reverse;
     animation-timing-function: ease;
 }
+
+div#campusReach{
+    display: inline-flex;
+    justify-content: space-between;
+    align-content: center;
+    width: 100%;
+} 
+div#campusReach label{
+    display: flex;
+    gap: 1ch;
+}

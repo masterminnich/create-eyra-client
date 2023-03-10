@@ -7,6 +7,7 @@ import ReactDOM from "react-dom";
 import { Callback, ObjectIdSchemaDefinition, Schema } from 'mongoose';
 import { rootCertificates } from 'tls';
 import { isNoSubstitutionTemplateLiteral } from 'typescript';
+import { PHASE_PRODUCTION_SERVER } from 'next/dist/shared/lib/constants';
 
 var socket = io({transports: ['websocket'], upgrade: false});
 let hoverTimerId;
@@ -46,9 +47,15 @@ type memberAttributes = {
   patronTypes: string[], 
   graduationYears: string[],
 }
+type campusReach = {
+  campusPopulation: number,
+  patronType: string,
+  goalPercentage: number,
+}
 type statConfig = {
   semesters: string[],
   academicYears: string[],
+  campusReach: campusReach
 }
 type Config = {
   certifications: string[],
@@ -1111,7 +1118,7 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class AddPill extends React.Component<{addPill: Function, existingPills: string[]},{name: string, focus: boolean}>{
+  class AddPill extends React.Component<{addPill: Function, existingPills: string[], isDate: boolean},{name: string, focus: boolean}>{
     textInput: React.RefObject<HTMLSpanElement>;
     constructor(props){
       super(props);
@@ -1150,7 +1157,9 @@ export default function Home({ members, activities, config }){
       if (pillName == ""){
         console.log("validate | pillName is empty")
       } else if (this.props.existingPills.includes(pillName)) {
-        console.log("validate | duplicate pill detected")
+        console.log("validate | Duplicate pill detected")
+      } else if (this.props.isDate == true && new Date(pillName).toString() == 'Invalid Date'){
+        console.log("validate | Invalid date. Use mm/dd/yyyy format.")
       } else {
         this.createNewPill(e, pillName)
       }
@@ -1208,8 +1217,6 @@ export default function Home({ members, activities, config }){
       this.handleRemoveCertification = this.handleRemoveCertification.bind(this)
       this.handleRemoveTool = this.handleRemoveTool.bind(this)
       this.handleRemoveGradyr = this.handleRemoveGradyr.bind(this)
-
-      console.log("this.state.config.stats",this.state.config.stats)
     }
 
     updateConfigCollection = () => {
@@ -1380,6 +1387,13 @@ export default function Home({ members, activities, config }){
       this.setState({config: newState})
     }
 
+    handleCampusReachChange = (attribute,e) => {
+      let newState = this.state.config
+      newState.stats.campusReach[attribute] = e.target.value
+      this.setState({config: newState})
+      console.log("this.state",this.state)
+    }
+
     render(){
       return(
         <>
@@ -1416,7 +1430,7 @@ export default function Home({ members, activities, config }){
               {this.state.config.certifications.map((i) => 
                 <DeletablePill inputName={i} handler={this.handleRemoveCertification} key={i}/>
               )}
-              <AddPill addPill={this.addCertPill} existingPills={state.configCollection.certifications}/>
+              <AddPill addPill={this.addCertPill} existingPills={state.configCollection.certifications} isDate={false}/>
             </div>
 
             <h2 title="All other tools you want to track the usage of that don't require a certification.">otherTools: </h2>
@@ -1424,7 +1438,7 @@ export default function Home({ members, activities, config }){
               {this.state.config.otherTools.map((i) => 
                 <DeletablePill inputName={i} handler={this.handleRemoveTool} key={i}/>
               )}
-              <AddPill addPill={this.addToolPill} existingPills={state.configCollection.otherTools}/>
+              <AddPill addPill={this.addToolPill} existingPills={state.configCollection.otherTools} isDate={false}/>
             </div>
 
             
@@ -1433,7 +1447,7 @@ export default function Home({ members, activities, config }){
               {this.state.config.visitType.map((i) => 
                 <DeletablePill inputName={i} handler={this.removeVisitType} key={i}/>
               )}
-              <AddPill addPill={this.addVisitType} existingPills={state.configCollection.visitType}/>
+              <AddPill addPill={this.addVisitType} existingPills={state.configCollection.visitType} isDate={false}/>
             </div>
 
             <details id="memberAttributes">
@@ -1446,14 +1460,14 @@ export default function Home({ members, activities, config }){
                 {this.state.config.memberAttributes.patronTypes.map((i) => 
                   <DeletablePill inputName={i} handler={this.handleRemovePatron} key={i}/>
                 )}
-                <AddPill addPill={this.addPatron} existingPills={state.configCollection.memberAttributes.patronTypes}/>
+                <AddPill addPill={this.addPatron} existingPills={state.configCollection.memberAttributes.patronTypes} isDate={false}/>
               </div>
               <h2 title="ex: 2023, 2024, 2025, 2026, Graduate Student">Graduation Years:</h2>
               <div id="gradyr-pills">
                 {this.state.config.memberAttributes.graduationYears.map((i) => 
                   <DeletablePill inputName={i} handler={this.handleRemoveGradyr} key={i}/>
                 )}
-                <AddPill addPill={this.addGraduationYr} existingPills={this.state.config.memberAttributes.graduationYears}/>
+                <AddPill addPill={this.addGraduationYr} existingPills={this.state.config.memberAttributes.graduationYears} isDate={false}/>
               </div>
               {/*<input type="text" defaultValue={this.state.config.memberAttributes.graduationYears.toString()}></input>*/}
             </details>
@@ -1466,7 +1480,7 @@ export default function Home({ members, activities, config }){
                 {this.state.config.stats.semesters.map((i) => 
                   <DeletablePill inputName={i} handler={this.removeSemester} key={i}/>
                 )}
-                <AddPill addPill={this.addSemester} existingPills={state.configCollection.stats.semesters}/>
+                <AddPill addPill={this.addSemester} existingPills={state.configCollection.stats.semesters} isDate={true}/>
               </div>
 
               <h2 title="Enter the dates (mm/dd/yyyy) representing the first day of each academic year. Include the next academic year as well.">Academic Years:</h2>
@@ -1474,7 +1488,25 @@ export default function Home({ members, activities, config }){
                 {this.state.config.stats.academicYears.map((i) => 
                   <DeletablePill inputName={i} handler={this.removeAcademicYr} key={i}/>
                 )}
-                <AddPill addPill={this.addAcademicYr} existingPills={state.configCollection.stats.academicYears}/>
+                <AddPill addPill={this.addAcademicYr} existingPills={state.configCollection.stats.academicYears} isDate={true}/>
+              </div>
+
+              <h2 title="Track what percentage of the total campus has registed in Eyra.">Campus Reach</h2>
+              <div id="campusReach">
+                <label>Campus Population
+                  <input type="number" min="0" defaultValue={this.state.config.stats.campusReach.campusPopulation} onChange={(e) => this.handleCampusReachChange("campusPopulation",e)}></input>
+                </label>
+                <label>% Reach Goal
+                  <input type="number" max="100" min="0" defaultValue={this.state.config.stats.campusReach.goalPercentage} onChange={(e) => this.handleCampusReachChange("goalPercentage",e)}></input>
+                </label>
+                <label htmlFor="countPatronType">Count: 
+                  <select name="countPatronType" defaultValue={this.state.config.stats.campusReach.patronType} onClick={(e) => this.handleCampusReachChange("patronType",e)}>
+                    {this.state.config.memberAttributes.patronTypes.map((p) =>
+                      <option key={p} value={p}>{p}</option>
+                    )}
+                    <option value="All Members">All Members</option>
+                  </select>
+                </label>
               </div>
             </details>
 
@@ -1811,12 +1843,22 @@ export default function Home({ members, activities, config }){
     }
   }
 
-  class GraphStatCard extends React.Component<{statTitle: string},{studentsRegistered: number, goal: number}>{
+  class GraphStatCard extends React.Component<{statTitle: string},{patronsRegistered: number, goal: number, progress: number}>{
     constructor(props){
       super(props);
+
+      let goal = state.configCollection.stats.campusReach.goalPercentage;
+      let patronsRegistered = 0
+      if (state.configCollection.stats.campusReach.patronType == "All Members"){
+        patronsRegistered = state.membersCollection.length
+      } else {
+        patronsRegistered = state.membersCollection.filter((mem) => mem.PatronType === state.configCollection.stats.campusReach.patronType).length
+      }
+
       this.state = { 
-        studentsRegistered: state.membersCollection.filter((mem) => mem.PatronType === "Student").length,
-        goal: 7.5
+        patronsRegistered: patronsRegistered,
+        goal: goal,
+        progress: patronsRegistered / state.configCollection.stats.campusReach.campusPopulation * 100,
       }
     }
     
@@ -1824,11 +1866,11 @@ export default function Home({ members, activities, config }){
       return(
         <div className="statCard">
           <h3>{this.props.statTitle}</h3>
-          <h2>{Math.round(this.state.studentsRegistered/ 10 )/10}%</h2>
+          <h2>{Math.round(this.state.progress * 10) / 10}%</h2>
           <div style={{width: "100%"}}>
             <h4>Goal: {this.state.goal}%</h4>
             <div className="progressBar">
-              <div className="progress" style={{width: this.state.studentsRegistered / this.state.goal +"%", maxWidth: "100%"}}></div>
+              <div className="progress" style={{width: String(this.state.progress / this.state.goal * 100) +"%", maxWidth: "100%"}}></div>
             </div>
           </div>
         </div>
@@ -1904,8 +1946,6 @@ export default function Home({ members, activities, config }){
       </div>
       <div className="column" id="c2">
         <GraphStatCard statTitle="Campus Reach"/>
-        <StatCard statTitle="placeholder"/>
-        <StatCard statTitle="placeholder"/>
       </div>
     </main>
     </>
