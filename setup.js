@@ -8,6 +8,18 @@ let password = args[2]
 let envLocalContent = "MONGODB_URI=mongodb+srv://admin:"+password+"@m0cluster.hqusv.mongodb.net/eyra?retryWrites=true&w=majority"
 let nextConfigContent = "module.exports = { env: { MONGO_URI: 'mongodb+srv://admin:"+password+"@m0cluster.hqusv.mongodb.net/eyra?retryWrites=true&w=majority' } }"
 
+const {execSync} = require('child_process');
+
+const runCommand = command => {
+  try {
+    execSync(`${command}`, {stdio: 'inherit'});
+  } catch (e) {
+    console.error(`Failed to execute ${command}`, e);
+    return false;
+  }
+  return true;
+}
+
 async function installNext() {
     //console.log("Attempting to npm install Next.js...")
     try {
@@ -19,8 +31,6 @@ async function installNext() {
             console.log("Successfully installed Next.js") 
             writeEnvLocal()
             writeNextConfig()
-            console.log("Create an optimized build with this command:")
-            console.log("npm run build")
         }
     } catch (e) { console.error(e); }
 }
@@ -34,15 +44,23 @@ async function writeEnvLocal(){
     });
 }
 
+
+
 async function writeNextConfig(){
     //console.log("Attempting to write next.config.js...")
     fs.writeFile('next.config.js', nextConfigContent, err => {
         if (err) { 
             console.error(err); 
-        } else { console.log("Successfully wrote next.config.js") }
+        } else { 
+            console.log("Successfully wrote next.config.js")
+            console.log(`Creating optimized build...`);
+            const optimizedBuild = runCommand(`npm run build`);
+            if(!optimizedBuild) process.exit(-1);
+            console.log("")
+            console.log("Eyra is ready to go! Type the following command to start up Eyra:")
+            console.log("npm run start")
+        }
     });
 }
 
 installNext()
-
-//TODO: Instantiate MongoDB Cluster w/ activities, members, config (is this neccessary?)
