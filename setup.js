@@ -9,7 +9,7 @@ let envLocalContent = "MONGODB_URI=mongodb+srv://admin:"+password+"@m0cluster.hq
 let nextConfigContent = "module.exports = { env: { MONGO_URI: 'mongodb+srv://admin:"+password+"@m0cluster.hqusv.mongodb.net/eyra?retryWrites=true&w=majority' } }"
 
 async function installNext() {
-    console.log("Attempting to npm install Next.js...")
+    //console.log("Attempting to npm install Next.js...")
     try {
         const { stdout, stderr } = await exec('npm install next --legacy-peer-deps');
         //console.log('stdout:', stdout);
@@ -19,12 +19,14 @@ async function installNext() {
             console.log("Successfully installed Next.js") 
             writeEnvLocal()
             writeNextConfig()
+            console.log("Eyra is ready to go! Start it up with this command:")
+            console.log("npm run start")
         }
     } catch (e) { console.error(e); }
 }
 
 async function writeEnvLocal(){
-    console.log("Attempting to write .env.local...")
+    //console.log("Attempting to write .env.local...")
     fs.writeFile('.env.local', envLocalContent, err => {
         if (err) { 
             console.error(err); 
@@ -33,7 +35,7 @@ async function writeEnvLocal(){
 }
 
 async function writeNextConfig(){
-    console.log("Attempting to write next.config.js...")
+    //console.log("Attempting to write next.config.js...")
     fs.writeFile('next.config.js', nextConfigContent, err => {
         if (err) { 
             console.error(err); 
