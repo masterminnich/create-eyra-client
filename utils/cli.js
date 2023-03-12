@@ -26,9 +26,5 @@ console.log(`Installing dependencies for ${repoName}`);
 const installedDeps = runCommand(installDepsCommand);
 if(!installedDeps) process.exit(-1);
 
-console.log(`Creating optimized build...`);
-const optimizedBuild = runCommand(`npm run build`);
-if(!optimizedBuild) process.exit(-1);
-
 console.log("Eyra has been installed successfully! Type the following command to connect Eyra to MongoDB Atlas:")
 console.log(`cd ${repoName} && node setup.js YOUR_MONGODB_PASSWORD`)

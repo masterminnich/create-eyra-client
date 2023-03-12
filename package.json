@@ -1,14 +1,13 @@
 {
   "bin": "./utils/cli.js",
   "name": "@eyra-oss/create-eyra-client",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start"
   },
   "dependencies": {
-    "@eyra-oss/create-eyra-client": "^0.0.3",
     "cors": "^2.8.5",
     "file-saver": "^2.0.5",
     "isomorphic-unfetch": "^3.1.0",

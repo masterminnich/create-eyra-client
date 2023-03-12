@@ -19,8 +19,8 @@ async function installNext() {
             console.log("Successfully installed Next.js") 
             writeEnvLocal()
             writeNextConfig()
-            console.log("Eyra is ready to go! Start it up with this command:")
-            console.log("npm run start")
+            console.log("Create an optimized build with this command:")
+            console.log("npm run build")
         }
     } catch (e) { console.error(e); }
 }
