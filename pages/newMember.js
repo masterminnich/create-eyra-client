@@ -3,7 +3,6 @@ import { useRouter, withRouter } from 'next/router';
 import fetch from 'isomorphic-unfetch';
 import { Button, Form, Loader, Radio, Dropdown } from 'semantic-ui-react';
 import clientPromise from '../utils/mongodb'
-import io from 'Socket.IO-client'
 
 const localDateTimeOptions = {year:"numeric","month":"2-digit", day:"2-digit",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}
 const headers = {"Accept": "application/json", "Content-Type": "application/json"}

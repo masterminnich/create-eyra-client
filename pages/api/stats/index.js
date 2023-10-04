@@ -110,6 +110,7 @@ const fetchDataOneDay = (todayDateStr,activitiesCollection,config) =>{
         config.visitType.forEach((v) =>
             eventTypeCount[v] = 0
         )
+        eventTypeCount["New Member Registered"] = 0
         ActivityDay.Events.forEach(event => eventTypeCount[event.event] += 1)
         collectedStats["eventTypeCount"] = eventTypeCount;
 

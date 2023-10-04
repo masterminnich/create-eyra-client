@@ -1,5 +1,5 @@
 import React from 'react';
-import io from 'Socket.IO-client'
+import io from 'socket.io-client'
 import clientPromise from '../utils/mongodb'
 
 //This page allows users to manually type in their RFID number to badge in.

@@ -26,9 +26,27 @@
     "ts-node": "^10.9.1"
   },
   "devDependencies": {
-    "@types/node": "18.11.17",
-    "@types/react": "18.0.26",
-    "create-react-class": "^15.7.0",
-    "typescript": "4.9.4"
+    "create-react-class": "^15.7.0"
+  },
+  "pkg": {
+    "scripts": "index.js",
+    "targets": [
+      {
+        "outputName": "Eyra-Launcher-win",
+        "platform": "win",
+        "arch": "x64",
+        "icon": "public/icon_256x256.ico"
+      },
+      {
+        "outputName": "Eyra-Launcher-macos",
+        "platform": "macos",
+        "arch": "x64"
+      },
+      {
+        "outputName": "Eyra-Launcher-linux",
+        "platform": "linux",
+        "arch": "x64"
+      }
+    ]
   }
 }

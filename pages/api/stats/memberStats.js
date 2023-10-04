@@ -22,7 +22,6 @@ function getWorkshopPopularity(members, listOfCerts){ //get data to create Donut
             let WorkshopName = Object.keys(WorkshopList)[j]
             if (member.Certifications.includes(WorkshopName)){ //If member is certified for this workshop
                 WorkshopList[WorkshopName] += 1;
-                //console.log("add to "+WorkshopName+"...",WorkshopList[WorkshopName])
             }
         }
     }
@@ -35,66 +34,37 @@ function getWorkshopPopularity(members, listOfCerts){ //get data to create Donut
     return DonutChartData
 }
 
-function getMemberTableData(members){ //Create a sortable table using GoogleCharts. Include major, gradYr, amount of certifications, totalSessionLength
-    let TableData = [];
-    for (let i=0;i<members.length;i++){
-        let member = members[i];
-        let RowOfData = [];
-        RowOfData.push(member.Name)
-        RowOfData.push(member.Name)
-    }
-    return "test"
-}
-
 function getMemberStats(members, config){
-    let numOfMakerspaceStaff = {"registered":0};
-    let numOfFaculty = {"registered":0};
-    let numOf2022Grads = {"registered":0,"cumEvents":0};
-    let numOf2023Grads = {"registered":0,"cumEvents":0};
-    let numOf2024Grads = {"registered":0,"cumEvents":0};
-    let numOf2025Grads = {"registered":0,"cumEvents":0};
-    let numOf2026Grads = {"registered":0,"cumEvents":0};
+    let patronTypes = config.memberAttributes.patronTypes
+    let gradYrs = config.memberAttributes.graduationYears
+    let numOfEachPatronType = []
+    let numOfEachGradYr = []
+    
+    gradYrs.forEach(gradYr => {
+        let stats = {"registered":0,"totalEvents":0}
+        numOfEachGradYr.push( { [gradYr] : stats } )
+    })
+
+    patronTypes.forEach(patronType => {
+        let stats = {"registered":0,"totalEvents":0}
+        numOfEachPatronType.push( { [patronType] : stats } )
+    })
+
     for (let i=0;i<members.length;i++){
         let member = members[i];
-        switch (member.PatronType){
-            case "Faculty":
-                numOfFaculty.registered += 1;
-                //numOfFaculty.cumEvents += member.sessions.length;
-                break;
-            case "Makerspace Staff":
-                numOfMakerspaceStaff.registered += 1;
-                //numOfMakerspaceStaff.cumEvents += member.sessions.length;
-                break;
+
+        let foundStats_patronType = numOfEachPatronType.find(obj => obj.hasOwnProperty(member.PatronType))
+        if (foundStats_patronType) {
+            foundStats_patronType[member.PatronType].registered += 1
         }
-        switch (member.GraduationYear){
-            case "2022":
-                numOf2022Grads.registered += 1;
-                //numOf2022Grads.cumEvents += member.sessions.length;
-                break;
-            case "2023":
-                numOf2023Grads.registered += 1;
-                //numOf2023Grads.cumEvents += member.sessions.length;
-                break;
-            case "2024":
-                numOf2024Grads.registered += 1;
-                //numOf2024Grads.cumEvents += member.sessions.length;
-                break;
-            case "2025":
-                numOf2025Grads.registered += 1;
-                //numOf2025Grads.cumEvents += member.sessions.length;
-                break;
-            case "2026":
-                numOf2026Grads.registered += 1;
-                break;
+
+        let foundStats_gradYr = numOfEachGradYr.find(obj => obj.hasOwnProperty(member.GraduationYear))
+        if (foundStats_gradYr) {
+            foundStats_gradYr[member.GraduationYear].registered += 1
         }
     }
 
-    // Turn activities -> one giant array of all events (from everyday)
-    // let allMemberEvents = activities.filter(a => a.memberID == )
-    // .length
-
-    //console.log("numOfMakerspaceStaff",numOfMakerspaceStaff,"numOfFaculty",numOfFaculty,"numOf2022Grads",numOf2022Grads,"numOf2023Grads",numOf2023Grads,"numOf2024Grads",numOf2024Grads,"numOf2025Grads",numOf2025Grads,"numOf2026Grads",numOf2026Grads)
-    let memberStats = {"numOfMakerspaceStaff":numOfMakerspaceStaff,"numOfFaculty":numOfFaculty,"numOf2022Grads":numOf2022Grads,"numOf2023Grads":numOf2023Grads,"numOf2024Grads":numOf2024Grads,"numOf2025Grads":numOf2025Grads,"numOf2026Grads":numOf2026Grads}
+    let memberStats = [numOfEachGradYr,numOfEachPatronType]
     return memberStats
 }
 
@@ -114,7 +84,7 @@ export default async function handler(req, res) {
                 console.log("/api/stats/memberStats is fetching stats...")
                 const members = await Member.find({}); 
                 const config = await Config.find({});
-                let memberStats = getMemberStats(members, config)
+                let memberStats = getMemberStats(members, config[0])
                 let workshopStats = getWorkshopPopularity(members, config[0].certifications)
                 res.status(200).json({ success: true, data: [workshopStats,memberStats] })
             } catch (error) {
@@ -127,13 +97,3 @@ export default async function handler(req, res) {
             break;
     }
 }
-
-
-
-
-
-// Get members Collection.
-// Compare how many register members (Faculty/staff/1yr/2yr/3yr/4yr)
-// Compare registered members reach by major.
-    // How many unique majors total vs. all majors
-    // Ranked List of major vs registered vs visits

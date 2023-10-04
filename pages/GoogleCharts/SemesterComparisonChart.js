@@ -34,7 +34,7 @@ function SemesterComparisonChart ({google,calStats,config}) {
         if (semCompVarOfInterest && chart) {
             var options = {
                 'title':'Semester Comparison - '+semCompVarOfInterest,
-                'width':400,
+                'width':700,
                 'height':300,
                 'annotations': { 
                     'style': 'line',
@@ -265,7 +265,7 @@ function SemesterComparisonChart ({google,calStats,config}) {
 
             var options = {
                 'title':'Semester Comparison - '+defaultVarOfInterest,
-                'width':400,
+                'width':700,
                 'height':300,
                 'annotations': { 
                     'style': 'line',
@@ -290,6 +290,7 @@ function SemesterComparisonChart ({google,calStats,config}) {
                 <option disabled value="avgSessionMinutes">avgSessionMinutes</option>
                 <option value="cumSessionMinutes">cumSessionMinutes</option>
                 <option disabled>──────────</option>
+                <option value="New Member Registered">New Member Registered</option>
                 {config?.visitType.map((visitType) =>
                     <option value={visitType} key={visitType}>{visitType}</option>
                 )}

@@ -30,12 +30,19 @@ function WorkshopPopularityPieChart ({google,memberStats}) {
     function loadChart(){
         // Create the data table.
         let dataForPieChart = [["Member",varOfInterest]]
-        let keys = Object.keys(memberStats)
-        for (let i=0;i<keys.length;i++){ //memberStats is {stat:{Registered:dp1, cumEvents:dp2}}
-            let datapoint = memberStats[keys[i]][varOfInterest]
-            let categoryName = keys[i].substring(5,keys[i].length)
-            dataForPieChart.push([categoryName, datapoint]) 
+
+        function isNumeric(str) {
+            const num = parseFloat(str);
+            return !isNaN(num);
         }
+
+        memberStats[0].forEach(gradYr => {
+            let categoryName = Object.keys(gradYr)[0]
+            let datapoint =  gradYr[categoryName].registered
+            if (isNumeric(categoryName)){ categoryName = categoryName + " Graduates"} //If gradYr is a number add 'graduates' to the end of the string
+            dataForPieChart.push([categoryName, datapoint])
+        })
+        
         var data = google.visualization.arrayToDataTable(dataForPieChart);
 
         // Set chart options
