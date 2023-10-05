@@ -145,10 +145,10 @@ class NewMember extends React.Component {
         if (!this.state.form.Name) {
             err.Name = 'Name is required';
         }
-        if (!this.state.form.Major && this.state.form.PatronType !== "Faculty") {
+        if (!this.state.form.Major && this.state.form.PatronType !== "Faculty/Staff" || "Faculty" || "Staff") {
             err.Major = 'Major is required';
         }
-        if (!this.state.form.Major && this.state.form.PatronType == "Faculty") { //If Faculty doesn't select N/A from the list, automatically set it for them instead of throwing an error.
+        if (!this.state.form.Major && this.state.form.PatronType == "Faculty/Staff" || "Faculty" || "Staff") { //If Faculty doesn't select N/A from the list, automatically set it for them instead of throwing an error.
             let tempForm = this.state.form
             tempForm.Major = "N/A"
             this.setState({ form:tempForm });
