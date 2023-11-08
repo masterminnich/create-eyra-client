@@ -145,10 +145,11 @@ class NewMember extends React.Component {
         if (!this.state.form.Name) {
             err.Name = 'Name is required';
         }
-        if (!this.state.form.Major && this.state.form.PatronType !== "Faculty/Staff" || "Faculty" || "Staff") {
+        if (!this.state.form.Major && !["Faculty/Staff" || "Faculty" || "Staff"].includes(this.state.form.PatronType)) {
+            console.log("Form Results:",this.state.form)
             err.Major = 'Major is required';
         }
-        if (!this.state.form.Major && this.state.form.PatronType == "Faculty/Staff" || "Faculty" || "Staff") { //If Faculty doesn't select N/A from the list, automatically set it for them instead of throwing an error.
+        if (!this.state.form.Major && ["Faculty/Staff" || "Faculty" || "Staff"].includes(this.state.form.PatronType)) { //If Faculty doesn't select N/A from the list, automatically set it for them instead of throwing an error.
             let tempForm = this.state.form
             tempForm.Major = "N/A"
             this.setState({ form:tempForm });
@@ -223,7 +224,7 @@ class NewMember extends React.Component {
                                 <label htmlFor="GraduationYear">Graduation Year: </label>
                                 <select name="GraduationYear" onChange={this.handleSelect} style={ this.state.errors.GraduationYear ? { border:"red solid" } : {  }}>
                                     {this.props.config.memberAttributes.graduationYears.map((gradYr) => (
-                                        <option value={gradYr}>{gradYr}</option>
+                                        <option key={gradYr} value={gradYr}>{gradYr}</option>
                                     ))}
                                 </select>
                             </div>
