@@ -1794,6 +1794,26 @@ export default function Home({ members, activities, config }){
         patronsRegistered = state.membersCollection.length
       } else {
         patronsRegistered = state.membersCollection.filter((mem) => mem.PatronType === state.configCollection?.stats?.campusReach?.patronType).length
+      
+        //identify how many students have graduated and subtract from the count.
+        //Assuming students graduate on June 1st... (This assumpsion is weak. The config page should collect better data about semesters/academic year)
+        let patrons = state.membersCollection.filter((mem) => mem.PatronType === state.configCollection?.stats?.campusReach?.patronType)
+
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const isBeforeJune1 = currentDate.getMonth() < 5; // Months are zero-indexed, so May is 4
+
+        // Filter the array based on the current date and criteria
+        const filteredPatrons = patrons.filter((patron) => {
+          const patronGraduationYear = parseInt(patron.GraduationYear, 10); // Parse year string to integer
+          if (isBeforeJune1) {
+            return patronGraduationYear < currentYear;
+          } else {
+            return patronGraduationYear <= currentYear;
+          }
+        });
+
+        patronsRegistered = patronsRegistered - filteredPatrons.length
       }
 
       this.state = { 
