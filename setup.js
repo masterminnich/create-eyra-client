@@ -3,10 +3,18 @@ const exec = util.promisify(require('child_process').exec);
 const fs = require('fs');
 
 let args = process.argv
-let password = args[2]
+let uri = args[2]
+/*let uri_template = args[2]
+let password = args[3]
 
-let envLocalContent = "MONGODB_URI=mongodb+srv://admin:"+password+"@m0cluster.hqusv.mongodb.net/eyra?retryWrites=true&w=majority"
-let nextConfigContent = "module.exports = { env: { MONGO_URI: 'mongodb+srv://admin:"+password+"@m0cluster.hqusv.mongodb.net/eyra?retryWrites=true&w=majority' } }"
+URI_prefix = uri_template.split('<password>')[0]
+URI_host = uri_template.split('<password>')[1].split('?')[0] + "eyra?"
+URI_options = uri_template.split('<password>')[1].split('?')[1]
+
+let uri = URI_prefix + password + URI_host + URI_options*/
+
+let envLocalContent = "MONGODB_URI="+uri
+let nextConfigContent = "module.exports = { env: { MONGO_URI: '" + uri + "' } }"
 
 const {execSync} = require('child_process');
 
@@ -40,7 +48,10 @@ async function writeEnvLocal(){
     fs.writeFile('.env.local', envLocalContent, err => {
         if (err) { 
             console.error(err); 
-        } else { console.log("Successfully wrote .env.local") }
+        } else { 
+            console.log("")
+            console.log("Successfully wrote .env.local") 
+        }
     });
 }
 
@@ -53,14 +64,16 @@ async function writeNextConfig(){
             console.error(err); 
         } else { 
             console.log("Successfully wrote next.config.js")
-            console.log(`Creating optimized build...`);
-            const optimizedBuild = runCommand(`npm run build`);
-            if(!optimizedBuild) process.exit(-1);
+            //console.log(`Creating optimized build...`);
+            //const optimizedBuild = runCommand(`npm run build`);
+            //if(!optimizedBuild) process.exit(-1);
             console.log("")
-            console.log("Eyra is ready to go! Type the following command to start up Eyra:")
-            console.log("npm run start")
+            console.log("Eyra is ready to go! Use the launcher or type the following command to start up Eyra:")
+            console.log("npm run dev")
         }
     });
 }
 
-installNext()
+//installNext()
+writeEnvLocal()
+writeNextConfig()

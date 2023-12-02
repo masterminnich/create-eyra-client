@@ -8,12 +8,12 @@ Eyra is a web app designed to make it easy for makerspaces to log their members,
 - Download [Node.js](https://nodejs.org/en/download/)
 
 ## Getting Started
-1. Clone the repository using npm.  ```git clone ...```
+1. Clone the repository using npx  ```npx @eyra-oss/create-eyra-client```
 2. Create a [MongoDB account](https://account.mongodb.com/account/register)
 3. Create a new [MongoDB "shared" cluster](https://account.mongodb.com/account/register)
 4. Whitelist your IP under the "Network Access" tab in MongoDB
 5. Download a keyboard wedge compatible with your ID cards. We recommend [PacsProbe](https://pacsprobe.com/free_software_download_for_card_number/)
-6. ```node setup.js YOUR_MONGODB_PASSWORD```
+6. Connect Eyra to MongoDB Atlas ```node setup.js <MONGODB_CONNECTION_STRING>```
 7. Start the app with ```npm run dev```
 
 ## Usage
