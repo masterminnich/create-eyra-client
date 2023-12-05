@@ -158,7 +158,7 @@ function SemesterComparisonChart ({google,calStats,config}) {
                 //if (daysSince > daysInSemester){ daysInSemester = daysSince }
             }
 
-            daysInSemester = Math.max.apply(Math, data.map(function(o) { return o[3]; })) //Get max value in column 3 (daysSince)
+            daysInSemester = Math.max(...data.map(row => row[3]).filter(value => !isNaN(value))) //Get max value in column 3 (daysSince)
 
             //data now looks like... [Date, annotation, datapoint, daysSince, segmentIndex]
             //console.log("about to reformat the data",data)
