@@ -749,6 +749,8 @@ a.cornerButton, button.cornerButton {
     text-decoration: none;
     left: 5px;
     top: 4px;
+    position: absolute;
+    z-index: 1;
 }
 
 
