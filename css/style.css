@@ -1,32 +1,36 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;500;700;900&display=swap');
 
-* { font-family: 'Inter'; }
-
-h2.subtitle { text-align: CENTER;}
-
-thead.badgeInMembers {
-    position: relative; 
+* {
+    font-family: 'Inter';
 }
 
-.column{
+h2.subtitle {
+    text-align: CENTER;
+}
+
+thead.badgeInMembers {
+    position: relative;
+}
+
+.column {
     display: flex;
     flex-direction: column;
     gap: 2ch;
 }
 
-.gradient{
+.gradient {
     background-color: violet;
     background-image: linear-gradient(227deg, dodgerblue, violet);
     background-size: 120%;
     background-repeat: repeat;
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent; 
+    -webkit-text-fill-color: transparent;
     -moz-background-clip: text;
     -moz-text-fill-color: transparent;
 }
 
-.statCard{
+.statCard {
     background: #EBEBEB;
     width: 100%;
     aspect-ratio: 10/9;
@@ -38,19 +42,19 @@ thead.badgeInMembers {
     flex-wrap: wrap;
 }
 
-.statCard h4{ 
+.statCard h4 {
     font-size: 1vw;
     text-align: center;
     margin: 0 auto 1ch auto;
 }
 
-.statCard h3{ 
+.statCard h3 {
     font-size: 1.75vw;
     margin: 1ch 0 0 0;
     font-weight: 700;
 }
 
-.statCard h2{
+.statCard h2 {
     text-align: center;
     font-size: 6vw;
     line-height: 0;
@@ -58,7 +62,7 @@ thead.badgeInMembers {
     font-weight: 500;
 }
 
-.progressBar{
+.progressBar {
     width: 80%;
     height: 32px;
     margin: auto;
@@ -68,33 +72,43 @@ thead.badgeInMembers {
     margin: 0 auto 24px auto;
 }
 
-.progress{
+.progress {
     background-color: violet;
     width: 0%;
     height: inherit;
     border-radius: 4px 0px 0px 4px;
 }
 
-#c1{ width: 55vw; }
-#c2{ width: 20vw; }
+#c1 {
+    width: 55vw;
+}
 
-td.checkbox{ 
+#c2 {
+    width: 20vw;
+}
+
+td.checkbox {
     width: 24px;
     border: 3px solid black;
     border-radius: 8px;
     height: 24px;
 }
 
-th.rotated { transform: rotate(315deg); }
-th.rotated div { 
+th.rotated {
+    transform: rotate(315deg);
+}
+
+th.rotated div {
     width: 32px;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-th { white-space: nowrap; }
+th {
+    white-space: nowrap;
+}
 
-section.Popup{
+section.Popup {
     background-color: #EBEBEB;
     display: flex;
     flex-direction: column;
@@ -108,7 +122,7 @@ section.Popup{
     padding: 1ch 2ch;
 }
 
-section.Popup button{
+section.Popup button {
     width: fit-content;
     border: 3px solid black;
     border-radius: 6px;
@@ -117,56 +131,58 @@ section.Popup button{
     display: inline;
 }
 
-input#badgeInInput, input#badgeOutInput{ 
+input#badgeInInput, input#badgeOutInput {
     width: 24ch;
     position: absolute;
     left: 14ch;
 }
 
-.enterInfoLabel{ 
+.enterInfoLabel {
     width: fit-content;
     position: relative;
 }
 
-.enterInfoLabelFixed{ 
+.enterInfoLabelFixed {
     width: 24ch;
     width: fit-content;
     margin-bottom: 5px;
 }
 
-a#close-button::before{
+a#close-button::before {
     position: absolute;
     top: -30px;
     bottom: 0;
     right: 15px;
     content: "\2A2F";
-    font-size: 100px; 
+    font-size: 100px;
     color: #FFF;
 }
 
-section.fit{ 
+section.fit {
     width: fit-content;
     min-width: 500px;
 }
 
 /* Start Question Mark Tooltip */
-#VisitTypeQuestion{
+#VisitTypeQuestion {
     width: 1rem;
     height: 1rem;
     background-color: red;
 }
+
 /* End Question Mark Tooltip */
 
 /* Start Tooltip CSS */
-.tooltip{
+.tooltip {
     position: absolute;
-    background:rgb(57, 166, 209);
+    background: rgb(57, 166, 209);
     z-index: 1;
     width: max-content;
     transform: translateY(calc(-50% + .65rem)) translateX(10px);
 }
 
-.tooltip:before{ /* Use a pseudo-element to increase the "hit area" */
+.tooltip:before {
+    /* Use a pseudo-element to increase the "hit area" */
     content: "";
     height: 124%;
     width: 120%;
@@ -174,7 +190,8 @@ section.fit{
     transform: translate(-3%, -12%);
 }
 
-.tooltipArrow { /*Draw little arrow connecting tooltip*/
+.tooltipArrow {
+    /*Draw little arrow connecting tooltip*/
     width: 0;
     height: 0;
     border-top: 10px solid transparent;
@@ -186,29 +203,34 @@ section.fit{
     top: calc(50% - 0.65rem);
 }
 
-span.tooltip div{ 
-    width: 34ch; 
+span.tooltip div {
+    width: 34ch;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     line-height: 0;
 }
 
-p.tooltip_attribute{
+p.tooltip_attribute {
     display: inline;
-    float:left;
+    float: left;
     padding: 0 4px;
     line-height: 1.5em;
     margin: 0;
 }
 
-span.tooltip div p:nth-child(1){ font-weight: 600; }
+span.tooltip div p:nth-child(1) {
+    font-weight: 600;
+}
 
-span.tooltip div p:nth-child(2){ float:right; }
+span.tooltip div p:nth-child(2) {
+    float: right;
+}
+
 /* End Tooltip CSS */
 
 /* Start Search Results for Member Badge In CSS */
-div.searchResultsDropdown{
+div.searchResultsDropdown {
     max-height: 11ch;
     border: 1px solid black;
     background: lightgray;
@@ -217,23 +239,24 @@ div.searchResultsDropdown{
     position: relative;
     left: calc(50% - 1ch);
 }
+
 /* End Search Results for Member Badge In CSS */
 
 /* Start Recent Activity */
-table#recentActivity { 
-    width: -webkit-fill-available; 
-    text-align: left; 
+table#recentActivity {
+    width: -webkit-fill-available;
+    text-align: left;
     border-spacing: 0;
 }
 
-#dateSelection{
+#dateSelection {
     display: inline-flex;
     justify-content: space-between;
     align-items: center;
     width: 18ch;
 }
 
-#dateSelection p{
+#dateSelection p {
     font-size: 18px;
 }
 
@@ -259,30 +282,41 @@ tbody#recentActivityTbody tr td {
     padding: .15em;
 }
 
-table#recentActivity td#noEvents, td.noMembersIn{
+table#recentActivity td#noEvents, td.noMembersIn {
     width: 100%;
     text-align: center;
     font-size: 20px;
 }
 
-td.noMembersIn{ padding-top: 0.75em; }
+td.noMembersIn {
+    padding-top: 0.75em;
+}
 
-div.inOutTime{
+div.inOutTime {
     display: flex;
     align-items: center;
     flex: 1;
     margin: .5ch;
 }
 
-div.inOutTime p { 
+div.inOutTime p {
     margin: 0;
     flex: 1;
 }
-p.in_out{ justify-content: flex-start; }
-p.inOutTime{ justify-content: center; }
-p.am_pm{ justify-content: flex-end; }
 
-p.in_out, p.am_pm{
+p.in_out {
+    justify-content: flex-start;
+}
+
+p.inOutTime {
+    justify-content: center;
+}
+
+p.am_pm {
+    justify-content: flex-end;
+}
+
+p.in_out, p.am_pm {
     font-size: 12px;
 }
 
@@ -299,21 +333,22 @@ a#activitiesBackward:after{
     left: 10ch;
 }*/
 
-button#deleteActivityButton{
+button#deleteActivityButton {
     top: 5px;
     position: absolute;
     right: 5px;
 }
 
-button#deleteActivityButton:after{
+button#deleteActivityButton:after {
     content: '\1F5D1';
     font-size: 35px;
     color: black;
 }
+
 /* End Recent Activity */
 
 /* Start NewMemberMsg PopUp CSS */
-div#newMemberMsg{
+div#newMemberMsg {
     text-align: center;
     border: solid black 1px;
     border-radius: 20px;
@@ -326,11 +361,11 @@ div#newMemberMsg{
     display: none;
 }
 
-#newMemberMsg a,#newMemberMsg p{
+#newMemberMsg a, #newMemberMsg p {
     text-align: center;
 }
 
-#newMemberMsg a{
+#newMemberMsg a {
     background-color: rgb(109, 185, 109);
     border: solid black 2px;
     padding: 10px 16px;
@@ -341,7 +376,7 @@ div#newMemberMsg{
     left: 45%;
 }
 
-#newMemberMsg a:hover{
+#newMemberMsg a:hover {
     background-color: rgb(0, 185, 0);
 }
 
@@ -351,76 +386,95 @@ div#newMemberMsg{
     font-size: 22px;
     position: absolute;
 }
+
 /*End NewMemberMsg PopUp CSS*/
 
-button#submitBadgeOutPopup{ float: right; }
+button#submitBadgeOutPopup {
+    float: right;
+}
 
-button#cancelPopupButton{ float: left; }
+button#cancelPopupButton {
+    float: left;
+}
 
-div section form div.field{
+div section form div.field {
     display: flex;
     margin-bottom: 5px;
 }
 
-div section form div.field input{
+div section form div.field input {
     /*Badged In, Badged Out input boxes in popup*/
     width: 24ch;
 }
 
-div section form div.field input, div#visitType select{
+div section form div.field input, div#visitType select {
     position: absolute;
     left: 14ch;
 }
 
-input.date{
+input.date {
     position: absolute;
     left: 14ch;
 }
 
-input.time{
+input.time {
     position: absolute;
     left: 29ch;
 }
 
-h1#badgingOutTitle{ text-align: center; }
+h1#badgingOutTitle {
+    text-align: center;
+}
 
-div#visitType, div#badgeInTime{ margin-bottom: 5px; }
+div#visitType, div#badgeInTime {
+    margin-bottom: 5px;
+}
 
-div.checkboxes p{ margin-bottom: 5px; }
+div.checkboxes p {
+    margin-bottom: 5px;
+}
 
-.addInfoCheckbox{
+.addInfoCheckbox {
     display: flex;
     margin: auto;
     height: 1.8em;
     width: 36px;
 }
 
-button.addInfoAttn{ background-color: yellow; }
+button.addInfoAttn {
+    background-color: yellow;
+}
 
-button.addInfo { 
+button.addInfo {
     display: flex;
     margin: auto;
     background: none;
     border: none;
 }
 
-button.addInfo svg{
+button.addInfo svg {
     width: 24px;
 }
 
-a#activitiesForward{ float: right; }
+a#activitiesForward {
+    float: right;
+}
 
-a#backEndButton{ background-color: #42e36d; }
+a#backEndButton {
+    background-color: #42e36d;
+}
 
-a#backEndButton:hover{ background-color: #32a852; }
+a#backEndButton:hover {
+    background-color: #32a852;
+}
 
 /* Start stats page*/
-div#calendarChart, div#workshopPopularityPieChart{
+div#calendarChart, div#workshopPopularityPieChart {
     top: 37px;
     position: relative;
 }
 
-div.controlCalendarChart{
+div.controlCalendarChart {
     top: 10px;
     position: relative;
 }
@@ -434,38 +488,41 @@ div#selectStats, div#selectEventTypes {
     display: flex;
 }
 
-.controlCalendarChart p, .controlCalendarChart select,.controlMemberPieChart p, .controlMemberPieChart select{
+.controlCalendarChart p, .controlCalendarChart select, .controlMemberPieChart p, .controlMemberPieChart select {
     display: inline;
 }
 
-div.PieCharts{
+div.PieCharts {
     top: 19px;
     display: flex;
     position: relative;
 }
 
-div#workshopPopularityPieChart, div#memberPieChart, div.controlMemberPieChart{
+div#workshopPopularityPieChart, div#memberPieChart, div.controlMemberPieChart {
     top: 0;
 }
 
-div.controlMemberPieChart{ 
+div.controlMemberPieChart {
     z-index: 1;
     transform: translate(50%);
 }
 
-div#memberPieChart, div.controlMemberPieChart{ position: absolute; }
+div#memberPieChart, div.controlMemberPieChart {
+    position: absolute;
+}
+
 /* End stats page */
 
 /* Start badge in popup CSS */
-div#FoundPopup{
+div#FoundPopup {
     background-color: green;
 }
 
-div#NotFoundPopup, div#TooManyPopup{
-    background-color:salmon;
+div#NotFoundPopup, div#TooManyPopup {
+    background-color: salmon;
 }
 
-div#FoundPopup, div#TooManyPopup, div#NotFoundPopup{
+div#FoundPopup, div#TooManyPopup, div#NotFoundPopup {
     width: 75%;
     height: 25vw;
     left: 0;
@@ -478,20 +535,21 @@ div#FoundPopup, div#TooManyPopup, div#NotFoundPopup{
     position: fixed;
 }
 
-.popupMsg{
+.popupMsg {
     text-align: center;
     font-size: 3vw;
     font-weight: 700;
 }
 
-p.helpMsg{
+p.helpMsg {
     text-align: center;
     font-size: 2vw;
     font-weight: 700;
 }
+
 /* End badge in popup CSS */
 
-div.badgeIn{
+div.badgeIn {
     display: flex;
     flex-direction: column;
     top: 5%;
@@ -499,7 +557,7 @@ div.badgeIn{
     width: 100%;
 }
 
-div.arrow{
+div.arrow {
     display: flex;
     box-sizing: border-box;
     width: 70px;
@@ -510,32 +568,37 @@ div.arrow{
     position: relative;
 }
 
-div.arrow:before{
+div.arrow:before {
     content: "";
     flex: 1;
     margin: 0 5px;
     background: currentColor;
-    clip-path: polygon(0 10px,calc(100% - 15px) 10px,calc(100% - 15px) 0,100% 50%,calc(100% - 15px) 100%,calc(100% - 15px) calc(100% - 10px),0 calc(100% - 10px));
+    clip-path: polygon(0 10px, calc(100% - 15px) 10px, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, calc(100% - 15px) calc(100% - 10px), 0 calc(100% - 10px));
     animation: arrow-bounce .5s infinite alternate;
 }
 
 @keyframes arrow-bounce {
-    0%  {transform: scaleX(var(--s,1)) translate(-6px)}
-    100%{transform: scaleX(var(--s,1)) translate( 6px)}
+    0% {
+        transform: scaleX(var(--s, 1)) translate(-6px)
+    }
+
+    100% {
+        transform: scaleX(var(--s, 1)) translate(6px)
+    }
 }
 
-h1#pleaseBadgeIn{
+h1#pleaseBadgeIn {
     font-weight: 900;
     text-align: center;
     font-size: 5vw;
 }
 
-h2#pleaseBadgeIn{
+h2#pleaseBadgeIn {
     text-align: CENTER;
     margin-top: 0;
 }
 
-a#newMemberButton{
+a#newMemberButton {
     display: flex;
     justify-content: center;
     font-weight: 700;
@@ -550,32 +613,32 @@ a#newMemberButton{
     text-decoration: none;
 }
 
-a#newMemberButton:hover{
+a#newMemberButton:hover {
     background: #93b7c3;
 }
 
-fieldset#machinesUtilized label, fieldset#otherToolsUtilized label{
+fieldset#machinesUtilized label, fieldset#otherToolsUtilized label {
     display: flex;
     flex-wrap: row;
     flex-basis: 50%;
 }
 
-div.equipment{
+div.equipment {
     display: flex;
     flex-direction: row;
 }
 
-input#badgeInTextInput{
+input#badgeInTextInput {
     border: none;
     outline: none;
     color: white;
 }
 
-div.form-container{
+div.form-container {
     text-align: center;
 }
 
-a#manualBadgeIn{
+a#manualBadgeIn {
     position: absolute;
     top: 4px;
     left: 4px;
@@ -586,11 +649,11 @@ a#manualBadgeIn{
     font-weight: 600;
 }
 
-a#manualBadgeIn:hover{
-    background-color:salmon;
+a#manualBadgeIn:hover {
+    background-color: salmon;
 }
 
-div.left-arrow{
+div.left-arrow {
     border: solid black;
     border-width: 0 3px 3px 0;
     display: inline-block;
@@ -601,23 +664,25 @@ div.left-arrow{
     position: relative;
 }
 
-div.field{
+div.field {
     display: flex;
 }
 
-div.formComponent div input#NameInput, div.formComponent select{
+div.formComponent div input#NameInput, div.formComponent select {
     left: 15px;
     position: relative;
 }
 
-input#NameInput{ position: sticky !important; }
+input#NameInput {
+    position: sticky !important;
+}
 
-div#formName, div#formRadios, div#formMajor, div#formGrad{
+div#formName, div#formRadios, div#formMajor, div#formGrad {
     display: inline-flex;
     justify-content: center;
 }
 
-form#newMember{
+form#newMember {
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -625,30 +690,40 @@ form#newMember{
     position: relative;
 }
 
-#newMemberSubmit{
+#newMemberSubmit {
     width: 35%;
     margin: auto;
 }
 
 
 /* Start CSS for codeOfConduct */
-#codeOfConduct .header{
+#codeOfConduct .header {
     text-align: center;
 }
 
-#codeOfConduct p.header{ margin-bottom: calc(2.75vw + 18px); }
+#codeOfConduct p.header {
+    margin-bottom: calc(2.75vw + 18px);
+}
 
-#codeOfConduct p{ font-size: calc(1.1vw + 9px); }
-#codeOfConduct h1{ font-size: calc(1.6vw + 18px); }
-#codeOfConduct li{ font-size: calc(1vw + 8px); }
+#codeOfConduct p {
+    font-size: calc(1.1vw + 9px);
+}
 
-#iAgree{
+#codeOfConduct h1 {
+    font-size: calc(1.6vw + 18px);
+}
+
+#codeOfConduct li {
+    font-size: calc(1vw + 8px);
+}
+
+#iAgree {
     color: black;
     background-color: papayawhip;
     font-size: calc(1.2vw + 12px);
     border: calc(.1vw + 2px) solid black;
     border-radius: calc(.8vw + 4px);
-    padding: calc(.4vw + 2px) calc(.6vw + 3px) ;
+    padding: calc(.4vw + 2px) calc(.6vw + 3px);
     width: calc(7ch + 1vw + 8px);
     text-decoration: none;
     text-align: center;
@@ -656,33 +731,36 @@ form#newMember{
     margin-top: calc(.8vw + 4px);
     position: absolute;
     left: 0;
-    right: 0;    
+    right: 0;
 }
 
-#iAgree:hover{
+#iAgree:hover {
     background-color: #fdd89b;
 }
+
 /* End CSS for codeOfConduct */
 
 
-a.cornerButton, button.cornerButton {/* Navigation buttons in top corners */
+a.cornerButton, button.cornerButton {
+    /* Navigation buttons in top corners */
     color: black;
     border: 1px solid black;
     padding: 4px;
     text-decoration: none;
-    position: absolute;
     left: 5px;
     top: 4px;
+    position: absolute;
+    z-index: 1;
 }
 
 
-h1#org_name{
+h1#org_name {
     font-size: 24px;
     font-weight: 700;
     text-align: center;
 }
 
-header#header{
+header#header {
     width: 80%;
     border-bottom: 1px solid black;
     margin: auto;
@@ -695,7 +773,7 @@ header button {
     display: contents;
 }
 
-header svg{
+header svg {
     width: fit-content;
 }
 
@@ -717,7 +795,9 @@ main {
     justify-content: space-between;
 }
 
-main#codeOfConduct{ display: block; }
+main#codeOfConduct {
+    display: block;
+}
 
 section {
     background: white;
@@ -725,7 +805,7 @@ section {
     /*filter: drop-shadow(-4px 6px 12px #00000025);*/
 }
 
-section header{
+section header {
     display: flex;
     justify-content: space-between;
     width: auto;
@@ -733,36 +813,38 @@ section header{
     padding: 0ch 2ch;
 }
 
-section header h2{
+section header h2 {
     font-size: 18px;
     font-weight: 500;
 }
 
-section header div{
+section header div {
     /*flex: 1;*/
     display: flex;
 }
 
-button.badgeOut{
+button.badgeOut {
     display: contents;
 }
 
-.certChecbox div{
+.certChecbox div {
     aspect-ratio: 1;
     width: 2ch;
     border: 3px solid black;
     border-radius: 6px;
 }
 
-svg.icon{ width: 32px; }
+svg.icon {
+    width: 32px;
+}
 
-div.certChecbox { 
+div.certChecbox {
     display: inline-flex;
     width: fit-content;
     gap: 2px;
 }
 
-div.row{
+div.row {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -773,12 +855,27 @@ div.row{
     margin-bottom: 0.5ch;
 }
 
-div.name{ width: 30%; display: flex; }
-div.major{ width: 20%; display: flex; }
-div.badgeOut{ width: 32px; display: flex; }
-div.certHeader{ width: 24px; margin: 0px 2px; }
+div.name {
+    width: 30%;
+    display: flex;
+}
 
-div.rotated{
+div.major {
+    width: 20%;
+    display: flex;
+}
+
+div.badgeOut {
+    width: 32px;
+    display: flex;
+}
+
+div.certHeader {
+    width: 24px;
+    margin: 0px 2px;
+}
+
+div.rotated {
     display: inline-flex;
     flex-direction: row;
     position: relative;
@@ -797,7 +894,7 @@ div.rotated{
     position: relative;
 }
 
-div#blur{
+div#blur {
     width: 100vw;
     height: 100vh;
     position: fixed;
@@ -807,28 +904,28 @@ div#blur{
     backdrop-filter: blur(1px);
 }
 
-section#config h3{
+section#config h3 {
     text-align: center;
     font-size: 1vw;
     font-weight: 500;
 }
 
-section#config{
+section#config {
     height: 80vh;
     overflow-y: scroll;
 }
 
-button#x{
+button#x {
     border: none;
     padding: none;
     background: none;
 }
 
-button#x:hover path{
+button#x:hover path {
     fill: black;
 }
 
-div#pill{
+div#pill {
     /*border: 2px solid black;*/
     border-radius: 12px;
     display: inline-flex;
@@ -839,17 +936,17 @@ div#pill{
     color: #545454;
 }
 
-div#pill p{
+div#pill p {
     margin: auto;
 }
 
-div#certification-pills, div#otherTools-pills, div#patron-pills, div#gradyr-pills, div#visitType-pills{
+div#certification-pills, div#otherTools-pills, div#patron-pills, div#gradyr-pills, div#visitType-pills {
     gap: 1ch;
     display: flex;
     flex-wrap: wrap;
 }
 
-#confirmPopup{
+#confirmPopup {
     z-index: 3;
     background: white;
     height: fit-content;
@@ -865,35 +962,35 @@ div#certification-pills, div#otherTools-pills, div#patron-pills, div#gradyr-pill
     border-radius: 12px;
 }
 
-svg.x{
+svg.x {
     scale: 0.8;
     height: auto;
     display: block;
 }
 
-input#addPill{
+input#addPill {
     background: none;
     width: fit-content;
 }
 
-section#editMember select, section#editMember input{
+section#editMember select, section#editMember input {
     max-width: fit-content;
 }
 
-section#editMember h2#title{
+section#editMember h2#title {
     text-align: center;
 }
 
-section#editMember div#buttons{
+section#editMember div#buttons {
     display: flex;
     justify-content: space-between;
 }
 
-input[type='checkbox']#checkbox:checked{
+input[type='checkbox']#checkbox:checked {
     background-color: violet;
 }
 
-input[type='checkbox']#checkbox{
+input[type='checkbox']#checkbox {
     appearance: none;
     background-color: #fff;
     aspect-ratio: 1;
@@ -903,19 +1000,19 @@ input[type='checkbox']#checkbox{
     border-radius: 6px;
 }
 
-section#editMember div#certs{
+section#editMember div#certs {
     height: 95px;
     align-content: flex-end;
     flex-wrap: wrap;
     display: flex;
 }
 
-section#editMember label{
+section#editMember label {
     display: flex;
     gap: 1ch;
 }
 
-textarea#majors{
+textarea#majors {
     width: 98%;
     height: 5.5ch;
     resize: none;
@@ -926,32 +1023,35 @@ textarea#majors{
     width: 10px;
     border-radius: 4px;
 }
-  
+
 /*::-webkit-scrollbar-track {
     background: #f1f1f1; 
 }*/
 
 ::-webkit-scrollbar-thumb {
-    background: #888; 
+    background: #888;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #555; 
+    background: #555;
 }
+
 /* End custom scrollbar */
 
-details#memberAttributes, details#stats{
+details#memberAttributes, details#stats {
     margin-top: 1.5em;
     position: relative;
 }
 
-details#memberAttributes summary, details#stats summary{
+details#memberAttributes summary, details#stats summary {
     font-weight: bold;
     font-size: 1.5em;
 }
 
 @keyframes blinking {
-    to { fill: violet; }
+    to {
+        fill: violet;
+    }
 }
 
 button#config_true path {
@@ -962,17 +1062,18 @@ button#config_true path {
     animation-timing-function: ease;
 }
 
-div#campusReach{
+div#campusReach {
     display: inline-flex;
     justify-content: space-between;
     align-content: center;
     width: 100%;
-} 
-div#campusReach label{
+}
+
+div#campusReach label {
     display: flex;
     gap: 1ch;
 }
 
-input#rfidLength{
+input#rfidLength {
     width: fit-content;
 }
